@@ -39,13 +39,15 @@ class Map:
 
 
 class Cell:
-    def __init__(self, x, y, type):
+    def __init__(self, x, y, type, resource_value, resource_type):
         self.x = x
         self.y = y
         # CELL_TYPES
         self.type = type
 		# current ants in this cell
         self.ants = []
+        self.resource_value = resource_value
+        self.resource_type = resource_type
 
 
 class Resource:
