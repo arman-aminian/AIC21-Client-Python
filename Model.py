@@ -76,8 +76,19 @@ class GameConfig:
         self.generate_sarbaz = generate_sarbaz
         self.rate_death_resource = rate_death_resource
 
+class CurrentState:
+    # This will keep the current state of the game
+    def __init__(self,around_cells, chat_box, current_x, current_y,
+    current_resource_value, current_resource_type, health):
+        self.around_cells = around_cells
+        self.chat_box = chat_box
+        self.current_x = current_x
+        self.current_y = current_y
+        self.current_resource_value = current_resource_value
+        self.current_resource_type = current_resource_type
+        self.health = health
+
 # CurrentState: each turn before AI.py is called
-# GameConfig: getting from server at startup
 
 # def AI(self, currentState):
 # 	#
