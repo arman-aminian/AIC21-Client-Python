@@ -12,10 +12,6 @@ class Ant:
         self.locationCell = locationCell
         self.health = health
 
-    # returns a DIRECTION
-    def move(self):
-        pass
-
     def send_message(self, text):
         pass
 
