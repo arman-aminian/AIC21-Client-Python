@@ -66,7 +66,7 @@ class Message:
         self.turn = turn
 
 class GameConfig:
-    # This will initiate game constants at the begging of the game.
+    # This will initiate game constants at the beginning of the game.
     def __init__(self, map_width, map_height, ant_type, base_x, base_y,
     health_kargar, health_sarbaz, attack_distance, generate_sarbaz,
     rate_death_resource):
