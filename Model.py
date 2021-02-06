@@ -61,7 +61,10 @@ class Resource:
         return self.amount
 
 class GameConfig:
-    def __init__(self):
+    # This will initiate game constants at the begging of the game.
+    def __init__(self, map_width, map_height, ant_type, base_x, base_y,
+    health_kargar, health_sarbaz, attack_distance, generate_sarbaz,
+    rate_death_resource):
         self.map_width = map_width
         self.map_height = map_height
         self.ant_type = ant_type
@@ -72,7 +75,7 @@ class GameConfig:
         self.attack_distance = attack_distance
         self.generate_sarbaz = generate_sarbaz
         self.rate_death_resource = rate_death_resource
-        
+
 # CurrentState: each turn before AI.py is called
 # GameConfig: getting from server at startup
 
