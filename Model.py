@@ -60,6 +60,19 @@ class Resource:
     def get_amount(self):
         return self.amount
 
+class GameConfig:
+    def __init__(self):
+        self.map_width = map_width
+        self.map_height = map_height
+        self.ant_type = ant_type
+        self.base_x = base_x
+        self.base_y = base_y
+        self.health_kargar = health_kargar
+        self.health_sarbaz = health_sarbaz
+        self.attack_distance = attack_distance
+        self.generate_sarbaz = generate_sarbaz
+        self.rate_death_resource = rate_death_resource
+        
 # CurrentState: each turn before AI.py is called
 # GameConfig: getting from server at startup
 
