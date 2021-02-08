@@ -62,6 +62,17 @@ class Message:
 
 
 class GameConfig:
+    map_width: int
+    map_height: int
+    ant_type: AntType
+    base_x: int
+    base_y: int
+    health_kargar: int
+    health_sarbaz: int
+    attack_distance: int
+    generate_sarbaz: int
+    rate_death_resource: float
+
     # This will initiate game constants at the beginning of the game.
     def __init__(self, map_width, map_height, ant_type, base_x, base_y,
     health_kargar, health_sarbaz, attack_distance, generate_sarbaz,
@@ -77,7 +88,16 @@ class GameConfig:
         self.generate_sarbaz = generate_sarbaz
         self.rate_death_resource = rate_death_resource
 
+
 class CurrentState:
+    around_cells: List["Cell"]
+    chat_box: List["Message"]
+    current_x: int
+    current_y: int
+    current_resource_type: ResourceTypes
+    current_resource_value: int
+    health: int
+
     # This will keep the current state of the game
     def __init__(self,around_cells, chat_box, current_x, current_y,
     current_resource_value, current_resource_type, health):
