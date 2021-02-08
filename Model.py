@@ -1,7 +1,7 @@
 from enum import Enum
 
 class Ant:
-    def __init__(self, type, health, locationCell):
+    def __init__(self, type: AntType, health: int, locationCell: Cell):
         # ANT_TYPES
         self.type = type
         # Current Cell
@@ -24,10 +24,10 @@ class Ant:
 
 
 class Map:
-    def __init__(self, length, width):
+    def __init__(self, length: int, width: int):
         self.length = length
         self.width = width
-        self.cells = None
+        self.cells = []
 
 
 class Cell:
@@ -43,7 +43,7 @@ class Cell:
 
 
 class Resource:
-    def __init__(self, type, amount):
+    def __init__(self, type: ResourceType, amount: int):
         # RESOURCE_TYPES
         self.type = type
         self.amount = amount
@@ -56,7 +56,7 @@ class Resource:
 
 
 class Message:
-    def __init__(self, text, turn):
+    def __init__(self, text: str, turn: int):
         self.text = text
         self.turn = turn
 
