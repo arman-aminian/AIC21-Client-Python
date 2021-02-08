@@ -89,6 +89,9 @@ class GameConfig:
         self.generate_sarbaz = generate_sarbaz
         self.rate_death_resource = rate_death_resource
 
+    def get_base_cell(self):
+        return new Cell(x,y,CellType.BASE, None, None)
+
 
 class CurrentState:
     around_cells: List["Cell"]
