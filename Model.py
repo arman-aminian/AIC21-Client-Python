@@ -17,6 +17,7 @@ class Ant:
 
     # get cells in this ants view
     def get_neighbours_cell(self):
+        # return currentState.around_cells;
         pass
 
     def get_health(self):
