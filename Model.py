@@ -109,7 +109,8 @@ class CurrentState:
         self.current_resource_type = current_resource_type
         self.health = health
 
-class AntTypes(Enum):
+
+class AntType(Enum):
     SARBAAZ = 0
     KARGAR = 1
 
@@ -144,7 +145,7 @@ class Direction(Enum):
         return None
 
 
-class CellTypes(Enum):
+class CellType(Enum):
     BASE = 0
     EMPTY = 1
     WALL = 2
@@ -160,7 +161,7 @@ class CellTypes(Enum):
         return None
 
 
-class ResourceTypes(Enum):
+class ResourceType(Enum):
     BREAD = 0
     GRASS = 1
 
