@@ -1,8 +1,4 @@
-ANT_TYPES = ["SARBAAZ", "KARGAR"]
-CELL_TYPES = ["EMPTY", "WALL", "BASE"]
-RESOURCE_TYPES = ["BREAD", "GRASS"]
-DIRECTIORN = ["RIGHT", "LEFT", "UP", "DOWN", "CENTER"]
-
+from enum import Enum
 
 class Ant:
     def __init__(self, type, health, locationCell):
@@ -58,10 +54,12 @@ class Resource:
     def get_amount(self):
         return self.amount
 
+
 class Message:
     def __init__(self, text, turn):
         self.text = text
         self.turn = turn
+
 
 class GameConfig:
     # This will initiate game constants at the beginning of the game.
@@ -91,14 +89,67 @@ class CurrentState:
         self.current_resource_type = current_resource_type
         self.health = health
 
+class AntTypes(Enum):
+    SARBAAZ = 0
+    KARGAR = 1
+
+    @staticmethod
+    def get_value(string: str):
+        if string == "SARBAAZ":
+            return AntTypes.SARBAAZ
+        if string == "KARGAR":
+            return AntTypes.KARGAR
+        return None
+
+
+class Direction(Enum):
+    CENTER = 0
+    RIGHT = 1
+    UP = 2
+    LEFT = 3
+    DOWN = 4
+
+    @staticmethod
+    def get_value(string:str):
+        if string == "CENTER":
+            return Direction.CENTER
+        if string == "right":
+            return Direction.RIGHT
+        if string == "UP":
+            return Direction.UP
+        if string == "LEFT":
+            return Direction.LEFT
+        if string == "DOWN":
+            return Direction.DOWN
+        return None
+
+
+class CellTypes(Enum):
+    BASE = 0
+    EMPTY = 1
+    WALL = 2
+
+    @staticmethod
+    def get_value(string: str):
+        if string == "BASE":
+            return CellTypes.BASE
+        if string == "EMPTY":
+            return CellTypes.EMPTY
+        if string == "WALL":
+            return CellTypes.WALL
+        return None
+
+
+class ResourceTypes(Enum):
+    BREAD = 0
+    GRASS = 1
+
+    @staticmethod
+    def get_value(string: str):
+        if string == "BREAD":
+            return ResourceTypes.BREAD
+        if string == "GRASS":
+            return ResourceTypes.GRASS
+        return None
+
 # CurrentState: each turn before AI.py is called
-
-# def AI(self, currentState):
-# 	#
-# 	#
-# 	#
-
-# 	return {
-# 		Message,
-# 		Direction,
-# 	}
