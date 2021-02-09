@@ -44,7 +44,8 @@ class Controller:
                 self.network.send(message)
 
     def turn(gameConfig, massage):
-        pass
+        self.client.set_currrent_state()
+        
         
     def handle_shutdown_massage(massage):
         pass
