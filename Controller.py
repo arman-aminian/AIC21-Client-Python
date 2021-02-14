@@ -12,14 +12,12 @@ from model import
 class Message:
     def __init__(self, turn, type, info):
         self.type = type
-        self.info = Info(info)
+        self.info = info()
         self.turn = turn
        
 
-    
-class Info:
-    def __info__(self, inf):
-        self.
+
+       
         
 class ServerConstants:
     KEY_INFO = "info"
@@ -30,9 +28,6 @@ class ServerConstants:
     CONFIG_KEY_PORT = "port"
     CONFIG_KEY_TOKEN = "token"
 
-
-#     MESSAGE_TYPE_DIRECTION = 1
-#     MESSAGE_TYPE_CHAT = 2
     MESSAGE_TYPE_INIT = 3
     MESSAGE_TYPE_TURN = 4
     
@@ -91,7 +86,7 @@ class Controller:
                             })
     
     def handle_turn_message(self, message):
-        
+        # call send functions and ai
         pass
     
     def handle_init_message(self, massage):
