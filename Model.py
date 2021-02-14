@@ -8,17 +8,13 @@ class Ant:
         self.locationCell = locationCell
         self.health = health
 
-    def send_message(self, text):
-        pass
-
     # get current location
     def get_location(self):
         return self.locationCell
 
     # get cells in this ants view
     def get_neighbours_cell(self):
-        # return currentState.around_cells;
-        pass
+        return currentState.around_cells;
 
     def get_health(self):
         return self.health
