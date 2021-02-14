@@ -14,11 +14,11 @@ class Message:
         self.type = type
         self.info = info()
         self.turn = turn
-       
 
 
-       
-        
+
+
+
 class ServerConstants:
     KEY_INFO = "info"
     KEY_TURN = "turn"
@@ -30,7 +30,7 @@ class ServerConstants:
 
     MESSAGE_TYPE_INIT = 3
     MESSAGE_TYPE_TURN = 4
-    
+
 
 
 
@@ -48,9 +48,9 @@ class Controller:
         self.argDefaults = ["127.0.0.1", 7099, "00000000000000000000000000000000", "1000"]
         self.turn_num = 0
 
-    
+
     # fill args in threads
-    
+
     def handle_message(self, message):
         if message[ServerConstants.KEY_TYPE] == ServerConstants.MESSAGE_TYPE_INIT:
             self.handle_init_message(message[ServerConstants.KEY_INFO])
@@ -59,18 +59,18 @@ class Controller:
         elif message[ServerConstants.KEY_TYPE] == ServerConstants.MESSAGE_TYPE_TURN:
             self.handle_turn_message(message[ServerConstants.KEY_INFO])
             threading.Thread().start()
-            
 
 
-        
 
-            
+
+
+
     def send_direction_message(self, direction):
         self.network.send({
                            "type": 1,
                            "info": {"direction": direction}
                             })
-    
+
     def send_chat_message(self, chat,value):
         self.network.send({
                            "type": 2,
@@ -78,22 +78,25 @@ class Controller:
                                    "value" : value
                                    }
                             })
-    
+
     def send_end_message():
         self.network.send({
                            "type": 6,
                            "info": {}
                             })
-    
+
     def handle_turn_message(self, message):
-        # call send functions and ai
-        pass
-    
+        currentState = CurrentState(list(message.values))
+        client.set_current_state(currentState)
+        client.set_game_config(self.gameConfig)
+        (message, direction) = self.client.turn()
+        self.send_direction_message(direction)
+        self.send_chat_message(message)
+
+
     def handle_init_message(self, massage):
-        
         self.gameConfig = GameConfig(list(message.values()))
-            
-        
+
 
     def start(self):
         self.read_settings()
@@ -103,7 +106,7 @@ class Controller:
                                message_handler=self.handle_message)
         self.network.connect()
         Thread().start()
-        
+
 
 
     def read_settings(self):
@@ -118,6 +121,3 @@ class Controller:
         print("finished!")
         self.network.close()
         self.sending_flag = False
-
-
-
