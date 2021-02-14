@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import socket
 import json
 
@@ -75,3 +76,6 @@ class Network():
     def close(self):
         self.terminate()
         self.s.close()
+=======
+
+>>>>>>> ai
