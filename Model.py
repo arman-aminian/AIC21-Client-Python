@@ -175,4 +175,24 @@ class ResourceType(Enum):
         return None
 
 
+class ServerConstants:
+    KEY_INFO = "info"
+    KEY_TURN = "turn"
+    KEY_TYPE = "type"
+
+    CONFIG_KEY_IP = "ip"
+    CONFIG_KEY_PORT = "port"
+    CONFIG_KEY_TOKEN = "token"
+
+    MESSAGE_TYPE_EVENT = "event"
+    MESSAGE_TYPE_INIT = "init"
+    MESSAGE_TYPE_PICK = "pick"
+    MESSAGE_TYPE_SHUTDOWN = "shutdown"
+    MESSAGE_TYPE_TURN = "turn"
+    MESSAGE_TYPE_END_TURN = "endTurn"
+
+    CHANGE_TYPE_ADD = "a"
+    CHANGE_TYPE_DEL = "d"
+    CHANGE_TYPE_MOV = "m"
+    CHANGE_TYPE_ALT = "c"
 # CurrentState: each turn before AI.py is called
