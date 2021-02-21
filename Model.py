@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class Ant:
     def __init__(self, type: AntType, health: int, locationCell: Cell):
         # ANT_TYPES
@@ -14,7 +15,7 @@ class Ant:
 
     # get cells in this ants view
     def get_neighbours_cell(self):
-        return currentState.around_cells;
+        return currentState.around_cells
 
     def get_health(self):
         return self.health
@@ -33,7 +34,7 @@ class Cell:
         self.y = y
         # CELL_TYPES
         self.type = type
-		# current ants in this cell
+        # current ants in this cell
         self.ants = []
         self.resource_value = resource_value
         self.resource_type = resource_type
@@ -72,8 +73,8 @@ class GameConfig:
 
     # This will initiate game constants at the beginning of the game.
     def __init__(self, map_width, map_height, ant_type, base_x, base_y,
-    health_kargar, health_sarbaz, attack_distance, generate_sarbaz,
-    rate_death_resource):
+                 health_kargar, health_sarbaz, attack_distance, generate_sarbaz,
+                 rate_death_resource):
         self.map_width = map_width
         self.map_height = map_height
         self.ant_type = ant_type
@@ -86,7 +87,7 @@ class GameConfig:
         self.rate_death_resource = rate_death_resource
 
     def get_base_cell(self):
-        return new Cell(x,y,CellType.BASE, None, None)
+        return Cell(x, y, CellType.BASE, None, None)
 
 
 class CurrentState:
@@ -99,8 +100,8 @@ class CurrentState:
     health: int
 
     # This will keep the current state of the game
-    def __init__(self,around_cells, chat_box, current_x, current_y,
-    current_resource_value, current_resource_type, health):
+    def __init__(self, around_cells, chat_box, current_x, current_y,
+                 current_resource_value, current_resource_type, health):
         self.around_cells = around_cells
         self.chat_box = chat_box
         self.current_x = current_x
@@ -131,7 +132,7 @@ class Direction(Enum):
     DOWN = 4
 
     @staticmethod
-    def get_value(string:str):
+    def get_value(string: str):
         if string == "CENTER":
             return Direction.CENTER
         if string == "right":
