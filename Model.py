@@ -1,8 +1,7 @@
 from enum import Enum
 
-
 class Ant:
-    def __init__(self, type: AntType, health: int, locationCell: Cell):
+    def __init__(self, type, health, locationCell):
         # ANT_TYPES
         self.type = type
         # Current Cell
@@ -41,7 +40,7 @@ class Cell:
 
 
 class Resource:
-    def __init__(self, type: ResourceType, amount: int):
+    def __init__(self, type, amount):
         # RESOURCE_TYPES
         self.type = type
         self.amount = amount
@@ -62,7 +61,7 @@ class Message:
 class GameConfig:
     map_width: int
     map_height: int
-    ant_type: AntType
+    ant_type = None
     base_x: int
     base_y: int
     health_kargar: int
@@ -91,11 +90,11 @@ class GameConfig:
 
 
 class CurrentState:
-    around_cells: List["Cell"]
-    chat_box: List["Message"]
+    around_cells = [] #List["Cell"]
+    chat_box = [] #List["Message"]
     current_x: int
     current_y: int
-    current_resource_type: ResourceTypes
+    current_resource_type = None #ResourceTypes
     current_resource_value: int
     health: int
 
@@ -109,6 +108,7 @@ class CurrentState:
         self.current_resource_value = current_resource_value
         self.current_resource_type = current_resource_type
         self.health = health
+
 
 
 class AntType(Enum):
@@ -173,5 +173,6 @@ class ResourceType(Enum):
         if string == "GRASS":
             return ResourceTypes.GRASS
         return None
+
 
 # CurrentState: each turn before AI.py is called

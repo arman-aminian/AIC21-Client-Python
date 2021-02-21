@@ -1,5 +1,4 @@
 from Model import *
-from Controller import *
 import random
 
 
