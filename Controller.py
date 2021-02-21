@@ -105,3 +105,9 @@ class Controller:
         print("finished!")
         self.network.close()
         self.sending_flag = False
+
+if __name__ == '__main__':
+    c = Controller()
+    if len(sys.argv) > 1 and sys.argv[1] == '--verbose':
+        World.DEBUGGING_MODE = True
+    c.start()
