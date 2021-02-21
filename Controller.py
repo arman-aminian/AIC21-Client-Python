@@ -34,7 +34,7 @@ class Controller:
     def __init__(self):
         self.sending_flag = True
         self.gameConfig = None
-        self.conf = []
+        self.conf = {}
         self.network = None
         self.queue = Queue()
         self.client = AI()
