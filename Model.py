@@ -195,4 +195,12 @@ class ServerConstants:
     CHANGE_TYPE_DEL = "d"
     CHANGE_TYPE_MOV = "m"
     CHANGE_TYPE_ALT = "c"
+
+
+class ServerMessage:
+        def __init__(self, turn, type, info):
+        self.type = type
+        self.info = info
+        self.turn = turn
+
 # CurrentState: each turn before AI.py is called
