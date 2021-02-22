@@ -198,7 +198,7 @@ class ServerConstants:
 
 
 class ServerMessage:
-    def __init__(self, turn, type, info):
+    def __init__(self, type, turn, info):
         self.type = type
         self.info = info
         self.turn = turn

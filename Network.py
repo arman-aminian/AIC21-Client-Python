@@ -25,8 +25,7 @@ class Network():
                 connect_attempt += 1
                 self.s.connect((self.ip, self.port))
                 connected = True
-                self.send({ServerConstants.KEY_TYPE: ServerConstants.CONFIG_KEY_TOKEN,
-                 ServerConstants.KEY_ARGS: [self.token]})
+                self.send(ServerMessage(ServerConstants.CONFIG_KEY_TOKEN,0, [self.token]))
                 init = self.receive()
                 if init[ServerConstants.KEY_TYPE] == "wrong token":
                     raise ConnectionRefusedError("wrong token")
@@ -45,7 +44,8 @@ class Network():
             print('Cant connect to server, ERROR: {}'.format(error))
 
     def send(self, message):
-        self.s.send(json.dumps(message).encode('UTF-8'))
+        print(json.dumps(message.__dict__).encode('UTF-8'))
+        self.s.send(json.dumps(message.__dict__).encode('UTF-8'))
         self.s.send(b'\x00')
 
     def receive(self):
