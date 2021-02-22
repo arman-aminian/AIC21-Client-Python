@@ -44,7 +44,10 @@ class Network():
             print('Cant connect to server, ERROR: {}'.format(error))
 
     def send(self, message):
+
+        # This print is used for debugging purposes
         print(json.dumps(message.__dict__).encode('UTF-8'))
+
         self.s.send(json.dumps(message.__dict__).encode('UTF-8'))
         self.s.send(b'\x00')
 
