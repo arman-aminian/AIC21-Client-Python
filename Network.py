@@ -25,7 +25,10 @@ class Network():
                 connect_attempt += 1
                 self.s.connect((self.ip, self.port))
                 connected = True
-                self.send(ServerMessage(ServerConstants.CONFIG_KEY_TOKEN,0, [self.token]))
+                self.send(ServerMessage(type = ServerConstants.CONFIG_KEY_TOKEN,
+                                        turn = 0,
+                                        info = {ServerConstants.CONFIG_KEY_TOKEN: self.token}
+                                        ))
                 init = self.receive()
                 if init[ServerConstants.KEY_TYPE] == "wrong token":
                     raise ConnectionRefusedError("wrong token")
