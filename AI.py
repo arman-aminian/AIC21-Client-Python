@@ -22,5 +22,5 @@ class AI:
     def turn(self):
         self.message = ""
         self.value = random.randint(1,10)
-        self.direction = random.choice(list(Direction))
+        self.direction = random.choice(list(Direction)).value
         return (self.message, self.value , self.direction)
