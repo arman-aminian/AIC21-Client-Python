@@ -47,17 +47,15 @@ class Network():
             print('Cant connect to server, ERROR: {}'.format(error))
 
     def send(self, message):
-
-        # This print is used for debugging purposes
-        print(json.dumps(message.__dict__).encode('UTF-8'))
-
         j_obj = json.dumps(message.__dict__)
         self.s.send(j_obj.encode('UTF-8'))
         self.s.send(b'\x00')
 
     def receive(self):
         while self.receive_flag:
-            self.result += self.s.recv(1024)
+            k = self.s.recv(1024)
+            self.result += k
+            print(k)
             if b'\x00' in self.result:
                 ans = json.loads(self.result[:self.result.index(b'\x00')].decode('UTF-8'))
                 self.result = self.result[self.result.index(b'\x00') + 1:]
