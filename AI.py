@@ -20,5 +20,5 @@ class AI:
     # this will be called each turn and it should return message and direction
     def turn(self):
         self.message = ""
-        self.direction = random.choice(Direction)
+        self.direction = random.choice(list(Direction))
         return (self.message, self.direction)
