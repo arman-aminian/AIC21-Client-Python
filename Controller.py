@@ -9,7 +9,6 @@ from Model import CurrentState, GameConfig
 from Network import Network
 
 
-class Message:
     def __init__(self, turn, type, info):
         self.type = type
         self.info = info()
