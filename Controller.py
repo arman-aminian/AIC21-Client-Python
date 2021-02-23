@@ -57,9 +57,9 @@ class Controller:
         currentState = CurrentState(message)
         self.client.set_current_state(currentState)
         self.client.set_game_config(self.gameConfig)
-        (message, direction) = self.client.turn()
+        (message, value, direction) = self.client.turn()
         self.send_direction_message(direction)
-        self.send_chat_message(message)
+        self.send_chat_message(message,value)
 
     def handle_init_message(self, message):
         self.gameConfig = GameConfig(message)

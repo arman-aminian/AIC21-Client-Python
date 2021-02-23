@@ -5,6 +5,7 @@ import random
 class AI:
     def __init__(self):
         self.message = None  # type: str
+        self.value = 0 #type: int
         self.direction = None  # type: DIRECTION
         self.currentState = None  # type: CurrentState
         self.gameConfig = None  # type: GameConfig
@@ -20,5 +21,6 @@ class AI:
     # this will be called each turn and it should return message and direction
     def turn(self):
         self.message = ""
+        self.value = random.randint(1,10)
         self.direction = random.choice(list(Direction))
-        return (self.message, self.direction)
+        return (self.message, self.value , self.direction)
