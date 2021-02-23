@@ -5,27 +5,8 @@ import traceback
 from queue import Queue
 from threading import Thread
 from AI import AI
-from Model import CurrentState, GameConfig
+from Model import CurrentState, GameConfig, ServerConstants
 from Network import Network
-
-
-    def __init__(self, turn, type, info):
-        self.type = type
-        self.info = info()
-        self.turn = turn
-
-
-class ServerConstants:
-    KEY_INFO = "info"
-    KEY_TURN = "turn"
-    KEY_TYPE = "type"
-
-    CONFIG_KEY_IP = "ip"
-    CONFIG_KEY_PORT = "port"
-    CONFIG_KEY_TOKEN = "token"
-
-    MESSAGE_TYPE_INIT = 3
-    MESSAGE_TYPE_TURN = 4
 
 
 class Controller:
