@@ -54,9 +54,9 @@ class Controller:
         })
 
     def handle_turn_message(self, message):
-        client.set_current_state(currentState)
-        client.set_game_config(self.gameConfig)
         currentState = CurrentState(message)
+        self.client.set_current_state(currentState)
+        self.client.set_game_config(self.gameConfig)
         (message, direction) = self.client.turn()
         self.send_direction_message(direction)
         self.send_chat_message(message)
