@@ -51,7 +51,8 @@ class Network():
         # This print is used for debugging purposes
         print(json.dumps(message.__dict__).encode('UTF-8'))
 
-        self.s.send(json.dumps(message.__dict__).encode('UTF-8'))
+        j_obj = json.dumps(message.__dict__)
+        self.s.send(j_obj.encode('UTF-8'))
         self.s.send(b'\x00')
 
     def receive(self):
