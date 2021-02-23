@@ -53,9 +53,7 @@ class Network():
 
     def receive(self):
         while self.receive_flag:
-            k = self.s.recv(1024)
-            self.result += k
-            print(k)
+            self.result += self.s.recv(1024)
             if b'\x00' in self.result:
                 ans = json.loads(self.result[:self.result.index(b'\x00')].decode('UTF-8'))
                 self.result = self.result[self.result.index(b'\x00') + 1:]
