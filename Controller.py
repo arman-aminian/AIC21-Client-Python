@@ -61,8 +61,8 @@ class Controller:
         self.send_direction_message(direction)
         self.send_chat_message(message)
 
-    def handle_init_message(self, massage):
-        self.gameConfig = GameConfig(list(message.values()))
+    def handle_init_message(self, message):
+        self.gameConfig = GameConfig(message)
 
     def start(self):
         self.read_settings()
