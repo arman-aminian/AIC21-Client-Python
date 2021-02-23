@@ -59,31 +59,19 @@ class Message:
 
 
 class GameConfig:
-    map_width: int
-    map_height: int
+    map_width = 0 # int
+    map_height = 0 # int
     ant_type = None
-    base_x: int
-    base_y: int
-    health_kargar: int
-    health_sarbaz: int
-    attack_distance: int
-    generate_sarbaz: int
-    rate_death_resource: float
+    base_x = -1 #int
+    base_y = -1 # int
+    health_kargar = 0 # int
+    health_sarbaz = 0 # int
+    attack_distance = 0 # int
+    generate_sarbaz = 0 # int
+    rate_death_resource = 0 # float
 
-    # This will initiate game constants at the beginning of the game.
-    def __init__(self, map_width, map_height, ant_type, base_x, base_y,
-                 health_kargar, health_sarbaz, attack_distance, generate_sarbaz,
-                 rate_death_resource):
-        self.map_width = map_width
-        self.map_height = map_height
-        self.ant_type = ant_type
-        self.base_x = base_x
-        self.base_y = base_y
-        self.health_kargar = health_kargar
-        self.health_sarbaz = health_sarbaz
-        self.attack_distance = attack_distance
-        self.generate_sarbaz = generate_sarbaz
-        self.rate_death_resource = rate_death_resource
+    def __init__(self, message):
+        self.__dict__ = message
 
     def get_base_cell(self):
         return Cell(x, y, CellType.BASE, None, None)
