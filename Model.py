@@ -80,24 +80,14 @@ class GameConfig:
 class CurrentState:
     around_cells = [] #List["Cell"]
     chat_box = [] #List["Message"]
-    current_x: int
-    current_y: int
+    current_x = -1 #int
+    current_y = -1 #int
     current_resource_type = None #ResourceTypes
-    current_resource_value: int
-    health: int
+    current_resource_value = 0 #int
+    health = 0 #int
 
-    # This will keep the current state of the game
-    def __init__(self, around_cells, chat_box, current_x, current_y,
-                 current_resource_value, current_resource_type, health):
-        self.around_cells = around_cells
-        self.chat_box = chat_box
-        self.current_x = current_x
-        self.current_y = current_y
-        self.current_resource_value = current_resource_value
-        self.current_resource_type = current_resource_type
-        self.health = health
-
-
+    def __init__(self, message):
+        self.__dict__ = message
 
 class AntType(Enum):
     SARBAAZ = 0
