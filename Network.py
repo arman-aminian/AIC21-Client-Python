@@ -1,5 +1,6 @@
 import socket
 import json
+import time
 
 from Model import *
 
@@ -24,11 +25,14 @@ class Network():
                 connect_attempt += 1
                 self.s.connect((self.ip, self.port))
                 connected = True
-                self.send({Constants.KEY_NAME: Constants.CONFIG_KEY_TOKEN, Constants.KEY_ARGS: [self.token]})
+                self.send({"type": ServerConstants.CONFIG_KEY_TOKEN,
+                                        "turn": 0,
+                                        "info": {ServerConstants.CONFIG_KEY_TOKEN: self.token}
+                                        })
                 init = self.receive()
-                if init[Constants.KEY_NAME] == "wrong token":
+                if init[ServerConstants.KEY_TYPE] == "wrong token":
                     raise ConnectionRefusedError("wrong token")
-                elif not init[Constants.KEY_NAME] == Constants.MESSAGE_TYPE_INIT:
+                elif not init[ServerConstants.KEY_TYPE] == ServerConstants.MESSAGE_TYPE_INIT:
                     self.close()
                     raise IOError("first message was not init")
             except Exception as e:
@@ -43,7 +47,8 @@ class Network():
             print('Cant connect to server, ERROR: {}'.format(error))
 
     def send(self, message):
-        self.s.send(json.dumps(message).encode('UTF-8'))
+        j_obj = json.dumps(message, default = str)
+        self.s.send(j_obj.encode('UTF-8'))
         self.s.send(b'\x00')
 
     def receive(self):

@@ -59,31 +59,19 @@ class Message:
 
 
 class GameConfig:
-    map_width: int
-    map_height: int
+    map_width = 0 # int
+    map_height = 0 # int
     ant_type = None
-    base_x: int
-    base_y: int
-    health_kargar: int
-    health_sarbaz: int
-    attack_distance: int
-    generate_sarbaz: int
-    rate_death_resource: float
+    base_x = -1 #int
+    base_y = -1 # int
+    health_kargar = 0 # int
+    health_sarbaz = 0 # int
+    attack_distance = 0 # int
+    generate_sarbaz = 0 # int
+    rate_death_resource = 0 # float
 
-    # This will initiate game constants at the beginning of the game.
-    def __init__(self, map_width, map_height, ant_type, base_x, base_y,
-                 health_kargar, health_sarbaz, attack_distance, generate_sarbaz,
-                 rate_death_resource):
-        self.map_width = map_width
-        self.map_height = map_height
-        self.ant_type = ant_type
-        self.base_x = base_x
-        self.base_y = base_y
-        self.health_kargar = health_kargar
-        self.health_sarbaz = health_sarbaz
-        self.attack_distance = attack_distance
-        self.generate_sarbaz = generate_sarbaz
-        self.rate_death_resource = rate_death_resource
+    def __init__(self, message):
+        self.__dict__ = message
 
     def get_base_cell(self):
         return Cell(x, y, CellType.BASE, None, None)
@@ -92,24 +80,14 @@ class GameConfig:
 class CurrentState:
     around_cells = [] #List["Cell"]
     chat_box = [] #List["Message"]
-    current_x: int
-    current_y: int
+    current_x = -1 #int
+    current_y = -1 #int
     current_resource_type = None #ResourceTypes
-    current_resource_value: int
-    health: int
+    current_resource_value = 0 #int
+    health = 0 #int
 
-    # This will keep the current state of the game
-    def __init__(self, around_cells, chat_box, current_x, current_y,
-                 current_resource_value, current_resource_type, health):
-        self.around_cells = around_cells
-        self.chat_box = chat_box
-        self.current_x = current_x
-        self.current_y = current_y
-        self.current_resource_value = current_resource_value
-        self.current_resource_type = current_resource_type
-        self.health = health
-
-
+    def __init__(self, message):
+        self.__dict__ = message
 
 class AntType(Enum):
     SARBAAZ = 0
@@ -174,5 +152,25 @@ class ResourceType(Enum):
             return ResourceTypes.GRASS
         return None
 
+
+class ServerConstants:
+    KEY_INFO = "info"
+    KEY_TURN = "turn"
+    KEY_TYPE = "type"
+
+    # CONFIG_KEY_IP = "ip"
+    # CONFIG_KEY_PORT = "port"
+    CONFIG_KEY_TOKEN = "token"
+
+    MESSAGE_TYPE_INIT = "3"
+    MESSAGE_TYPE_TURN = "4"
+
+
+
+class ServerMessage:
+    def __init__(self, type, turn, info):
+        self.type = type
+        self.info = info
+        self.turn = turn
 
 # CurrentState: each turn before AI.py is called

@@ -5,28 +5,8 @@ import traceback
 from queue import Queue
 from threading import Thread
 from AI import AI
-from Model import CurrentState, GameConfig
+from Model import CurrentState, GameConfig, ServerConstants
 from Network import Network
-
-
-class Message:
-    def __init__(self, turn, type, info):
-        self.type = type
-        self.info = info()
-        self.turn = turn
-
-
-class ServerConstants:
-    KEY_INFO = "info"
-    KEY_TURN = "turn"
-    KEY_TYPE = "type"
-
-    CONFIG_KEY_IP = "ip"
-    CONFIG_KEY_PORT = "port"
-    CONFIG_KEY_TOKEN = "token"
-
-    MESSAGE_TYPE_INIT = 3
-    MESSAGE_TYPE_TURN = 4
 
 
 class Controller:
@@ -74,15 +54,15 @@ class Controller:
         })
 
     def handle_turn_message(self, message):
-        currentState = CurrentState(list(message.values))
-        client.set_current_state(currentState)
-        client.set_game_config(self.gameConfig)
-        (message, direction) = self.client.turn()
+        currentState = CurrentState(message)
+        self.client.set_current_state(currentState)
+        self.client.set_game_config(self.gameConfig)
+        (message, value, direction) = self.client.turn()
         self.send_direction_message(direction)
-        self.send_chat_message(message)
+        self.send_chat_message(message,value)
 
-    def handle_init_message(self, massage):
-        self.gameConfig = GameConfig(list(message.values()))
+    def handle_init_message(self, message):
+        self.gameConfig = GameConfig(message)
 
     def start(self):
         self.read_settings()
@@ -108,6 +88,6 @@ class Controller:
 
 if __name__ == '__main__':
     c = Controller()
-    if len(sys.argv) > 1 and sys.argv[1] == '--verbose':
-        World.DEBUGGING_MODE = True
+    # if len(sys.argv) > 1 and sys.argv[1] == '--verbose':
+    #     DEBUGGING_MODE = True
     c.start()
