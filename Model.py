@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class Ant:
     def __init__(self, type, health, locationCell):
         # ANT_TYPES
@@ -59,16 +60,18 @@ class Message:
 
 
 class GameConfig:
-    map_width = 0 # int
-    map_height = 0 # int
+    map_width = 0  # int
+    map_height = 0  # int
     ant_type = None
-    base_x = -1 #int
-    base_y = -1 # int
-    health_kargar = 0 # int
-    health_sarbaz = 0 # int
-    attack_distance = 0 # int
-    generate_sarbaz = 0 # int
-    rate_death_resource = 0 # float
+    base_x = -1  # int
+    base_y = -1  # int
+    health_kargar = 0  # int
+    health_sarbaaz = 0  # int
+    attack_distance = 0  # int
+    generate_kargar = 0
+    generate_sarbaz = 0  # int
+    generate_sarbaaz = 0
+    rate_death_resource = 0  # float
 
     def __init__(self, message):
         self.__dict__ = message
@@ -78,16 +81,17 @@ class GameConfig:
 
 
 class CurrentState:
-    around_cells = [] #List["Cell"]
-    chat_box = [] #List["Message"]
-    current_x = -1 #int
-    current_y = -1 #int
-    current_resource_type = None #ResourceTypes
-    current_resource_value = 0 #int
-    health = 0 #int
+    around_cells = []  # List["Cell"]
+    chat_box = []  # List["Message"]
+    current_x = -1  # int
+    current_y = -1  # int
+    current_resource_type = None  # ResourceTypes
+    current_resource_value = 0  # int
+    health = 0  # int
 
     def __init__(self, message):
         self.__dict__ = message
+
 
 class AntType(Enum):
     SARBAAZ = 0
@@ -96,9 +100,9 @@ class AntType(Enum):
     @staticmethod
     def get_value(string: str):
         if string == "SARBAAZ":
-            return AntTypes.SARBAAZ
+            return AntType.SARBAAZ
         if string == "KARGAR":
-            return AntTypes.KARGAR
+            return AntType.KARGAR
         return None
 
 
@@ -132,11 +136,11 @@ class CellType(Enum):
     @staticmethod
     def get_value(string: str):
         if string == "BASE":
-            return CellTypes.BASE
+            return CellType.BASE
         if string == "EMPTY":
-            return CellTypes.EMPTY
+            return CellType.EMPTY
         if string == "WALL":
-            return CellTypes.WALL
+            return CellType.WALL
         return None
 
 
@@ -147,9 +151,9 @@ class ResourceType(Enum):
     @staticmethod
     def get_value(string: str):
         if string == "BREAD":
-            return ResourceTypes.BREAD
+            return ResourceType.BREAD
         if string == "GRASS":
-            return ResourceTypes.GRASS
+            return ResourceType.GRASS
         return None
 
 
@@ -164,7 +168,7 @@ class ServerConstants:
 
     MESSAGE_TYPE_INIT = "3"
     MESSAGE_TYPE_TURN = "4"
-
+    MESSAGE_TYPE_KILL = "7"
 
 
 class ServerMessage:
@@ -172,5 +176,3 @@ class ServerMessage:
         self.type = type
         self.info = info
         self.turn = turn
-
-# CurrentState: each turn before AI.py is called

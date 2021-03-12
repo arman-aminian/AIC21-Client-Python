@@ -7,6 +7,7 @@ from threading import Thread
 from AI import AI
 from Model import CurrentState, GameConfig, ServerConstants
 from Network import Network
+import json
 
 
 class Controller:
@@ -27,11 +28,21 @@ class Controller:
     def handle_message(self, message):
         if message[ServerConstants.KEY_TYPE] == ServerConstants.MESSAGE_TYPE_INIT:
             self.handle_init_message(message[ServerConstants.KEY_INFO])
-            threading.Thread().start()
 
         elif message[ServerConstants.KEY_TYPE] == ServerConstants.MESSAGE_TYPE_TURN:
-            self.handle_turn_message(message[ServerConstants.KEY_INFO])
-            threading.Thread().start()
+            gameStatus = CurrentState(message[ServerConstants.KEY_INFO])
+            threading.Thread(target=self.launch_on_thread,
+                             args=([gameStatus])).start()
+
+        elif message[ServerConstants.KEY_TYPE] == ServerConstants.MESSAGE_TYPE_KILL:
+            exit()
+
+    def launch_on_thread(self, world):
+        try:
+            self.handle_turn_message(world)
+        except Exception as e:
+            print("Error in client:")
+            print(e)
 
     def send_direction_message(self, direction):
         self.network.send({
@@ -53,13 +64,16 @@ class Controller:
             "info": {}
         })
 
-    def handle_turn_message(self, message):
-        currentState = CurrentState(message)
+    def handle_turn_message(self, currentState):
         self.client.set_current_state(currentState)
         self.client.set_game_config(self.gameConfig)
         (message, value, direction) = self.client.turn()
-        self.send_direction_message(direction)
-        self.send_chat_message(message,value)
+        if (direction is not None):
+            print("salam")
+            self.send_direction_message(direction)
+        if (message is not None and value is not None):
+            self.send_chat_message(message, value)
+        self.send_end_message()
 
     def handle_init_message(self, message):
         self.gameConfig = GameConfig(message)
@@ -85,6 +99,7 @@ class Controller:
         print("finished!")
         self.network.close()
         self.sending_flag = False
+
 
 if __name__ == '__main__':
     c = Controller()
