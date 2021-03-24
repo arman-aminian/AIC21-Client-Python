@@ -5,13 +5,12 @@ import traceback
 from queue import Queue
 from threading import Thread
 from AI import AI
-from Model import CurrentState, GameConfig, ServerConstants
+from Model import CurrentState, GameConfig, ServerConstants, Game
 from Network import Network
 import json
 
 
 class Controller:
-
     def __init__(self):
         self.sending_flag = True
         self.gameConfig = None
@@ -19,10 +18,13 @@ class Controller:
         self.network = None
         self.queue = Queue()
         self.client = AI()
-        self.argNames = ["AICHostIP", "AICHostPort",
-                         "AICToken", "AICRetryDelay"]
-        self.argDefaults = ["127.0.0.1", 7099,
-                            "00000000000000000000000000000000", "1000"]
+        self.argNames = ["AICHostIP", "AICHostPort", "AICToken", "AICRetryDelay"]
+        self.argDefaults = [
+            "127.0.0.1",
+            7099,
+            "00000000000000000000000000000000",
+            "1000",
+        ]
         self.turn_num = 0
 
     def handle_message(self, message):
@@ -31,47 +33,38 @@ class Controller:
 
         elif message[ServerConstants.KEY_TYPE] == ServerConstants.MESSAGE_TYPE_TURN:
             gameStatus = CurrentState(message[ServerConstants.KEY_INFO])
-            threading.Thread(target=self.launch_on_thread,
-                             args=([gameStatus])).start()
+            threading.Thread(target=self.launch_on_thread, args=([gameStatus])).start()
 
         elif message[ServerConstants.KEY_TYPE] == ServerConstants.MESSAGE_TYPE_KILL:
-            exit()
+            exit(4)
 
     def launch_on_thread(self, world):
-        try:
-            self.handle_turn_message(world)
-        except Exception as e:
-            print("Error in client:")
-            print(e)
+        # try:
+        self.handle_turn_message(world)
+
+    # except Exception as e:
+    #     print("Error in client:")
+    #     print(e)
 
     def send_direction_message(self, direction):
-        self.network.send({
-            "type": 1,
-            "info": {"direction": direction}
-        })
+        self.network.send({"type": 1, "info": {"direction": direction}})
 
     def send_chat_message(self, chat, value):
-        self.network.send({
-            "type": 2,
-            "info": {"message": chat,
-                     "value": value
-                     }
-        })
+        self.network.send({"type": 2, "info": {"message": chat, "value": value}})
 
     def send_end_message(self):
-        self.network.send({
-            "type": 6,
-            "info": {}
-        })
+        self.network.send({"type": 6, "info": {}})
 
     def handle_turn_message(self, currentState):
-        self.client.set_current_state(currentState)
-        self.client.set_game_config(self.gameConfig)
+        self.client = AI()
+        game = Game()
+        game.initGameConfig(self.gameConfig)
+        game.setCurrentState(currentState)
+        self.client.game = game
         (message, value, direction) = self.client.turn()
-        if (direction is not None):
-            print("salam")
+        if direction is not None:
             self.send_direction_message(direction)
-        if (message is not None and value is not None):
+        if message is not None and value is not None:
             self.send_chat_message(message, value)
         self.send_end_message()
 
@@ -80,10 +73,12 @@ class Controller:
 
     def start(self):
         self.read_settings()
-        self.network = Network(ip=self.conf[self.argNames[0]],
-                               port=int(self.conf[self.argNames[1]]),
-                               token=self.conf[self.argNames[2]],
-                               message_handler=self.handle_message)
+        self.network = Network(
+            ip=self.conf[self.argNames[0]],
+            port=int(self.conf[self.argNames[1]]),
+            token=self.conf[self.argNames[2]],
+            message_handler=self.handle_message,
+        )
         self.network.connect()
         Thread().start()
 
@@ -101,7 +96,7 @@ class Controller:
         self.sending_flag = False
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     c = Controller()
     # if len(sys.argv) > 1 and sys.argv[1] == '--verbose':
     #     DEBUGGING_MODE = True
