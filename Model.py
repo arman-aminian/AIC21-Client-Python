@@ -92,8 +92,8 @@ class Map:
 
     def createCompressedCells(self, midX: int, midY: int):
         compressedCells = [
-            [None for i in range(2 * self.manhattanDistance)]
-            for j in range(2 * self.manhattanDistance)
+            [None for i in range(2 * self.manhattanDistance + 1)]
+            for j in range(2 * self.manhattanDistance + 1)
         ]
         starterI = max(midY - self.manhattanDistance, 0)
         endI = min(midY + self.manhattanDistance, self.height)
