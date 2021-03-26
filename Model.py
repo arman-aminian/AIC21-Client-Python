@@ -96,9 +96,9 @@ class Map:
             for j in range(2 * self.manhattanDistance + 1)
         ]
         starterI = max(midY - self.manhattanDistance, 0)
-        endI = min(midY + self.manhattanDistance, self.height)
+        endI = min(midY + self.manhattanDistance + 1, self.height)
         starterJ = max(midX - self.manhattanDistance, 0)
-        endJ = min(midX + self.manhattanDistance, self.width)
+        endJ = min(midX + self.manhattanDistance + 1, self.width)
         xTransform = self.manhattanDistance - midX
         yTransform = self.manhattanDistance - midY
 
