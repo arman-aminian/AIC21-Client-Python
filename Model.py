@@ -59,7 +59,7 @@ class Ant:
         )
 
     def getMapCell(self, x, y):
-        return self.visibleMap.getCell(x, y, self.viewDistance)
+        return self.visibleMap.getCell(x, y)
 
     def getNeightbourCell(self, x, y):
         return self.getMapCell(x, y)
@@ -72,14 +72,14 @@ class Map:
     cells: List[List["Cell"]]
     width: int
     height: int
-    manhattanDistance: int
+    antCurrentX: int
+    antCurrentY: int
 
     def __init__(
         self,
         cells: List["Cell"],
         width: int,
         height: int,
-        manhattanDistance: int,
         currentX: int,
         currentY: int,
     ):
@@ -87,40 +87,15 @@ class Map:
         self.cells = cells
         self.width = width
         self.height = height
-        self.manhattanDistance = manhattanDistance
-        self.cells = self.createCompressedCells(currentX, currentY)
+        this.antCurrentX = currentX
+        this.antCurrentY = currentY
 
-    def createCompressedCells(self, midX: int, midY: int):
-        compressedCells = [
-            [None for i in range(2 * self.manhattanDistance + 1)]
-            for j in range(2 * self.manhattanDistance + 1)
-        ]
-        starterI = max(midY - self.manhattanDistance, 0)
-        endI = min(midY + self.manhattanDistance + 1, self.height)
-        starterJ = max(midX - self.manhattanDistance, 0)
-        endJ = min(midX + self.manhattanDistance + 1, self.width)
-        xTransform = self.manhattanDistance - midX
-        yTransform = self.manhattanDistance - midY
-
-        for i in range(starterI, endI, 1):
-            for j in range(starterJ, endJ, 1):
-                try:
-                    compressedCells[j + yTransform][i + xTransform] = cells[j][i]
-                except:
-                    pass
-
-        return compressedCells
-
-    def getCell(self, x: int, y: int, distance: int):
-        if abs(x) + abs(y) > distance:
+    def getCell(self, dx: int, dy: int):
+        x = self.antCurrentX + dx
+        y = self.antCurrentY + dy
+        if (x < 0 | x >= this.width | y < 0 | y >= this.height)
             return None
-        if distance + x >= self.width or distance + x < 0:
-            return None
-        if distance + y < 0 or distance + y >= self.height:
-            return None
-
-        return self.cells[distance + y][distance + x]
-
+        return this.cells[x][y]
 
 class Cell:
     x = 0
@@ -277,7 +252,6 @@ class Game:
             cells,
             self.mapWidth,
             self.mapHeight,
-            self.attackDistance,
             currentState.current_x,
             currentState.current_y,
         )
