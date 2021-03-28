@@ -87,15 +87,15 @@ class Map:
         self.cells = cells
         self.width = width
         self.height = height
-        this.antCurrentX = currentX
-        this.antCurrentY = currentY
+        self.antCurrentX = currentX
+        self.antCurrentY = currentY
 
     def getCell(self, dx: int, dy: int):
         x = self.antCurrentX + dx
         y = self.antCurrentY + dy
-        if (x < 0 | x >= this.width | y < 0 | y >= this.height)
+        if (x < 0 | x >= self.width | y < 0 | y >= self.height):
             return None
-        return this.cells[x][y]
+        return self.cells[x][y]
 
 class Cell:
     x = 0
