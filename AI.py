@@ -1,10 +1,13 @@
 from Model import *
+from graph import *
 import random
 import json
 from typing import *
 
 
 class AI:
+    round = 0
+
     def __init__(self):
         # Current Game State
         self.game: Game = None
@@ -14,6 +17,9 @@ class AI:
         self.direction: int = None
         self.value: int = None
 
+        # mine
+        self.g = None
+
     """
     Return a tuple with this form:
         (message: str, message_value: int, message_dirction: int)
@@ -21,9 +27,17 @@ class AI:
     """
 
     def turn(self) -> (str, int, int):
-        """ self.message = "hello python"
-        self.value = random.randint(1,10)
-        self.direction = random.choice(list(Direction)).value """
+        AI.round += 1
+
+        self.message = str(AI.round)
+        self.value = random.randint(1, 10)
+        # at the beginning, create the map graph
+        if AI.round == 1:
+            self.g = Graph((self.game.mapWidth, self.game.mapHeight),
+                           (self.game.baseX, self.game.baseY))
+            self.message = "made map"
+            self.direction = Direction.RIGHT.value
+            return self.message, self.value, self.direction
 
         # todo update map
         # mh
@@ -36,8 +50,5 @@ class AI:
             # todo sarbaz move
             # arman
             self.direction = Direction.RIGHT.value
-
-        self.message = (str(AntType.KARGAR.value))
-        self.value = random.randint(1, 10)
 
         return (self.message, self.value, self.direction)
