@@ -102,7 +102,7 @@ class Cell:
     y = 0
     type = 0
     resource_value = 0
-    resrouce_type = 0
+    resource_type = 0
     ants = []
 
     def __init__(self, x, y, type, resource_value, resource_type):
