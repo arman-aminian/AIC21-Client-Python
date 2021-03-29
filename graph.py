@@ -1,11 +1,23 @@
+import json
+
+
+def pos_str(pos):
+    return f"{pos[0]},{pos[1]}"
+
+
+def str_pos(s: str):
+    return int(s.split(',')[0]), int(s.split(',')[1])
+
+
 class Node:
-    def __init__(self, wall=True, bread=0, grass=0):
+    def __init__(self, discovered, wall=True, bread=0, grass=0):
+        self.discovered = discovered
         self.wall = wall
         self.bread = bread
         self.grass = grass
-        
+    
     def __repr__(self):
-        return f"{self.wall} {self.bread} {self.grass}"
+        return f"{self.__dict__}"
 
 
 class Graph:
@@ -17,9 +29,34 @@ class Graph:
             for j in range(dim[1]):
                 self.adj[(i, j)] = []
                 if (i, j) == base_pos:
-                    self.nodes[(i, j)] = Node(False)
+                    self.nodes[(i, j)] = Node(True, False)
                 else:
-                    self.nodes[(i, j)] = Node()
+                    self.nodes[(i, j)] = Node(False)
+    
+    def init_from_graph(self, adj_json, nodes_json):
+        # adj part
+        adj_dict = json.loads(adj_json)
+        self.adj.clear()
+        for k, v in adj_dict.items():
+            self.adj[str_pos(k)] = [str_pos(s) for s in v]
+        # nodes part
+        nodes_dict = json.loads(nodes_json)
+        self.nodes.clear()
+        for k, v in nodes_dict.items():
+            d, w, b, g = list(v.values())
+            self.nodes[str_pos(k)] = Node(d, w, b, g)
+    
+    def get_nodes(self):
+        new_dict = {}
+        for k, v in self.nodes.items():
+            new_dict[pos_str(k)] = v.__dict__
+        return json.dumps(new_dict)
+    
+    def get_adj(self):
+        new_dict = {}
+        for k, v in self.adj.items():
+            new_dict[pos_str(k)] = [pos_str(p) for p in v]
+        return json.dumps(new_dict)
     
     def step(self, src, dest):
         path = self.shortest_path(src, dest)
@@ -39,7 +76,7 @@ class Graph:
     def shortest_path(self, src, dest):
         q = [[src]]
         visited = []
-
+        
         while q:
             prev_path = q.pop(0)
             node = prev_path[-1]
@@ -52,7 +89,7 @@ class Graph:
                     if u == dest:
                         return path
                 visited.append(node)
-
+        
         return None
     
     def set_bread_grass(self, pos, b, g):
@@ -61,6 +98,7 @@ class Graph:
     
     def change_type(self, pos):
         self.nodes[pos].wall = False
+        self.nodes[pos].discovered = True
         neighbors = self.get_neighbors(pos)
         for n in neighbors:
             if not self.is_wall(n):
