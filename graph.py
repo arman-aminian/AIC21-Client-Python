@@ -1,4 +1,5 @@
 import json
+import random
 
 
 def pos_str(pos):
@@ -10,14 +11,18 @@ def str_pos(s: str):
 
 
 class Node:
-    def __init__(self, discovered, wall=True, bread=0, grass=0):
+    def __init__(self, pos, discovered, wall=True, bread=0, grass=0):
+        self.pos = pos
         self.discovered = discovered
         self.wall = wall
         self.bread = bread
         self.grass = grass
-    
+
     def __repr__(self):
         return f"{self.__dict__}"
+
+    def get_distance(self, node):
+        return abs(self.pos[0] - node.pos[0]) + abs(self.pos[1] - node.pos[1])
 
 
 class Graph:
@@ -29,10 +34,19 @@ class Graph:
             for j in range(dim[1]):
                 self.adj[(i, j)] = []
                 if (i, j) == base_pos:
-                    self.nodes[(i, j)] = Node(True, False)
+                    self.nodes[(i, j)] = Node(
+                        pos=(i, j),
+                        discovered=True,
+                        wall=False
+                    )
                 else:
-                    self.nodes[(i, j)] = Node(False)
-    
+                    self.nodes[(i, j)] = Node(
+                        pos=(i, j),
+                        discovered=False
+                    )
+
+        self.shortest_path_info = self.find_all_shortest_path()
+
     def init_from_graph(self, adj_json, nodes_json):
         # adj part
         adj_dict = json.loads(adj_json)
@@ -44,20 +58,20 @@ class Graph:
         self.nodes.clear()
         for k, v in nodes_dict.items():
             d, w, b, g = list(v.values())
-            self.nodes[str_pos(k)] = Node(d, w, b, g)
-    
+            self.nodes[str_pos(k)] = Node(k, d, w, b, g)
+
     def get_nodes(self):
         new_dict = {}
         for k, v in self.nodes.items():
             new_dict[pos_str(k)] = v.__dict__
         return json.dumps(new_dict)
-    
+
     def get_adj(self):
         new_dict = {}
         for k, v in self.adj.items():
             new_dict[pos_str(k)] = [pos_str(p) for p in v]
         return json.dumps(new_dict)
-    
+
     def step(self, src, dest):
         path = self.shortest_path(src, dest)
         if path is not None:
@@ -72,11 +86,11 @@ class Graph:
                 return "DOWN"
         else:
             return "NONE"
-    
+
     def shortest_path(self, src, dest):
         q = [[src]]
         visited = []
-        
+
         while q:
             prev_path = q.pop(0)
             node = prev_path[-1]
@@ -89,13 +103,13 @@ class Graph:
                     if u == dest:
                         return path
                 visited.append(node)
-        
+
         return None
-    
+
     def set_bread_grass(self, pos, b, g):
         self.nodes[pos].bread = b
         self.nodes[pos].grass = g
-    
+
     def change_type(self, pos):
         self.nodes[pos].wall = False
         self.nodes[pos].discovered = True
@@ -104,29 +118,82 @@ class Graph:
             if not self.is_wall(n):
                 self.adj[pos].append(n)
                 self.adj[n].append(pos)
-    
+
     def is_wall(self, pos):
         return self.nodes[pos].wall
-    
+
     def get_neighbors(self, pos):
         return [self.up(pos), self.right(pos), self.down(pos), self.left(pos)]
-    
+
     def right(self, pos):
         if pos[0] == self.dim[0] - 1:
             return 0, pos[1]
         return pos[0] + 1, pos[1]
-    
+
     def left(self, pos):
         if pos[0] == 0:
             return self.dim[0] - 1, pos[1]
         return pos[0] - 1, pos[1]
-    
+
     def up(self, pos):
         if pos[1] == 0:
             return pos[0], self.dim[1] - 1
         return pos[0], pos[1] - 1
-    
+
     def down(self, pos):
         if pos[1] == self.dim[1] - 1:
             return pos[0], 0
         return pos[0], pos[1] + 1
+
+    def guess_node(self, node):
+        # todo: make guessing better
+        return Node(pos=node.pos, discovered=False, wall=random.choice([True, False, False, False]))
+
+    def get_node(self, pos):
+        return self.nodes[pos] if self.nodes[pos].discovered else self.guess_node(self.nodes[pos])
+
+    def get_weight(self, src, dest):
+        # todo: make it better on guessing nodes
+        weight = src.get_distance(dest)
+        return weight
+
+    def get_shortest_path(self, src, nodes):
+        q = [src]
+        in_queue = {src.pos: True}
+        dist = {src.pos: 0}
+        parent = {src.pos: src.pos}
+
+        if src.wall:
+            return {
+                'dist': dist,
+                'parent': parent,
+            }
+
+        while q:
+            current_node = q.pop(0)
+            neighbors = self.get_neighbors(current_node.pos)
+            in_queue[current_node.pos] = False
+
+            for neighbor in neighbors:
+                next_node = nodes[neighbor]
+                if next_node.wall:
+                    continue
+                weight = self.get_weight(current_node, next_node)
+                if dist.get(next_node.pos) is None or weight + dist[current_node.pos] < dist.get(next_node.pos):
+                    dist[next_node.pos] = weight + dist[current_node.pos]
+                    parent[next_node.pos] = current_node.pos
+                    if not in_queue.get(next_node.pos):
+                        in_queue[next_node.pos] = True
+                        q.append(next_node)
+        return {
+            'dist': dist,
+            'parent': parent,
+        }
+
+    def find_all_shortest_path(self):
+        shortest_path_info = {}
+        nodes = {pos: self.get_node(pos) for pos in self.nodes.keys()}
+
+        for pos in self.nodes.keys():
+            shortest_path_info[pos] = self.get_shortest_path(nodes[pos], nodes)
+        return shortest_path_info
