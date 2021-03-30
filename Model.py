@@ -93,7 +93,7 @@ class Map:
     def getCell(self, dx: int, dy: int):
         x = self.antCurrentX + dx
         y = self.antCurrentY + dy
-        if (x < 0 | x >= self.width | y < 0 | y >= self.height):
+        if (x < 0 or x >= self.width or y < 0 or y >= self.height):
             return None
         return self.cells[x][y]
 
