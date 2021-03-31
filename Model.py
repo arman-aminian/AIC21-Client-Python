@@ -11,6 +11,7 @@ class Ant:
     health: int
     visibleMap: "Map"
     attackDistance: int
+    viewDistance: int
 
     def __init__(
         self,
@@ -22,6 +23,7 @@ class Ant:
         health: int,
         visibleMap: "Map",
         attackDistance: int,
+        viewDistance: int
     ):
         self.antType = ant_type
         self.antTeam = ant_team
@@ -31,10 +33,11 @@ class Ant:
         self.visibleMap = visibleMap
         self.health = health
         self.attackDistance = attackDistance
+        self.viewDistance = viewDistance
 
     @classmethod
     def createAntXY(cls, ant_type: int, ant_team: int, currentX: int, currentY: int):
-        return cls(ant_type, ant_team, None, currentX, currentY, -1, None, -1)
+        return cls(ant_type, ant_team, None, currentX, currentY, -1, None, -1, -1)
 
     @classmethod
     def createCurrentAnt(
@@ -44,6 +47,7 @@ class Ant:
         currentState: "CurrentState",
         visibleMap: "Map",
         attackDistance: int,
+        viewDistance: int,
     ):
         return cls(
             ant_type,
@@ -56,6 +60,7 @@ class Ant:
             currentState.health,
             visibleMap,
             attackDistance,
+            viewDistance
         )
 
 
@@ -116,6 +121,7 @@ class GameConfig:
     health_kargar: int = 0
     health_sarbaaz: int = 0
     attack_distance: int = 0
+    view_distance: int = 0
     generate_kargar: int = 0
     generate_sarbaz: int = 0
     generate_sarbaaz: int = 0
@@ -167,6 +173,7 @@ class Game:
     healthKargar: int
     healthSarbaaz: int
     attackDistance: int
+    viewDistance: int
     generateKargar: int
     rateDeathResource: int
     generateSarbaaz: int
@@ -180,6 +187,7 @@ class Game:
         self.healthKargar = None
         self.healthSarbaaz = None
         self.attackDistance = None
+        self.viewDistance = None
         self.generateKargar = None
         self.generateSarbaaz = None
         self.rateDeathResource = None
@@ -191,6 +199,7 @@ class Game:
         self.healthKargar = gameConfig.health_kargar
         self.healthSarbaaz = gameConfig.health_sarbaaz
         self.attackDistance = gameConfig.attack_distance
+        self.viewDistance = gameConfig.view_distance
         self.generateKargar = gameConfig.generate_kargar
         self.generateSarbaaz = gameConfig.generate_sarbaaz
         self.rateDeathResource = gameConfig.rate_death_resource
@@ -211,6 +220,7 @@ class Game:
             currentState,
             my_map,
             self.attackDistance,
+            self.viewDistance,
         )
 
 
