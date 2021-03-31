@@ -12,6 +12,8 @@ class Ant:
     visibleMap: "Map"
     attackDistance: int
     viewDistance: int
+    # near by attacks
+    attacks: List["Attack"]
 
     def __init__(
         self,
@@ -23,7 +25,8 @@ class Ant:
         health: int,
         visibleMap: "Map",
         attackDistance: int,
-        viewDistance: int
+        viewDistance: int,
+        attacks: List["Attack"],
     ):
         self.antType = ant_type
         self.antTeam = ant_team
@@ -34,10 +37,11 @@ class Ant:
         self.health = health
         self.attackDistance = attackDistance
         self.viewDistance = viewDistance
+        self.attacks = attacks
 
     @classmethod
     def createAntXY(cls, ant_type: int, ant_team: int, currentX: int, currentY: int):
-        return cls(ant_type, ant_team, None, currentX, currentY, -1, None, -1, -1)
+        return cls(ant_type, ant_team, None, currentX, currentY, -1, None, -1, -1, [])
 
     @classmethod
     def createCurrentAnt(
@@ -60,7 +64,8 @@ class Ant:
             currentState.health,
             visibleMap,
             attackDistance,
-            viewDistance
+            viewDistance,
+            currentState.attacks,
         )
 
 
@@ -139,6 +144,7 @@ class CurrentState:
     current_resource_type: int = None
     current_resource_value: int = 0
     health: int = 0
+    attacks: List["Attack"] = []
 
     def __init__(self, message):
         self.__dict__ = message
@@ -162,6 +168,21 @@ class CurrentState:
                     )
                 )
         self.around_cells = cells
+        attacks = []
+        for attack in self.attacks:
+            attacks.append(Attack(attack))
+        self.attacks = attacks
+
+
+class Attack:
+    attacker_row: int
+    attacker_col: int
+    defender_row: int
+    defender_col: int
+    is_attacker_enemy: bool
+
+    def __init__(self, message):
+        self.__dict__ = message
 
 
 class Game:
