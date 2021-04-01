@@ -1,4 +1,5 @@
 import json
+import math
 import random
 
 
@@ -11,6 +12,10 @@ def str_pos(s: str):
 
 
 class Node:
+    GRASS_WEIGHT = 1
+    BREAD_WEIGHT = 1
+    DISTANCE_WEIGH = 2
+
     def __init__(self, pos, discovered, wall=True, bread=0, grass=0):
         self.pos = pos
         self.discovered = discovered
@@ -23,6 +28,16 @@ class Node:
 
     def get_distance(self, node):
         return abs(self.pos[0] - node.pos[0]) + abs(self.pos[1] - node.pos[1])
+
+    # todo: make get value better(use dest)
+    # todo: make default dist better
+    def grass_value(self, src, dest, shortest_path_info):
+        distance = Graph.get_shortest_distance(self, src, shortest_path_info, default=math.inf)
+        return -distance * self.DISTANCE_WEIGH + self.grass * self.GRASS_WEIGHT + src.grass * src.GRASS_WEIGHT
+
+    def bread_value(self, src, dest, shortest_path_info):
+        distance = Graph.get_shortest_distance(self, src, shortest_path_info, default=math.inf)
+        return -distance * self.DISTANCE_WEIGH + self.bread * self.BREAD_WEIGHT + src.bread * src.BREAD_WEIGHT
 
 
 class Graph:
@@ -44,8 +59,6 @@ class Graph:
                         pos=(i, j),
                         discovered=False
                     )
-
-        self.shortest_path_info = self.find_all_shortest_path()
 
     def init_from_graph(self, adj_json, nodes_json):
         # adj part
@@ -190,10 +203,33 @@ class Graph:
             'parent': parent,
         }
 
+    def get_random_nodes(self):
+        return {pos: self.get_node(pos) for pos in self.nodes.keys()}
+
     def find_all_shortest_path(self):
         shortest_path_info = {}
-        nodes = {pos: self.get_node(pos) for pos in self.nodes.keys()}
+        nodes = self.get_random_nodes()
 
         for pos in self.nodes.keys():
             shortest_path_info[pos] = self.get_shortest_path(nodes[pos], nodes)
         return shortest_path_info
+
+    @staticmethod
+    def get_nearest_grass_nodes(src, dest, nodes, shortest_path_info):
+        grass_nodes = []
+        for node in nodes.values():
+            if node.grass > 0:
+                grass_nodes.append(node)
+        return sorted(grass_nodes, key=lambda n: n.grass_value(src, dest, shortest_path_info), reverse=True)[:20]
+
+    @staticmethod
+    def get_nearest_bread_nodes(src, dest, nodes, shortest_path_info):
+        bread_nodes = []
+        for node in nodes.values():
+            if node.grass > 0:
+                bread_nodes.append(node)
+        return sorted(bread_nodes, key=lambda n: n.bread_value(src, dest, shortest_path_info), reverse=True)[:20]
+
+    @staticmethod
+    def get_shortest_distance(src, dest, shortest_path_info, default=None):
+        return shortest_path_info[src.pos]['dist'].get(dest.pos, default)
