@@ -3,14 +3,6 @@ import math
 import random
 
 
-def pos_str(pos):
-    return f"{pos[0]},{pos[1]}"
-
-
-def str_pos(s: str):
-    return int(s.split(',')[0]), int(s.split(',')[1])
-
-
 class Node:
     GRASS_WEIGHT = 1
     BREAD_WEIGHT = 1
@@ -19,6 +11,7 @@ class Node:
     def __init__(self, pos, discovered, wall=True, bread=0, grass=0,
                  ally_workers=0, ally_soldiers=0, enemy_workers=0,
                  enemy_soldiers=0):
+        # REMEMBER to change the encode/decode function after adding attrs
         self.pos = pos
         self.discovered = discovered
         self.wall = wall
@@ -64,19 +57,6 @@ class Graph:
                         discovered=False
                     )
 
-    def init_from_graph(self, nodes_json):
-        nodes_dict = json.loads(nodes_json)
-        self.nodes.clear()
-        for k, v in nodes_dict.items():
-            d, w, b, g, aw, ally_s, ew, es = list(v.values())
-            self.nodes[str_pos(k)] = Node(k, d, w, b, g, aw, ally_s, ew, es)
-
-    def get_nodes(self):
-        new_dict = {}
-        for k, v in self.nodes.items():
-            new_dict[pos_str(k)] = v.__dict__
-        return json.dumps(new_dict)
-
     def step(self, src, dest):
         path = self.shortest_path(src, dest)
         if path is not None:
@@ -111,12 +91,26 @@ class Graph:
 
         return None
 
-    def set_bread_grass(self, pos, b, g):
+    def set_bread(self, pos, b):
         self.nodes[pos].bread = b
-        self.nodes[pos].grass = g
 
-    def change_type(self, pos):
-        self.nodes[pos].wall = False
+    def set_grass(self, pos, g):
+        self.nodes[pos].grass = g
+    
+    def set_ally_workers(self, pos, aw):
+        self.nodes[pos].ally_workers = aw
+        
+    def set_ally_soldiers(self, pos, a_s):
+        self.nodes[pos].ally_soldiers = a_s
+        
+    def set_enemy_workers(self, pos, ew):
+        self.nodes[pos].enemy_workers = ew
+        
+    def set_enemy_soldiers(self, pos, es):
+        self.nodes[pos].enemy_soldiers = es
+
+    def discover(self, pos, is_wall):
+        self.nodes[pos].wall = is_wall
         self.nodes[pos].discovered = True
 
     def get_neighbors(self, pos):
