@@ -68,22 +68,44 @@ class Ant:
             currentState.attacks,
         )
 
+    def getMapRelativeCell(self, x, y):
+        return self.visibleMap.getRelativeCell(x, y)
+
+    def getNeightbourCell(self, x, y):
+        return self.getMapRelativeCell(x, y)
+
+    def getLocationCell(self):
+        return self.getNeightbourCell(0, 0)
+
 
 class Map:
-    cells: List["Cell"]
+    cells: List[List["Cell"]]
+    width: int
+    height: int
     antCurrentX: int
     antCurrentY: int
 
     def __init__(
         self,
         cells: List["Cell"],
+        width: int,
+        height: int,
         currentX: int,
         currentY: int,
     ):
         super().__init__()
         self.cells = cells
+        self.width = width
+        self.height = height
         self.antCurrentX = currentX
         self.antCurrentY = currentY
+
+    def getRelativeCell(self, dx: int, dy: int):
+        x = self.antCurrentX + dx
+        y = self.antCurrentY + dy
+        if x < 0 or x >= self.width or y < 0 or y >= self.height:
+            return None
+        return self.cells[x][y]
 
 
 class Cell:
@@ -92,7 +114,7 @@ class Cell:
     type = 0
     resource_value = 0
     resource_type = 0
-    ants = List["Ant"]
+    ants = []
 
     def __init__(self, x, y, type, resource_value, resource_type):
         self.x = x
@@ -120,6 +142,8 @@ class Message:
 
 
 class GameConfig:
+    map_width: int = 0
+    map_height: int = 0
     ant_type: int = 0
     base_x: int = -1
     base_y: int = -1
@@ -150,28 +174,45 @@ class CurrentState:
         self.__dict__ = message
         cells = []
         for cel in self.around_cells:
-            this_cell = Cell(
-                cel["cell_x"],
-                cel["cell_y"],
-                cel["cell_type"],
-                cel["resource_value"],
-                cel["resource_type"],
-            )
-            cells.append(this_cell)
-            for clientAnt in cel["ants"]:
-                this_cell.ants.append(
-                    Ant.createAntXY(
-                        clientAnt["ant_type"],
-                        clientAnt["ant_team"],
-                        cel["cell_x"],
-                        cel["cell_y"],
-                    )
+            cells.append(
+                Cell(
+                    cel["cell_x"],
+                    cel["cell_y"],
+                    cel["cell_type"],
+                    cel["resource_value"],
+                    cel["resource_type"],
                 )
+            )
         self.around_cells = cells
         attacks = []
         for attack in self.attacks:
             attacks.append(Attack(attack))
         self.attacks = attacks
+
+    def getVisibleCells(self, height, width):
+        cells = [[None for i in range(height)] for j in range(width)]
+        if self.around_cells == None:
+            return cells
+        for clientCell in self.around_cells:
+            cell = Cell(
+                clientCell.x,
+                clientCell.y,
+                clientCell.type,
+                clientCell.resource_type,
+                clientCell.resource_value,
+            )
+            for clientAnt in clientCell.ants:
+                cell.ants.append(
+                    Ant.createAntXY(
+                        clientAnt.antType,
+                        clientAnt.antTeam,
+                        clientAnt.currentX,
+                        clientAnt.currentY,
+                    )
+                )
+            cells[cell.x][cell.y] = cell
+
+        return cells
 
 
 class Attack:
@@ -189,6 +230,8 @@ class Game:
     ant: "Ant"
     chatBox: "ChatBox"
     antType: int
+    mapWidth: int
+    mapHeight: int
     baseX: int
     baseY: int
     healthKargar: int
@@ -203,6 +246,8 @@ class Game:
         super().__init__()
         self.ant = None
         self.chatBox = None
+        self.mapWidth = None
+        self.mapHeight = None
         self.baseX = None
         self.baseY = None
         self.healthKargar = None
@@ -215,6 +260,8 @@ class Game:
 
     def initGameConfig(self, gameConfig: "GameConfig"):
         self.antType = gameConfig.ant_type
+        self.mapWidth = gameConfig.map_width
+        self.mapHeight = gameConfig.map_height
         self.baseX = gameConfig.base_x
         self.baseY = gameConfig.base_y
         self.healthKargar = gameConfig.health_kargar
@@ -230,8 +277,11 @@ class Game:
         self.ant = self.initialAntState(currentState)
 
     def initialAntState(self, currentState: "CurrentState"):
+        cells = currentState.getVisibleCells(self.mapHeight, self.mapWidth)
         my_map = Map(
-            currentState.around_cells,
+            cells,
+            self.mapWidth,
+            self.mapHeight,
             currentState.current_x,
             currentState.current_y,
         )
