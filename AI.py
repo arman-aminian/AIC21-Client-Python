@@ -50,13 +50,17 @@ class AI:
             l = len(self.game.chatBox.allChats)
             if l > 0:
                 # self.message = "hichi " + str(l)
-                self.message = "hichi " + self.game.chatBox.allChats[l-1].__str__()
+                self.message = "hichi " + self.game.chatBox.allChats[l-1].text
                 self.value = 4
             self.direction = Direction.LEFT.value
         else:
             # todo sarbaz move
             # self.message = str(len(self.game.chatBox.allChats))
-            self.message = str(self.game.chatBox.allChats[0].turn)
+            l = len(self.game.chatBox.allChats)
+            if l > 0:
+                self.message = str(self.game.chatBox.allChats[0].turn)
+            else:
+                self.message = "nothing"
             self.value = 5
             self.direction = Direction.RIGHT.value
 
