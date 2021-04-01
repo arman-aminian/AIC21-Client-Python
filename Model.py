@@ -11,6 +11,9 @@ class Ant:
     health: int
     visibleMap: "Map"
     attackDistance: int
+    viewDistance: int
+    # near by attacks
+    attacks: List["Attack"]
 
     def __init__(
         self,
@@ -22,6 +25,8 @@ class Ant:
         health: int,
         visibleMap: "Map",
         attackDistance: int,
+        viewDistance: int,
+        attacks: List["Attack"],
     ):
         self.antType = ant_type
         self.antTeam = ant_team
@@ -31,10 +36,12 @@ class Ant:
         self.visibleMap = visibleMap
         self.health = health
         self.attackDistance = attackDistance
+        self.viewDistance = viewDistance
+        self.attacks = attacks
 
     @classmethod
     def createAntXY(cls, ant_type: int, ant_team: int, currentX: int, currentY: int):
-        return cls(ant_type, ant_team, None, currentX, currentY, -1, None, -1)
+        return cls(ant_type, ant_team, None, currentX, currentY, -1, None, -1, -1, [])
 
     @classmethod
     def createCurrentAnt(
@@ -44,6 +51,7 @@ class Ant:
         currentState: "CurrentState",
         visibleMap: "Map",
         attackDistance: int,
+        viewDistance: int,
     ):
         return cls(
             ant_type,
@@ -56,13 +64,15 @@ class Ant:
             currentState.health,
             visibleMap,
             attackDistance,
+            viewDistance,
+            currentState.attacks,
         )
 
-    def getMapCell(self, x, y):
-        return self.visibleMap.getCell(x, y)
+    def getMapRelativeCell(self, x, y):
+        return self.visibleMap.getRelativeCell(x, y)
 
     def getNeightbourCell(self, x, y):
-        return self.getMapCell(x, y)
+        return self.getMapRelativeCell(x, y)
 
     def getLocationCell(self):
         return self.getNeightbourCell(0, 0)
@@ -90,12 +100,13 @@ class Map:
         self.antCurrentX = currentX
         self.antCurrentY = currentY
 
-    def getCell(self, dx: int, dy: int):
+    def getRelativeCell(self, dx: int, dy: int):
         x = self.antCurrentX + dx
         y = self.antCurrentY + dy
-        if (x < 0 or x >= self.width or y < 0 or y >= self.height):
+        if x < 0 or x >= self.width or y < 0 or y >= self.height:
             return None
         return self.cells[x][y]
+
 
 class Cell:
     x = 0
@@ -139,6 +150,7 @@ class GameConfig:
     health_kargar: int = 0
     health_sarbaaz: int = 0
     attack_distance: int = 0
+    view_distance: int = 0
     generate_kargar: int = 0
     generate_sarbaz: int = 0
     generate_sarbaaz: int = 0
@@ -156,6 +168,7 @@ class CurrentState:
     current_resource_type: int = None
     current_resource_value: int = 0
     health: int = 0
+    attacks: List["Attack"] = []
 
     def __init__(self, message):
         self.__dict__ = message
@@ -171,9 +184,13 @@ class CurrentState:
                 )
             )
         self.around_cells = cells
+        attacks = []
+        for attack in self.attacks:
+            attacks.append(Attack(attack))
+        self.attacks = attacks
 
     def getVisibleCells(self, height, width):
-        cells = [[None for i in range(width)] for j in range(height)]
+        cells = [[None for i in range(height)] for j in range(width)]
         if self.around_cells == None:
             return cells
         for clientCell in self.around_cells:
@@ -193,10 +210,20 @@ class CurrentState:
                         clientAnt.currentY,
                     )
                 )
-
-            cells[cell.y][cell.x] = cell
+            cells[cell.x][cell.y] = cell
 
         return cells
+
+
+class Attack:
+    attacker_row: int
+    attacker_col: int
+    defender_row: int
+    defender_col: int
+    is_attacker_enemy: bool
+
+    def __init__(self, message):
+        self.__dict__ = message
 
 
 class Game:
@@ -210,6 +237,7 @@ class Game:
     healthKargar: int
     healthSarbaaz: int
     attackDistance: int
+    viewDistance: int
     generateKargar: int
     rateDeathResource: int
     generateSarbaaz: int
@@ -225,6 +253,7 @@ class Game:
         self.healthKargar = None
         self.healthSarbaaz = None
         self.attackDistance = None
+        self.viewDistance = None
         self.generateKargar = None
         self.generateSarbaaz = None
         self.rateDeathResource = None
@@ -238,6 +267,7 @@ class Game:
         self.healthKargar = gameConfig.health_kargar
         self.healthSarbaaz = gameConfig.health_sarbaaz
         self.attackDistance = gameConfig.attack_distance
+        self.viewDistance = gameConfig.view_distance
         self.generateKargar = gameConfig.generate_kargar
         self.generateSarbaaz = gameConfig.generate_sarbaaz
         self.rateDeathResource = gameConfig.rate_death_resource
@@ -261,6 +291,7 @@ class Game:
             currentState,
             my_map,
             self.attackDistance,
+            self.viewDistance,
         )
 
 

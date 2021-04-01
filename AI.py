@@ -21,8 +21,8 @@ class AI:
     """
 
     def turn(self) -> (str, int, int):
-        """ self.message = "hello python"
+        """self.message = "hello python"
         self.value = random.randint(1,10)
-        self.direction = random.choice(list(Direction)).value """
+        self.direction = random.choice(list(Direction)).value"""
         self.direction = Direction.UP.value
         return (self.message, self.value, self.direction)
