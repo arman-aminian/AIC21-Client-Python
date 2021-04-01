@@ -337,7 +337,7 @@ class Direction(Enum):
     def get_value(string: str):
         if string == "CENTER":
             return Direction.CENTER
-        if string == "right":
+        if string == "RIGHT":
             return Direction.RIGHT
         if string == "UP":
             return Direction.UP

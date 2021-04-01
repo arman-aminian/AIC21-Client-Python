@@ -16,12 +16,18 @@ class Node:
     BREAD_WEIGHT = 1
     DISTANCE_WEIGH = 2
 
-    def __init__(self, pos, discovered, wall=True, bread=0, grass=0):
+    def __init__(self, pos, discovered, wall=True, bread=0, grass=0,
+                 ally_workers=0, ally_soldiers=0, enemy_workers=0,
+                 enemy_soldiers=0):
         self.pos = pos
         self.discovered = discovered
         self.wall = wall
         self.bread = bread
         self.grass = grass
+        self.ally_workers = ally_workers
+        self.ally_soldiers = ally_soldiers
+        self.enemy_workers = enemy_workers
+        self.enemy_soldiers = enemy_soldiers
 
     def __repr__(self):
         return f"{self.__dict__}"
@@ -70,8 +76,8 @@ class Graph:
         nodes_dict = json.loads(nodes_json)
         self.nodes.clear()
         for k, v in nodes_dict.items():
-            d, w, b, g = list(v.values())
-            self.nodes[str_pos(k)] = Node(k, d, w, b, g)
+            d, w, b, g, aw, ally_s, ew, es = list(v.values())
+            self.nodes[str_pos(k)] = Node(k, d, w, b, g, aw, ally_s, ew, es)
 
     def get_nodes(self):
         new_dict = {}

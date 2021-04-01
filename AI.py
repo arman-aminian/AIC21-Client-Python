@@ -64,4 +64,4 @@ class AI:
             self.value = 5
             self.direction = Direction.RIGHT.value
 
-        return (self.message, self.value, self.direction)
+        return self.message, self.value, self.direction
