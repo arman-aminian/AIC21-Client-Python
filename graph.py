@@ -49,11 +49,9 @@ class Node:
 class Graph:
     def __init__(self, dim, base_pos):
         self.dim = dim  # width, height
-        self.adj = {}
         self.nodes = {}
         for i in range(dim[0]):
             for j in range(dim[1]):
-                self.adj[(i, j)] = []
                 if (i, j) == base_pos:
                     self.nodes[(i, j)] = Node(
                         pos=(i, j),
@@ -66,13 +64,7 @@ class Graph:
                         discovered=False
                     )
 
-    def init_from_graph(self, adj_json, nodes_json):
-        # adj part
-        adj_dict = json.loads(adj_json)
-        self.adj.clear()
-        for k, v in adj_dict.items():
-            self.adj[str_pos(k)] = [str_pos(s) for s in v]
-        # nodes part
+    def init_from_graph(self, nodes_json):
         nodes_dict = json.loads(nodes_json)
         self.nodes.clear()
         for k, v in nodes_dict.items():
@@ -83,12 +75,6 @@ class Graph:
         new_dict = {}
         for k, v in self.nodes.items():
             new_dict[pos_str(k)] = v.__dict__
-        return json.dumps(new_dict)
-
-    def get_adj(self):
-        new_dict = {}
-        for k, v in self.adj.items():
-            new_dict[pos_str(k)] = [pos_str(p) for p in v]
         return json.dumps(new_dict)
 
     def step(self, src, dest):
@@ -114,7 +100,7 @@ class Graph:
             prev_path = q.pop(0)
             node = prev_path[-1]
             if node not in visited:
-                neighbors = self.adj[node]
+                neighbors = self.get_neighbors(node)
                 for u in neighbors:
                     path = list(prev_path)
                     path.append(u)
@@ -132,17 +118,14 @@ class Graph:
     def change_type(self, pos):
         self.nodes[pos].wall = False
         self.nodes[pos].discovered = True
-        neighbors = self.get_neighbors(pos)
-        for n in neighbors:
-            if not self.is_wall(n):
-                self.adj[pos].append(n)
-                self.adj[n].append(pos)
-
-    def is_wall(self, pos):
-        return self.nodes[pos].wall
 
     def get_neighbors(self, pos):
-        return [self.up(pos), self.right(pos), self.down(pos), self.left(pos)]
+        if self.nodes[pos].wall:
+            return []
+        neighbors = [self.up(pos), self.right(pos), self.down(pos),
+                     self.left(pos)]
+        neighbors = [n for n in neighbors if not self.nodes[n].wall]
+        return neighbors
 
     def right(self, pos):
         if pos[0] == self.dim[0] - 1:
@@ -195,8 +178,6 @@ class Graph:
 
             for neighbor in neighbors:
                 next_node = nodes[neighbor]
-                if next_node.wall:
-                    continue
                 weight = self.get_weight(current_node, next_node)
                 if dist.get(next_node.pos) is None or weight + dist[current_node.pos] < dist.get(next_node.pos):
                     dist[next_node.pos] = weight + dist[current_node.pos]
