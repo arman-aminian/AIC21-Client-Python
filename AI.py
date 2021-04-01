@@ -29,8 +29,8 @@ class AI:
     def turn(self) -> (str, int, int):
         AI.round += 1
 
-        self.message = str(AI.round)
-        self.value = random.randint(1, 10)
+        # self.message = str(AI.round)
+        # self.value = random.randint(1, 10)
         # at the beginning, create the map graph
         if AI.round == 1:
             self.g = Graph((self.game.mapWidth, self.game.mapHeight),
@@ -45,10 +45,19 @@ class AI:
         if self.game.ant.antType == AntType.KARGAR.value:
             # todo kargar move
             # mehdi
+
+            # todo delete
+            l = len(self.game.chatBox.allChats)
+            if l > 0:
+                # self.message = "hichi " + str(l)
+                self.message = "hichi " + self.game.chatBox.allChats[l-1].__str__()
+                self.value = 4
             self.direction = Direction.LEFT.value
         else:
             # todo sarbaz move
-            # arman
+            # self.message = str(len(self.game.chatBox.allChats))
+            self.message = str(self.game.chatBox.allChats[0].turn)
+            self.value = 5
             self.direction = Direction.RIGHT.value
 
         return (self.message, self.value, self.direction)
