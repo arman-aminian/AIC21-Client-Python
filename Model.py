@@ -300,7 +300,13 @@ class ChatBox:
 
     def __init__(self, allChats):
         super().__init__()
-        self.allChats = allChats
+        chats = []
+        for chat in allChats:
+            chats.append(Chat(
+                chat["text"],
+                chat["turn"]
+            ))
+        self.allChats = chats
 
 
 class Chat:
