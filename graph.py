@@ -28,6 +28,7 @@ class Node:
         self.ally_soldiers = ally_soldiers
         self.enemy_workers = enemy_workers
         self.enemy_soldiers = enemy_soldiers
+        self.base_founded = False
 
     def __repr__(self):
         return f"{self.__dict__}"

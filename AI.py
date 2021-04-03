@@ -58,7 +58,7 @@ class AI:
             # self.message = str(len(self.game.chatBox.allChats))
             l = len(self.game.chatBox.allChats)
             if l > 0:
-                self.message = str(self.game.chatBox.allChats[0].turn)
+                self.message = self.game.chatBox.allChats[0].text
             else:
                 self.message = "nothing"
             self.value = 5
