@@ -103,6 +103,10 @@ class Map:
     def getRelativeCell(self, dx: int, dy: int):
         x = (self.antCurrentX + dx) % self.width
         y = (self.antCurrentY + dy) % self.height
+        if x < 0:
+            x += self.width
+        if y < 0:
+            y += self.width
         return self.cells[x][y]
 
 
@@ -172,15 +176,15 @@ class CurrentState:
         self.__dict__ = message
         cells = []
         for cel in self.around_cells:
-            cells.append(
-                Cell(
-                    cel["cell_x"],
-                    cel["cell_y"],
-                    cel["cell_type"],
-                    cel["resource_value"],
-                    cel["resource_type"],
-                )
+            cell_tmp = Cell(
+                cel["cell_x"],
+                cel["cell_y"],
+                cel["cell_type"],
+                cel["resource_value"],
+                cel["resource_type"],
             )
+            cell_tmp.ants = cel["ants"]
+            cells.append(cell_tmp)
         self.around_cells = cells
         attacks = []
         for attack in self.attacks:
@@ -202,10 +206,10 @@ class CurrentState:
             for clientAnt in clientCell.ants:
                 cell.ants.append(
                     Ant.createAntXY(
-                        clientAnt.antType,
-                        clientAnt.antTeam,
-                        clientAnt.currentX,
-                        clientAnt.currentY,
+                        clientAnt["ant_type"],
+                        clientAnt["ant_team"],
+                        clientCell.x,
+                        clientCell.y,
                     )
                 )
             cells[cell.x][cell.y] = cell
