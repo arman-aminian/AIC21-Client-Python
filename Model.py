@@ -101,10 +101,8 @@ class Map:
         self.antCurrentY = currentY
 
     def getRelativeCell(self, dx: int, dy: int):
-        x = self.antCurrentX + dx
-        y = self.antCurrentY + dy
-        if x < 0 or x >= self.width or y < 0 or y >= self.height:
-            return None
+        x = (self.antCurrentX + dx) % self.width
+        y = (self.antCurrentY + dy) % self.height
         return self.cells[x][y]
 
 
@@ -302,10 +300,7 @@ class ChatBox:
         super().__init__()
         chats = []
         for chat in allChats:
-            chats.append(Chat(
-                chat["text"],
-                chat["turn"]
-            ))
+            chats.append(Chat(chat["text"], chat["turn"]))
         self.allChats = chats
 
 
