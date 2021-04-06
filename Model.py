@@ -200,8 +200,8 @@ class CurrentState:
                 clientCell.x,
                 clientCell.y,
                 clientCell.type,
-                clientCell.resource_type,
                 clientCell.resource_value,
+                clientCell.resource_type,
             )
             for clientAnt in clientCell.ants:
                 cell.ants.append(
