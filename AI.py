@@ -50,12 +50,15 @@ class AI:
         else:
             # todo sarbaz move
             # self.message = str(len(self.game.chatBox.allChats))
-            l = len(self.game.chatBox.allChats)
-            if l > 0:
-                self.message = self.game.chatBox.allChats[0].text
+            if not self.g.base_founded:
+                self.direction = Direction.get_random_direction()
             else:
-                self.message = "nothing"
-            self.value = 5
-            self.direction = Direction.RIGHT.value
+                l = len(self.game.chatBox.allChats)
+                if l > 0:
+                    self.message = self.game.chatBox.allChats[0].text
+                else:
+                    self.message = "nothing"
+                self.value = 5
+                self.direction = Direction.RIGHT.value
 
         return self.message, self.value, self.direction

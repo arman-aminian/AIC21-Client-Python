@@ -51,6 +51,7 @@ class Graph:
         self.dim = dim  # width, height
         self.adj = {}
         self.base_founded = False
+        self.enemy_base = None
         self.nodes = {}
         for i in range(dim[0]):
             for j in range(dim[1]):

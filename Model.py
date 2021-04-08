@@ -1,5 +1,6 @@
 from enum import Enum
 from typing import *
+from random import randint
 
 
 class Ant:
@@ -351,6 +352,10 @@ class Direction(Enum):
         if string == "DOWN":
             return Direction.DOWN
         return None
+
+    @staticmethod
+    def get_random_direction():
+        return randint(1, 4)
 
 
 class CellType(Enum):
