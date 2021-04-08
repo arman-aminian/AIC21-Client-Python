@@ -8,7 +8,7 @@ class Node:
     BREAD_WEIGHT = 1
     DISTANCE_WEIGH = 2
 
-    def __init__(self, pos, discovered, wall=True, bread=0, grass=0,
+    def __init__(self, pos, discovered, wall=False, bread=0, grass=0,
                  ally_workers=0, ally_soldiers=0, enemy_workers=0,
                  enemy_soldiers=0):
         # REMEMBER to change the encode/decode function after adding attrs
@@ -24,6 +24,11 @@ class Node:
 
     def __repr__(self):
         return f"{self.__dict__}"
+    
+    def __eq__(self, other):
+        if type(self) is type(other):
+            return self.__dict__ == other.__dict__
+        return False
 
     def get_distance(self, node):
         return abs(self.pos[0] - node.pos[0]) + abs(self.pos[1] - node.pos[1])

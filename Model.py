@@ -101,10 +101,12 @@ class Map:
         self.antCurrentY = currentY
 
     def getRelativeCell(self, dx: int, dy: int):
-        x = self.antCurrentX + dx
-        y = self.antCurrentY + dy
-        if x < 0 or x >= self.width or y < 0 or y >= self.height:
-            return None
+        x = (self.antCurrentX + dx) % self.width
+        y = (self.antCurrentY + dy) % self.height
+        if x < 0:
+            x += self.width
+        if y < 0:
+            y += self.width
         return self.cells[x][y]
 
 
@@ -174,15 +176,15 @@ class CurrentState:
         self.__dict__ = message
         cells = []
         for cel in self.around_cells:
-            cells.append(
-                Cell(
-                    cel["cell_x"],
-                    cel["cell_y"],
-                    cel["cell_type"],
-                    cel["resource_value"],
-                    cel["resource_type"],
-                )
+            cell_tmp = Cell(
+                cel["cell_x"],
+                cel["cell_y"],
+                cel["cell_type"],
+                cel["resource_value"],
+                cel["resource_type"],
             )
+            cell_tmp.ants = cel["ants"]
+            cells.append(cell_tmp)
         self.around_cells = cells
         attacks = []
         for attack in self.attacks:
@@ -198,16 +200,16 @@ class CurrentState:
                 clientCell.x,
                 clientCell.y,
                 clientCell.type,
-                clientCell.resource_type,
                 clientCell.resource_value,
+                clientCell.resource_type,
             )
             for clientAnt in clientCell.ants:
                 cell.ants.append(
                     Ant.createAntXY(
-                        clientAnt.antType,
-                        clientAnt.antTeam,
-                        clientAnt.currentX,
-                        clientAnt.currentY,
+                        clientAnt["ant_type"],
+                        clientAnt["ant_team"],
+                        clientCell.x,
+                        clientCell.y,
                     )
                 )
             cells[cell.x][cell.y] = cell
@@ -300,7 +302,10 @@ class ChatBox:
 
     def __init__(self, allChats):
         super().__init__()
-        self.allChats = allChats
+        chats = []
+        for chat in allChats:
+            chats.append(Chat(chat["text"], chat["turn"]))
+        self.allChats = chats
 
 
 class Chat:
