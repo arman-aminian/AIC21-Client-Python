@@ -45,14 +45,8 @@ class AI:
         if self.game.ant.antType == AntType.KARGAR.value:
             # todo kargar move
             # mehdi
-
-            # todo delete
-            l = len(self.game.chatBox.allChats)
-            if l > 0:
-                # self.message = "hichi " + str(l)
-                self.message = "hichi " + self.game.chatBox.allChats[l-1].text
-                self.value = 4
             self.direction = Direction.LEFT.value
+
         else:
             # todo sarbaz move
             # self.message = str(len(self.game.chatBox.allChats))

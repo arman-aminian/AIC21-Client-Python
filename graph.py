@@ -28,7 +28,6 @@ class Node:
         self.ally_soldiers = ally_soldiers
         self.enemy_workers = enemy_workers
         self.enemy_soldiers = enemy_soldiers
-        self.base_founded = False
 
     def __repr__(self):
         return f"{self.__dict__}"
@@ -51,6 +50,7 @@ class Graph:
     def __init__(self, dim, base_pos):
         self.dim = dim  # width, height
         self.adj = {}
+        self.base_founded = False
         self.nodes = {}
         for i in range(dim[0]):
             for j in range(dim[1]):
