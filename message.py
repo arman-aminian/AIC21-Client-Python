@@ -57,7 +57,7 @@ def encode_graph_nodes(pos, nodes: dict, w, h, view) -> str:
     neighbors = get_neighbor_positions(pos, w, h, view)
     # building the string:
     arr = [[], [], [], [], [], []]  # for the values (b, g, aw, as, ew, es)
-    s = ""
+    s = pos_str(pos, w, h) + ":"
     for p, n in nodes.items():
         if n.wall:
             s += chr(neighbors.index(p) + CONSTANT)
@@ -98,8 +98,10 @@ def encode_graph_nodes(pos, nodes: dict, w, h, view) -> str:
     #     .replace(',0;', ',;').replace(':0,', ':,')
 
 
-def decode_nodes(pos, nodes_str: str, w, h, view) -> dict:
+def decode_nodes(nodes_str: str, w, h, view) -> dict:
     ret = {}
+    pos = str_pos(nodes_str[:nodes_str.index(':')], w, h)
+    nodes_str = nodes_str[nodes_str.index(':') + 1:]
     neighbors = get_neighbor_positions(pos, w, h, view)
     # for the second version
     part = nodes_str.split(DELIM)[0]  # wall

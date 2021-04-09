@@ -1,10 +1,16 @@
+import copy
+import sys
+
 from Model import *
 from graph import *
 from message import *
 
 
 class AI:
-    round = 0
+    game_round = -1
+    life_cycle = 1
+    map = None
+    w, h = -1, -1
 
     def __init__(self):
         # Current Game State
@@ -16,9 +22,7 @@ class AI:
         self.value: int = None
 
         # mine
-        self.w, self.h = -1, -1
         self.pos = (-1, -1)
-        self.map = None
         self.new_neighbors = {}
         self.encoded_neighbors = ""
         self.map_value = 10
@@ -35,7 +39,6 @@ class AI:
         cells = ant.visibleMap.cells
         neighbor_cells = [j for sub in cells for j in sub if j is not None]
         neighbor_nodes = []
-        print("i am in", self.pos)
         for n in neighbor_cells:
             w = n.type == CellType.WALL.value
             if w:
@@ -61,69 +64,76 @@ class AI:
                                            ally_s, ew, es))
         
         self.new_neighbors = {n.pos: n for n in neighbor_nodes if
-                              self.map.nodes[n.pos] != n}
+                              AI.map.nodes[n.pos] != n}
         
     def update_map_from_neighbors(self):
         if not self.new_neighbors:
             return
         # just in case. not really needed
         for pos, n in self.new_neighbors.items():
-            self.map.nodes[pos].__dict__ = n.__dict__
+            AI.map.nodes[pos] = copy.deepcopy(n)
             
     def update_map_from_chat_box(self):
         # TODO add map value if so that we won't search through messages
         # that are not maps
-        maps = [msg.text for msg in self.game.chatBox.allChats]
+        maps = [msg.text for msg in self.game.chatBox.allChats if '!' in
+                msg.text]
         for m in maps:
-            nodes = decode_nodes(self.pos, m, self.w, self.h,
+            nodes = decode_nodes(m, AI.w, AI.h,
                                  self.game.ant.viewDistance)
-            for n in nodes:
-                if n != self.map.nodes[n.pos]:
-                    self.map.nodes[n.pos].__dict__ = n.__dict__
+            for pos, n in nodes.items():
+                if n != AI.map.nodes[pos]:
+                    AI.map.nodes[pos] = copy.deepcopy(n)
 
     def turn(self) -> (str, int, int):
-        AI.round += 1
-        self.direction = Direction.LEFT.value
+        if AI.game_round == -1:
+            if not self.game.chatBox.allChats:
+                AI.game_round = 1
+            else:
+                AI.game_round = self.game.chatBox.allChats[-1].turn + 1
+        
+        if AI.life_cycle == 1:
+            AI.w, AI.h = self.game.mapWidth, self.game.mapHeight
+            AI.map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
     
         # MAP RELATED #################################################
         self.pos = (self.game.ant.currentX, self.game.ant.currentY)
-        self.w, self.h = self.game.mapWidth, self.game.mapHeight
-        self.map = Graph((self.w, self.h), (self.game.baseX, self.game.baseY))
         # should always create map based on chat box
         self.update_map_from_chat_box()
-        if AI.round == 2:
-            print(self.map.nodes)
         # should always update what you see
         self.search_neighbors()
         self.update_map_from_neighbors()
         self.encoded_neighbors = encode_graph_nodes(self.pos,
                                                     self.new_neighbors,
-                                                    self.w, self.h,
+                                                    AI.w, AI.h,
                                                     self.game.viewDistance)
-        print(self.encoded_neighbors)
-        return self.encoded_neighbors, self.map_value, self.direction
+        self.message = self.encoded_neighbors
+        self.value = self.map_value
+        self.direction = random.choice(list(Direction)[1:]).value
         # END OF MAP RELATED ##########################################
     
-        if self.game.ant.antType == AntType.KARGAR.value:
-            # todo kargar move
-            # mehdi
-        
-            # todo delete
-            l = len(self.game.chatBox.allChats)
-            if l > 0:
-                # self.message = "hichi " + str(l)
-                self.message = "hichi " + self.game.chatBox.allChats[l-1].text
-                self.value = 4
-            self.direction = Direction.LEFT.value
-        else:
-            # todo sarbaz move
-            # self.message = str(len(self.game.chatBox.allChats))
-            l = len(self.game.chatBox.allChats)
-            if l > 0:
-                self.message = str(self.game.chatBox.allChats[0].turn)
-            else:
-                self.message = "nothing"
-            self.value = 5
-            self.direction = Direction.RIGHT.value
+        # if self.game.ant.antType == AntType.KARGAR.value:
+        #     # todo kargar move
+        #     # mehdi
+        #
+        #     # todo delete
+        #     l = len(self.game.chatBox.allChats)
+        #     if l > 0:
+        #         # self.message = "hichi " + str(l)
+        #         self.message = "hichi " + self.game.chatBox.allChats[l-1].text
+        #         self.value = 4
+        #     self.direction = Direction.LEFT.value
+        # else:
+        #     # todo sarbaz move
+        #     # self.message = str(len(self.game.chatBox.allChats))
+        #     l = len(self.game.chatBox.allChats)
+        #     if l > 0:
+        #         self.message = str(self.game.chatBox.allChats[0].turn)
+        #     else:
+        #         self.message = "nothing"
+        #     self.value = 5
+        #     self.direction = Direction.RIGHT.value
     
+        AI.game_round += 1
+        AI.life_cycle += 1
         return self.message, self.value, self.direction
