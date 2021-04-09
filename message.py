@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from graph import Node
 
 
@@ -17,7 +19,7 @@ def str_pos(s, w, h):
 
 def encode_node(n):
     # remember to encode non-trivial attributes (if any)
-    temp = n.__dict__.copy()
+    temp = deepcopy(n)
     if temp["wall"]:
         return []
     values = list(temp.values())[3:]
