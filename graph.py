@@ -24,7 +24,7 @@ class Node:
 
     def __repr__(self):
         return f"{self.__dict__}"
-    
+
     def __eq__(self, other):
         if type(self) is type(other):
             return self.__dict__ == other.__dict__
@@ -47,6 +47,7 @@ class Node:
 class Graph:
     def __init__(self, dim, base_pos):
         self.dim = dim  # width, height
+        self.base_founded = False
         self.nodes = {}
         for i in range(dim[0]):
             for j in range(dim[1]):
@@ -101,16 +102,16 @@ class Graph:
 
     def set_grass(self, pos, g):
         self.nodes[pos].grass = g
-    
+
     def set_ally_workers(self, pos, aw):
         self.nodes[pos].ally_workers = aw
-        
+
     def set_ally_soldiers(self, pos, a_s):
         self.nodes[pos].ally_soldiers = a_s
-        
+
     def set_enemy_workers(self, pos, ew):
         self.nodes[pos].enemy_workers = ew
-        
+
     def set_enemy_soldiers(self, pos, es):
         self.nodes[pos].enemy_soldiers = es
 
@@ -177,6 +178,8 @@ class Graph:
 
             for neighbor in neighbors:
                 next_node = nodes[neighbor]
+                if next_node.wall:
+                    continue
                 weight = self.get_weight(current_node, next_node)
                 if dist.get(next_node.pos) is None or weight + dist[current_node.pos] < dist.get(next_node.pos):
                     dist[next_node.pos] = weight + dist[current_node.pos]
