@@ -119,12 +119,12 @@ class Graph:
         self.nodes[pos].wall = is_wall
         self.nodes[pos].discovered = True
 
-    def get_neighbors(self, pos):
-        if self.nodes[pos].wall:
+    def get_neighbors(self, pos, nodes):
+        if nodes[pos].wall:
             return []
         neighbors = [self.up(pos), self.right(pos), self.down(pos),
                      self.left(pos)]
-        neighbors = [n for n in neighbors if not self.nodes[n].wall]
+        neighbors = [n for n in neighbors if not nodes[n].wall]
         return neighbors
 
     def right(self, pos):
@@ -173,13 +173,11 @@ class Graph:
 
         while q:
             current_node = q.pop(0)
-            neighbors = self.get_neighbors(current_node.pos)
+            neighbors = get_neighbors(current_node.pos, nodes)
             in_queue[current_node.pos] = False
 
             for neighbor in neighbors:
                 next_node = nodes[neighbor]
-                if next_node.wall:
-                    continue
                 weight = self.get_weight(current_node, next_node)
                 if dist.get(next_node.pos) is None or weight + dist[current_node.pos] < dist.get(next_node.pos):
                     dist[next_node.pos] = weight + dist[current_node.pos]
