@@ -173,7 +173,7 @@ class Graph:
 
         while q:
             current_node = q.pop(0)
-            neighbors = get_neighbors(current_node.pos, nodes)
+            neighbors = self.get_neighbors(current_node.pos, nodes)
             in_queue[current_node.pos] = False
 
             for neighbor in neighbors:
