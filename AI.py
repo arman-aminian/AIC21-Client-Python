@@ -109,27 +109,27 @@ class AI:
         self.direction = random.choice(list(Direction)[1:]).value
         # END OF MAP RELATED ##########################################
 
-        # if self.game.ant.antType == AntType.KARGAR.value:
-        #     # todo kargar move
-        #     # mehdi
-        #
-        #     # todo delete
-        #     l = len(self.game.chatBox.allChats)
-        #     if l > 0:
-        #         # self.message = "hichi " + str(l)
-        #         self.message = "hichi " + self.game.chatBox.allChats[l-1].text
-        #         self.value = 4
-        #     self.direction = Direction.LEFT.value
-        # else:
-        #     # todo sarbaz move
-        #     # self.message = str(len(self.game.chatBox.allChats))
-        #     l = len(self.game.chatBox.allChats)
-        #     if l > 0:
-        #         self.message = str(self.game.chatBox.allChats[0].turn)
-        #     else:
-        #         self.message = "nothing"
-        #     self.value = 5
-        #     self.direction = Direction.RIGHT.value
+        if self.game.ant.antType == AntType.KARGAR.value:
+            # todo kargar move
+            # mehdi
+
+            # todo delete
+            l = len(self.game.chatBox.allChats)
+            if l > 0:
+                # self.message = "hichi " + str(l)
+                self.message = "hichi " + self.game.chatBox.allChats[l-1].text
+                self.value = 4
+            self.direction = Direction.LEFT.value
+        else:
+            # todo sarbaz move
+            # self.message = str(len(self.game.chatBox.allChats))
+            l = len(self.game.chatBox.allChats)
+            if l > 0:
+                self.message = str(self.game.chatBox.allChats[0].turn)
+            else:
+                self.message = "nothing"
+            self.value = 5
+            self.direction = Direction.RIGHT.value
 
         AI.game_round += 1
         AI.life_cycle += 1
