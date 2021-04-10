@@ -3,22 +3,15 @@ import math
 import random
 
 
-def pos_str(pos):
-    return f"{pos[0]},{pos[1]}"
-
-
-def str_pos(s: str):
-    return int(s.split(',')[0]), int(s.split(',')[1])
-
-
 class Node:
     GRASS_WEIGHT = 1
     BREAD_WEIGHT = 1
     DISTANCE_WEIGH = 2
 
-    def __init__(self, pos, discovered, wall=True, bread=0, grass=0,
+    def __init__(self, pos, discovered, wall=False, bread=0, grass=0,
                  ally_workers=0, ally_soldiers=0, enemy_workers=0,
                  enemy_soldiers=0):
+        # REMEMBER to change the encode/decode function after adding attrs
         self.pos = pos
         self.discovered = discovered
         self.wall = wall
@@ -31,6 +24,11 @@ class Node:
 
     def __repr__(self):
         return f"{self.__dict__}"
+
+    def __eq__(self, other):
+        if type(self) is type(other):
+            return self.__dict__ == other.__dict__
+        return False
 
     def get_distance(self, node):
         return abs(self.pos[0] - node.pos[0]) + abs(self.pos[1] - node.pos[1])
@@ -49,13 +47,11 @@ class Node:
 class Graph:
     def __init__(self, dim, base_pos):
         self.dim = dim  # width, height
-        self.adj = {}
         self.base_founded = False
         self.enemy_base = None
         self.nodes = {}
         for i in range(dim[0]):
             for j in range(dim[1]):
-                self.adj[(i, j)] = []
                 if (i, j) == base_pos:
                     self.nodes[(i, j)] = Node(
                         pos=(i, j),
@@ -67,31 +63,6 @@ class Graph:
                         pos=(i, j),
                         discovered=False
                     )
-
-    def init_from_graph(self, adj_json, nodes_json):
-        # adj part
-        adj_dict = json.loads(adj_json)
-        self.adj.clear()
-        for k, v in adj_dict.items():
-            self.adj[str_pos(k)] = [str_pos(s) for s in v]
-        # nodes part
-        nodes_dict = json.loads(nodes_json)
-        self.nodes.clear()
-        for k, v in nodes_dict.items():
-            d, w, b, g, aw, ally_s, ew, es = list(v.values())
-            self.nodes[str_pos(k)] = Node(k, d, w, b, g, aw, ally_s, ew, es)
-
-    def get_nodes(self):
-        new_dict = {}
-        for k, v in self.nodes.items():
-            new_dict[pos_str(k)] = v.__dict__
-        return json.dumps(new_dict)
-
-    def get_adj(self):
-        new_dict = {}
-        for k, v in self.adj.items():
-            new_dict[pos_str(k)] = [pos_str(p) for p in v]
-        return json.dumps(new_dict)
 
     def step(self, src, dest):
         path = self.shortest_path(src, dest)
@@ -116,7 +87,7 @@ class Graph:
             prev_path = q.pop(0)
             node = prev_path[-1]
             if node not in visited:
-                neighbors = self.adj[node]
+                neighbors = self.get_neighbors(node)
                 for u in neighbors:
                     path = list(prev_path)
                     path.append(u)
@@ -127,24 +98,35 @@ class Graph:
 
         return None
 
-    def set_bread_grass(self, pos, b, g):
+    def set_bread(self, pos, b):
         self.nodes[pos].bread = b
+
+    def set_grass(self, pos, g):
         self.nodes[pos].grass = g
 
-    def change_type(self, pos):
-        self.nodes[pos].wall = False
+    def set_ally_workers(self, pos, aw):
+        self.nodes[pos].ally_workers = aw
+
+    def set_ally_soldiers(self, pos, a_s):
+        self.nodes[pos].ally_soldiers = a_s
+
+    def set_enemy_workers(self, pos, ew):
+        self.nodes[pos].enemy_workers = ew
+
+    def set_enemy_soldiers(self, pos, es):
+        self.nodes[pos].enemy_soldiers = es
+
+    def discover(self, pos, is_wall):
+        self.nodes[pos].wall = is_wall
         self.nodes[pos].discovered = True
-        neighbors = self.get_neighbors(pos)
-        for n in neighbors:
-            if not self.is_wall(n):
-                self.adj[pos].append(n)
-                self.adj[n].append(pos)
 
-    def is_wall(self, pos):
-        return self.nodes[pos].wall
-
-    def get_neighbors(self, pos):
-        return [self.up(pos), self.right(pos), self.down(pos), self.left(pos)]
+    def get_neighbors(self, pos, nodes):
+        if nodes[pos].wall:
+            return []
+        neighbors = [self.up(pos), self.right(pos), self.down(pos),
+                     self.left(pos)]
+        neighbors = [n for n in neighbors if not nodes[n].wall]
+        return neighbors
 
     def right(self, pos):
         if pos[0] == self.dim[0] - 1:
@@ -192,13 +174,11 @@ class Graph:
 
         while q:
             current_node = q.pop(0)
-            neighbors = self.get_neighbors(current_node.pos)
+            neighbors = get_neighbors(current_node.pos, nodes)
             in_queue[current_node.pos] = False
 
             for neighbor in neighbors:
                 next_node = nodes[neighbor]
-                if next_node.wall:
-                    continue
                 weight = self.get_weight(current_node, next_node)
                 if dist.get(next_node.pos) is None or weight + dist[current_node.pos] < dist.get(next_node.pos):
                     dist[next_node.pos] = weight + dist[current_node.pos]
