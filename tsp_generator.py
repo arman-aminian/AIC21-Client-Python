@@ -134,5 +134,5 @@ def get_path_from_tsp_info(tsp_info, name_of_node_object, graph):
 
     return {
         'path': actual_path,
-        'best_mask': best_mask,
+        'value': dp[best_mask][number_of_dist_vertex - 1],
     }
