@@ -35,12 +35,12 @@ class Node:
 
     # todo: make get value better(use dest)
     # todo: make default dist better
-    def grass_value(self, src, dest, shortest_path_info):
-        distance = Graph.get_shortest_distance(self, src, shortest_path_info, default=math.inf)
+    def grass_value(self, src, dest, graph):
+        distance = graph.get_shortest_distance(self, src, default=math.inf)
         return -distance * self.DISTANCE_WEIGH + self.grass * self.GRASS_WEIGHT + src.grass * src.GRASS_WEIGHT
 
-    def bread_value(self, src, dest, shortest_path_info):
-        distance = Graph.get_shortest_distance(self, src, shortest_path_info, default=math.inf)
+    def bread_value(self, src, dest, graph):
+        distance = graph.get_shortest_distance(self, src, default=math.inf)
         return -distance * self.DISTANCE_WEIGH + self.bread * self.BREAD_WEIGHT + src.bread * src.BREAD_WEIGHT
 
 
@@ -50,6 +50,7 @@ class Graph:
         self.base_founded = False
         self.enemy_base = None
         self.nodes = {}
+        self.shortest_path_info = {}
         for i in range(dim[0]):
             for j in range(dim[1]):
                 if (i, j) == base_pos:
@@ -120,12 +121,12 @@ class Graph:
         self.nodes[pos].wall = is_wall
         self.nodes[pos].discovered = True
 
-    def get_neighbors(self, pos, nodes):
-        if nodes[pos].wall:
+    def get_neighbors(self, pos):
+        if self.nodes[pos].wall:
             return []
         neighbors = [self.up(pos), self.right(pos), self.down(pos),
                      self.left(pos)]
-        neighbors = [n for n in neighbors if not nodes[n].wall]
+        neighbors = [n for n in neighbors if not self.nodes[n].wall]
         return neighbors
 
     def right(self, pos):
@@ -160,7 +161,7 @@ class Graph:
         weight = src.get_distance(dest)
         return weight
 
-    def get_shortest_path(self, src, nodes):
+    def get_shortest_path(self, src):
         q = [src]
         in_queue = {src.pos: True}
         dist = {src.pos: 0}
@@ -174,11 +175,11 @@ class Graph:
 
         while q:
             current_node = q.pop(0)
-            neighbors = self.get_neighbors(current_node.pos, nodes)
+            neighbors = self.get_neighbors(current_node.pos)
             in_queue[current_node.pos] = False
 
             for neighbor in neighbors:
-                next_node = nodes[neighbor]
+                next_node = self.nodes[neighbor]
                 weight = self.get_weight(current_node, next_node)
                 if dist.get(next_node.pos) is None or weight + dist[current_node.pos] < dist.get(next_node.pos):
                     dist[next_node.pos] = weight + dist[current_node.pos]
@@ -200,7 +201,7 @@ class Graph:
 
         while q:
             current_node = q.pop(0)
-            neighbors = self.get_neighbors(current_node.pos, self.nodes)
+            neighbors = self.get_neighbors(current_node.pos)
 
             for neighbor in neighbors:
                 next_node = self.nodes[neighbor]
@@ -221,29 +222,31 @@ class Graph:
         return {pos: self.get_node(pos) for pos in self.nodes.keys()}
 
     def find_all_shortest_path(self):
-        shortest_path_info = {}
-        nodes = self.get_random_nodes()
-
         for pos in self.nodes.keys():
-            shortest_path_info[pos] = self.get_shortest_path(nodes[pos], nodes)
-        return shortest_path_info
+            self.shortest_path_info[pos] = self.get_shortest_path(self.nodes[pos])
 
-    @staticmethod
-    def get_nearest_grass_nodes(src, dest, nodes, shortest_path_info):
+    def get_nearest_grass_nodes(self, src, dest):
         grass_nodes = []
-        for node in nodes.values():
+        for node in self.nodes.values():
             if node.grass > 0:
                 grass_nodes.append(node)
-        return sorted(grass_nodes, key=lambda n: n.grass_value(src, dest, shortest_path_info), reverse=True)[:20]
+        return sorted(grass_nodes, key=lambda n: n.grass_value(src, dest, self), reverse=True)[:20]
 
-    @staticmethod
-    def get_nearest_bread_nodes(src, dest, nodes, shortest_path_info):
+    def get_nearest_bread_nodes(self, src, dest):
         bread_nodes = []
-        for node in nodes.values():
+        for node in self.nodes.values():
             if node.grass > 0:
                 bread_nodes.append(node)
-        return sorted(bread_nodes, key=lambda n: n.bread_value(src, dest, shortest_path_info), reverse=True)[:20]
+        return sorted(bread_nodes, key=lambda n: n.bread_value(src, dest, self), reverse=True)[:20]
 
-    @staticmethod
-    def get_shortest_distance(src, dest, shortest_path_info, default=None):
-        return shortest_path_info[src.pos]['dist'].get(dest.pos, default)
+    def get_shortest_distance(self, src, dest, default=None):
+        return self.shortest_path_info[src.pos]['dist'].get(dest.pos, default)
+
+    def get_shortest_path_from_shortest_path_info(self, src, dest):
+        parent = self.shortest_path_info['parent']
+        path = []
+        pos = src.pos
+        while parent[pos] != pos:
+            path.append(self.nodes[pos])
+            pos = parent[pos]
+        return list(reversed(path))
