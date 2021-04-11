@@ -1,6 +1,7 @@
 import json
 import math
 import random
+import Utils
 
 
 class Node:
@@ -214,7 +215,7 @@ class Graph:
                         while last_node_pos != src.pos:
                             path.append(last_node_pos)
                             last_node_pos = parent[last_node_pos]
-                        return path
+                        return Utils.reverse_list(path)
         return None
 
     def get_random_nodes(self):
