@@ -1,8 +1,11 @@
 from copy import deepcopy
-
 from graph import Node
 
 
+MESSAGE_VALUE = {
+    "id": 1,
+    "map": 10,
+}
 DELIM = '!'
 CONSTANT = 34
 

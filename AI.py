@@ -9,6 +9,8 @@ class AI:
     life_cycle = 1
     map = None
     w, h = -1, -1
+    id = random.randint(1, 10 ** 8)
+    ids = {}
 
     def __init__(self):
         # Current Game State
@@ -23,13 +25,6 @@ class AI:
         self.pos = (-1, -1)
         self.new_neighbors = {}
         self.encoded_neighbors = ""
-        self.map_value = 10
-
-    """
-    Return a tuple with this form:
-        (message: str, message_value: int, message_dirction: int)
-    check example
-    """
 
     def search_neighbors(self):
         # TODO improve by creating the list of indices instead of all the cells
@@ -83,7 +78,25 @@ class AI:
                 if n != AI.map.nodes[pos]:
                     AI.map.nodes[pos] = copy.deepcopy(n)
 
+    def update_ids_from_chat_box(self):
+        id_msgs = [msg.text for msg in self.game.chatBox.allChats if
+                   msg.text.startswith("id")]
+        for m in id_msgs:
+            msg_type = int(m[2])
+            msg_id = int(m[3:])
+            if msg_id not in AI.ids[0] and msg_id not in AI.ids[1]:
+                AI.ids[msg_type].append(msg_id)
+    
+    def send_id(self):
+        self.message = "id" + str(self.game.ant.antType) + str(AI.id)
+        self.value = MESSAGE_VALUE["id"]
+
     def turn(self) -> (str, int, int):
+        self.update_ids_from_chat_box()
+        if AI.life_cycle > 1 and AI.id not in AI.ids[0] and \
+                AI.id not in AI.ids[1]:
+            self.send_id()
+        
         if AI.game_round == -1:
             if not self.game.chatBox.allChats:
                 AI.game_round = 1
@@ -93,20 +106,21 @@ class AI:
         if AI.life_cycle == 1:
             AI.w, AI.h = self.game.mapWidth, self.game.mapHeight
             AI.map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
-
-        # MAP RELATED #################################################
-        self.pos = (self.game.ant.currentX, self.game.ant.currentY)
-        self.update_map_from_chat_box()
-        self.search_neighbors()
-        self.update_map_from_neighbors()
-        self.encoded_neighbors = encode_graph_nodes(self.pos,
-                                                    self.new_neighbors,
-                                                    AI.w, AI.h,
-                                                    self.game.viewDistance)
-        self.message = self.encoded_neighbors
-        self.value = self.map_value
-        self.direction = random.choice(list(Direction)[1:]).value
-        # END OF MAP RELATED ##########################################
+            AI.ids[AntType.SARBAAZ.value] = []
+            AI.ids[AntType.KARGAR.value] = []
+            self.send_id()
+        else:
+            self.pos = (self.game.ant.currentX, self.game.ant.currentY)
+            self.update_map_from_chat_box()
+            self.search_neighbors()
+            self.update_map_from_neighbors()
+            self.encoded_neighbors = encode_graph_nodes(self.pos,
+                                                        self.new_neighbors,
+                                                        AI.w, AI.h,
+                                                        self.game.viewDistance)
+            self.message = self.encoded_neighbors
+            self.value = MESSAGE_VALUE["map"]
+            self.direction = random.choice(list(Direction)[1:]).value
 
         if self.game.ant.antType == AntType.KARGAR.value:
             # todo kargar move
@@ -132,4 +146,5 @@ class AI:
 
         AI.game_round += 1
         AI.life_cycle += 1
+        print("IDS ARE", AI.ids, "MY ID IS", AI.id)
         return self.message, self.value, self.direction
