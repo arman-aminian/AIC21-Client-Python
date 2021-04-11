@@ -123,11 +123,12 @@ class Graph:
         self.nodes[pos].discovered = True
 
     def get_neighbors(self, pos):
-        if self.nodes[pos].wall:
+        if self.nodes[pos].wall or not self.nodes[pos].discovered:
             return []
         neighbors = [self.up(pos), self.right(pos), self.down(pos),
                      self.left(pos)]
-        neighbors = [n for n in neighbors if not self.nodes[n].wall]
+        neighbors = [n for n in neighbors if not self.nodes[n].wall and
+                     self.nodes[pos].discovered]
         return neighbors
 
     def right(self, pos):

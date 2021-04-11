@@ -1,3 +1,4 @@
+import copy
 from Model import *
 from graph import *
 from message import *
@@ -95,9 +96,7 @@ class AI:
 
         # MAP RELATED #################################################
         self.pos = (self.game.ant.currentX, self.game.ant.currentY)
-        # should always create map based on chat box
         self.update_map_from_chat_box()
-        # should always update what you see
         self.search_neighbors()
         self.update_map_from_neighbors()
         self.encoded_neighbors = encode_graph_nodes(self.pos,
