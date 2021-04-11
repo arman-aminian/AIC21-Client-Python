@@ -237,7 +237,7 @@ class Graph:
     def get_nearest_bread_nodes(self, src, dest):
         bread_nodes = []
         for node in self.nodes.values():
-            if node.grass > 0:
+            if node.bread > 0:
                 bread_nodes.append(node)
         return sorted(bread_nodes, key=lambda n: n.bread_value(src, dest, self), reverse=True)[:20]
 
