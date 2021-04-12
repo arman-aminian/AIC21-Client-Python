@@ -109,11 +109,13 @@ class AI:
             AI.ids[AntType.SARBAAZ.value] = []
             AI.ids[AntType.KARGAR.value] = []
             self.send_id()
-        else:
-            self.pos = (self.game.ant.currentX, self.game.ant.currentY)
+
+        self.pos = (self.game.ant.currentX, self.game.ant.currentY)
+        self.search_neighbors()
+        self.update_map_from_neighbors()
+        
+        if AI.life_cycle > 1:
             self.update_map_from_chat_box()
-            self.search_neighbors()
-            self.update_map_from_neighbors()
             self.encoded_neighbors = encode_graph_nodes(self.pos,
                                                         self.new_neighbors,
                                                         AI.w, AI.h,
