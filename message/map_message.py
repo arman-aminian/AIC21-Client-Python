@@ -1,5 +1,6 @@
 from copy import deepcopy
 from graph import Node
+from Utils import *
 
 
 MESSAGE_VALUE = {
@@ -11,17 +12,14 @@ CONSTANT = 34
 
 
 def pos_str(pos, w, h):
-    # return f"{pos[0] + pos[1] * w}"
-    return f"{pos[0]},{pos[1]}"
+    return f'{pos[0]:05b}' + f'{pos[1]:05b}'
 
 
 def str_pos(s, w, h):
-    # return s % w, s // w
-    return int(s.split(',')[0]), int(s.split(',')[1])
+    return int(s[:5], 2), int(s[5:], 2)
 
 
 def encode_node(n):
-    # remember to encode non-trivial attributes (if any)
     temp = deepcopy(n)
     if temp["wall"]:
         return []
@@ -107,7 +105,7 @@ def decode_nodes(nodes_str: str, w, h, view) -> dict:
     ret = {}
     pos = str_pos(nodes_str[:nodes_str.index(':')], w, h)
     nodes_str = nodes_str[nodes_str.index(':') + 1:]
-    neighbors = get_neighbor_positions(pos, w, h, view)
+    neighbors = get_view_distance_neighbors(pos, w, h, view)
     # for the second version
     part = nodes_str.split(DELIM)[0]  # wall
     for c in part:
@@ -169,14 +167,4 @@ def decode_nodes(nodes_str: str, w, h, view) -> dict:
                     ret[neighbors[idx]] = Node(neighbors[idx], True, False,
                                                enemy_soldiers=ord(v) - CONSTANT)
     
-    # for the first version
-    # for i, cell in enumerate(nodes_str.split(";")):
-    #     is_wall = cell == ''
-    #     if is_wall or cell == '0':
-    #         b, g, aw, ally_s, ew, es = [0] * 6
-    #     else:
-    #         cell = [int(x) if x != '' else 0 for x in cell.split(',')]
-    #         b, g, aw, ally_s, ew, es = cell
-    #     ret[str_pos(i, w, h)] = Node(str_pos(i, w, h), True, is_wall, b, g, aw,
-    #                                  ally_s, ew, es)
     return ret

@@ -1,7 +1,7 @@
 import copy
 from Model import *
 from graph import *
-from message import *
+from message.map_message import *
 
 
 class AI:
@@ -9,8 +9,9 @@ class AI:
     life_cycle = 1
     map = None
     w, h = -1, -1
-    id = random.randint(1, 10 ** 8)
+    id = 0
     ids = {}
+    latest_pos = {}
 
     def __init__(self):
         # Current Game State
@@ -90,9 +91,18 @@ class AI:
     def send_id(self):
         self.message = "id" + str(self.game.ant.antType) + str(AI.id)
         self.value = MESSAGE_VALUE["id"]
-
+        
+    def make_id(self):
+        all_ids = AI.ids[0] + AI.ids[1] if AI.ids else []
+        iid = random.randint(0, 64)
+        while iid in all_ids:
+            iid = random.randint(0, 64)
+        AI.id = iid
+        
     def turn(self) -> (str, int, int):
-        self.update_ids_from_chat_box()
+        if AI.life_cycle > 1:
+            self.update_ids_from_chat_box()
+        
         if AI.life_cycle > 1 and AI.id not in AI.ids[0] and \
                 AI.id not in AI.ids[1]:
             self.send_id()
@@ -108,6 +118,7 @@ class AI:
             AI.map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
             AI.ids[AntType.SARBAAZ.value] = []
             AI.ids[AntType.KARGAR.value] = []
+            self.make_id()
             self.send_id()
 
         self.pos = (self.game.ant.currentX, self.game.ant.currentY)
