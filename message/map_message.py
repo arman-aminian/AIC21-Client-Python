@@ -1,5 +1,8 @@
 from copy import deepcopy
+from typing import Tuple
+
 from graph import Node
+from Utils import get_view_distance_neighbors
 
 
 MESSAGE_VALUE = {
@@ -11,13 +14,11 @@ CONSTANT = 34
 
 
 def pos_str(pos, w, h):
-    # return f"{pos[0] + pos[1] * w}"
-    return f"{pos[0]},{pos[1]}"
+    return f"{chr(pos[0] + CONSTANT)}{chr(pos[1] + CONSTANT)}"
 
 
 def str_pos(s, w, h):
-    # return s % w, s // w
-    return int(s.split(',')[0]), int(s.split(',')[1])
+    return ord(s[0]) - CONSTANT, ord(s[1]) - CONSTANT
 
 
 def encode_node(n):
@@ -31,38 +32,10 @@ def encode_node(n):
     return values
 
 
-def fix(pos, w, h):
-    x = pos[0] % w
-    y = pos[1] % h
-    if x < 0:
-        x += w
-    if y < 0:
-        y += h
-    return x, y
-
-
-def manhattan(p, q, w, h) -> int:
-    x_diff = min(abs(p[0] - q[0]), h - abs(p[0] - q[0]))
-    y_diff = min(abs(p[1] - q[1]), w - abs(p[1] - q[1]))
-    return x_diff + y_diff
-
-
-def get_neighbor_positions(pos, w, h, view: int) -> list:
-    ret = []
-    for i in range(-view, view + 1):
-        for j in range(-view, view + 1):
-            p = fix((pos[0] + i, pos[1] + j), w, h)
-            if manhattan(pos, p, w, h) <= view:
-                ret.append(p)
-    return sorted(ret)
-
-
-def encode_graph_nodes(pos, nodes: dict, w, h, view) -> str:
-    # second version
-    neighbors = get_neighbor_positions(pos, w, h, view)
-    # building the string:
+def encode_graph_nodes(pos, nodes: dict, w, h, view, ant_id) -> str:
+    neighbors = get_view_distance_neighbors(pos, w, h, view)
     arr = [[], [], [], [], [], []]  # for the values (b, g, aw, as, ew, es)
-    s = pos_str(pos, w, h) + ":"
+    s = chr(ant_id + CONSTANT) + pos_str(pos, w, h)
     for p, n in nodes.items():
         if n.wall:
             s += chr(neighbors.index(p) + CONSTANT)
@@ -85,30 +58,14 @@ def encode_graph_nodes(pos, nodes: dict, w, h, view) -> str:
     
     return s
     
-    # first version which is too long
-    # new_dict = {}
-    # for k, v in nodes.items():
-    #     print(k, pos_str(k, w, h))
-    #     new_dict[pos_str(k, w, h)] = encode_node(v)
-    #
-    # ret2 = [str(k) + ':' + str(v) + ';' for k, v in new_dict.items()]
-    #
-    # ret = [[] for _ in range(len(new_dict.keys()))]
-    # for p in new_dict.keys():
-    #     ret[int(p)] = new_dict[p]
-    # ret2 = [str(r) + ';' for r in ret]
-    #
-    # return str(ret2).replace(' ', '').replace('\'', '').replace('[', '') \
-    #     .replace(']', '').replace(';,', ';').replace(',0,', ',,') \
-    #     .replace(',0;', ',;').replace(':0,', ':,')
 
-
-def decode_nodes(nodes_str: str, w, h, view) -> dict:
+def decode_nodes(nodes_str: str, w, h, view) -> Tuple[int, (int, int), dict]:
     ret = {}
-    pos = str_pos(nodes_str[:nodes_str.index(':')], w, h)
-    nodes_str = nodes_str[nodes_str.index(':') + 1:]
-    neighbors = get_neighbor_positions(pos, w, h, view)
-    # for the second version
+    ant_id = ord(nodes_str[0]) - CONSTANT
+    pos = str_pos(nodes_str[1:3], w, h)
+    nodes_str = nodes_str[3:]
+    neighbors = get_view_distance_neighbors(pos, w, h, view)
+
     part = nodes_str.split(DELIM)[0]  # wall
     for c in part:
         idx = ord(c) - CONSTANT
@@ -169,14 +126,4 @@ def decode_nodes(nodes_str: str, w, h, view) -> dict:
                     ret[neighbors[idx]] = Node(neighbors[idx], True, False,
                                                enemy_soldiers=ord(v) - CONSTANT)
     
-    # for the first version
-    # for i, cell in enumerate(nodes_str.split(";")):
-    #     is_wall = cell == ''
-    #     if is_wall or cell == '0':
-    #         b, g, aw, ally_s, ew, es = [0] * 6
-    #     else:
-    #         cell = [int(x) if x != '' else 0 for x in cell.split(',')]
-    #         b, g, aw, ally_s, ew, es = cell
-    #     ret[str_pos(i, w, h)] = Node(str_pos(i, w, h), True, is_wall, b, g, aw,
-    #                                  ally_s, ew, es)
-    return ret
+    return ant_id, pos, ret
