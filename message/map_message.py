@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Tuple
+# from typing import Tuple
 
 from graph import Node
 from Utils import get_view_distance_neighbors
@@ -59,7 +59,7 @@ def encode_graph_nodes(pos, nodes: dict, w, h, view, ant_id) -> str:
     return s
     
 
-def decode_nodes(nodes_str: str, w, h, view) -> Tuple[int, (int, int), dict]:
+def decode_nodes(nodes_str: str, w, h, view):
     ret = {}
     ant_id = ord(nodes_str[0]) - CONSTANT
     pos = str_pos(nodes_str[1:3], w, h)

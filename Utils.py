@@ -1,6 +1,9 @@
 import Model
 
 
+INIT_ANTS_NUM = 4
+
+
 def reverse_list(lst):
     return [ele for ele in reversed(lst)]
 

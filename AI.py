@@ -88,28 +88,28 @@ class AI:
             msg_id = int(m[3:])
             if msg_id not in AI.ids[0] and msg_id not in AI.ids[1]:
                 AI.ids[msg_type].append(msg_id)
-    
+
     def send_id(self):
         self.message = "id" + str(self.game.ant.antType) + str(AI.id)
         self.value = MESSAGE_VALUE["id"]
 
-    def make_id(self):
+    def make_id(self, min_id=1, max_id=100):
         # TODO make first 4 ids 1 to 4
         all_ids = AI.ids[0] + AI.ids[1] if AI.ids else []
-        iid = random.randint(0, 100)
+        iid = random.randint(min_id, max_id)
         while iid in all_ids:
-            iid = random.randint(0, 100)
+            iid = random.randint(min_id, max_id)
         AI.id = iid
 
     def turn(self) -> (str, int, int):
         # TODO update map from the first cycle
         if self.life_cycle > 1:
             self.update_ids_from_chat_box()
-        
+
         if AI.life_cycle > 1 and AI.id not in AI.ids[0] and \
                 AI.id not in AI.ids[1]:
             self.send_id()
-        
+
         if AI.game_round == -1:
             if not self.game.chatBox.allChats:
                 AI.game_round = 1
@@ -121,14 +121,15 @@ class AI:
             AI.map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
             AI.ids[AntType.SARBAAZ.value] = []
             AI.ids[AntType.KARGAR.value] = []
-            self.make_id()
+
+            self.make_id(max_id=Utils.INIT_ANTS_NUM)
             self.send_id()
 
         self.pos = (self.game.ant.currentX, self.game.ant.currentY)
         AI.latest_pos[AI.id] = (self.pos, AI.game_round)
         self.search_neighbors()
         self.update_map_from_neighbors()
-        
+
         if AI.life_cycle > 1:
             # TODO update map only from the last cycle
             self.update_map_from_chat_box()
@@ -143,24 +144,16 @@ class AI:
             self.direction = random.choice(list(Direction)[1:]).value
 
         if self.game.ant.antType == AntType.KARGAR.value:
-            # todo kargar move
-            # mehdi
-
-            # todo delete
-            l = len(self.game.chatBox.allChats)
-            if l > 0:
-                # self.message = "hichi " + str(l)
-                self.message = "hichi " + self.game.chatBox.allChats[l-1].text
-                self.value = 4
+            
             self.direction = Direction.LEFT.value
         else:
             # todo sarbaz move
             # self.message = str(len(self.game.chatBox.allChats))
-            l = len(self.game.chatBox.allChats)
-            if l > 0:
-                self.message = str(self.game.chatBox.allChats[0].turn)
-            else:
-                self.message = "nothing"
+            # l = len(self.game.chatBox.allChats)
+            # if l > 0:
+            #     self.message = str(self.game.chatBox.allChats[0].turn)
+            # else:
+            #     self.message = "nothing"
             self.value = 5
             self.direction = Direction.RIGHT.value
 
