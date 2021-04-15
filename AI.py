@@ -1,7 +1,7 @@
 import copy
 from Model import *
 from graph import *
-from message import *
+from message.map_message import *
 
 
 class AI:
@@ -9,8 +9,10 @@ class AI:
     life_cycle = 1
     map = None
     w, h = -1, -1
-    id = random.randint(1, 10 ** 8)
+    id = random.randint(0, 100)
     ids = {}
+    latest_pos = {}
+    found_history = {}
 
     def __init__(self):
         # Current Game State
@@ -58,6 +60,7 @@ class AI:
 
         self.new_neighbors = {n.pos: n for n in neighbor_nodes if
                               AI.map.nodes[n.pos] != n}
+        AI.found_history.update(set(self.new_neighbors.keys()))
 
     def update_map_from_neighbors(self):
         if not self.new_neighbors:
@@ -67,13 +70,12 @@ class AI:
             AI.map.nodes[pos] = copy.deepcopy(n)
 
     def update_map_from_chat_box(self):
-        # TODO add map value if so that we won't search through messages
-        # that are not maps
-        maps = [msg.text for msg in self.game.chatBox.allChats if '!' in
+        maps = [msg for msg in self.game.chatBox.allChats if '!' in
                 msg.text]
         for m in maps:
-            nodes = decode_nodes(m, AI.w, AI.h,
-                                 self.game.ant.viewDistance)
+            ant_id, ant_pos, nodes = decode_nodes(m.text, AI.w, AI.h,
+                                                  self.game.ant.viewDistance)
+            AI.latest_pos[ant_pos] = (ant_id, m.turn)
             for pos, n in nodes.items():
                 if n != AI.map.nodes[pos]:
                     AI.map.nodes[pos] = copy.deepcopy(n)
@@ -91,8 +93,19 @@ class AI:
         self.message = "id" + str(self.game.ant.antType) + str(AI.id)
         self.value = MESSAGE_VALUE["id"]
 
+    def make_id(self):
+        # TODO make first 4 ids 1 to 4
+        all_ids = AI.ids[0] + AI.ids[1] if AI.ids else []
+        iid = random.randint(0, 100)
+        while iid in all_ids:
+            iid = random.randint(0, 100)
+        AI.id = iid
+
     def turn(self) -> (str, int, int):
-        self.update_ids_from_chat_box()
+        # TODO update map from the first cycle
+        if self.life_cycle > 1:
+            self.update_ids_from_chat_box()
+        
         if AI.life_cycle > 1 and AI.id not in AI.ids[0] and \
                 AI.id not in AI.ids[1]:
             self.send_id()
@@ -108,18 +121,23 @@ class AI:
             AI.map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
             AI.ids[AntType.SARBAAZ.value] = []
             AI.ids[AntType.KARGAR.value] = []
+            self.make_id()
             self.send_id()
 
         self.pos = (self.game.ant.currentX, self.game.ant.currentY)
+        AI.latest_pos[AI.id] = (self.pos, AI.game_round)
         self.search_neighbors()
         self.update_map_from_neighbors()
         
         if AI.life_cycle > 1:
+            # TODO update map only from the last cycle
             self.update_map_from_chat_box()
             self.encoded_neighbors = encode_graph_nodes(self.pos,
                                                         self.new_neighbors,
                                                         AI.w, AI.h,
-                                                        self.game.viewDistance)
+                                                        self.game.viewDistance,
+                                                        AI.id)
+            # TODO not discovered = guess node
             self.message = self.encoded_neighbors
             self.value = MESSAGE_VALUE["map"]
             self.direction = random.choice(list(Direction)[1:]).value

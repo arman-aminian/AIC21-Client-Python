@@ -1,3 +1,7 @@
+./.~lock.temp.ods#
+./temp.ods
+./test.py
+./.fuse_hidden000002bb00000001
 __pycache__
 build/*
 dist/*
