@@ -1,7 +1,7 @@
 import copy
 from Model import *
 from graph import *
-from message.map_message import *
+from message import *
 
 
 class AI:
