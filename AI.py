@@ -12,6 +12,7 @@ class AI:
     id = random.randint(0, 100)
     ids = {}
     latest_pos = {}
+    found_history = {}
 
     def __init__(self):
         # Current Game State
@@ -59,6 +60,7 @@ class AI:
 
         self.new_neighbors = {n.pos: n for n in neighbor_nodes if
                               AI.map.nodes[n.pos] != n}
+        AI.found_history.update(set(self.new_neighbors.keys()))
 
     def update_map_from_neighbors(self):
         if not self.new_neighbors:
@@ -92,6 +94,7 @@ class AI:
         self.value = MESSAGE_VALUE["id"]
 
     def make_id(self):
+        # TODO make first 4 ids 1 to 4
         all_ids = AI.ids[0] + AI.ids[1] if AI.ids else []
         iid = random.randint(0, 100)
         while iid in all_ids:
@@ -99,6 +102,7 @@ class AI:
         AI.id = iid
 
     def turn(self) -> (str, int, int):
+        # TODO update map from the first cycle
         if self.life_cycle > 1:
             self.update_ids_from_chat_box()
         
@@ -126,12 +130,14 @@ class AI:
         self.update_map_from_neighbors()
         
         if AI.life_cycle > 1:
+            # TODO update map only from the last cycle
             self.update_map_from_chat_box()
             self.encoded_neighbors = encode_graph_nodes(self.pos,
                                                         self.new_neighbors,
                                                         AI.w, AI.h,
                                                         self.game.viewDistance,
                                                         AI.id)
+            # TODO not discovered = guess node
             self.message = self.encoded_neighbors
             self.value = MESSAGE_VALUE["map"]
             self.direction = random.choice(list(Direction)[1:]).value
