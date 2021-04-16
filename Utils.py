@@ -2,6 +2,7 @@ import Model
 
 
 INIT_ANTS_NUM = 4
+MAX_MESSAGES_PER_TURN = 5
 
 
 def reverse_list(lst):

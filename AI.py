@@ -1,5 +1,6 @@
 import copy
 from Model import *
+from Utils import *
 from graph import *
 from message.map_message import *
 
@@ -9,7 +10,7 @@ class AI:
     life_cycle = 1
     map = None
     w, h = -1, -1
-    id = random.randint(0, 100)
+    id = 0
     ids = {}
     latest_pos = {}
     found_history = {}
@@ -81,20 +82,29 @@ class AI:
                     AI.map.nodes[pos] = copy.deepcopy(n)
 
     def update_ids_from_chat_box(self):
-        id_msgs = [msg.text for msg in self.game.chatBox.allChats if
-                   msg.text.startswith("id")]
+        id_msgs = [msg.text for msg in
+                   self.game.chatBox.allChats[-MAX_MESSAGES_PER_TURN:] if
+                   msg.text.startswith("id") and msg.turn == AI.game_round - 1]
+        if AI.life_cycle == 1:
+            id_msgs = [msg.text for msg in self.game.chatBox.allChats if
+                       msg.text.startswith("id")]
+        
         for m in id_msgs:
             msg_type = int(m[2])
             msg_id = int(m[3:])
             if msg_id not in AI.ids[0] and msg_id not in AI.ids[1]:
                 AI.ids[msg_type].append(msg_id)
+        
+        if AI.game_round == 2:
+            AI.id = sorted(AI.ids[self.game.ant.antType]).index(AI.id) + 1
+            AI.ids[0] = [x for x in range(1, len(AI.ids[0]) + 1)]
+            AI.ids[1] = [x for x in range(1, len(AI.ids[1]) + 1)]
 
     def send_id(self):
         self.message = "id" + str(self.game.ant.antType) + str(AI.id)
         self.value = MESSAGE_VALUE["id"]
 
-    def make_id(self, min_id=1, max_id=100):
-        # TODO make first 4 ids 1 to 4
+    def make_id(self, min_id=1, max_id=220):
         all_ids = AI.ids[0] + AI.ids[1] if AI.ids else []
         iid = random.randint(min_id, max_id)
         while iid in all_ids:
@@ -103,8 +113,7 @@ class AI:
 
     def turn(self) -> (str, int, int):
         # TODO update map from the first cycle
-        if self.life_cycle > 1:
-            self.update_ids_from_chat_box()
+        self.update_ids_from_chat_box()
 
         if AI.life_cycle > 1 and AI.id not in AI.ids[0] and \
                 AI.id not in AI.ids[1]:
@@ -121,8 +130,10 @@ class AI:
             AI.map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
             AI.ids[AntType.SARBAAZ.value] = []
             AI.ids[AntType.KARGAR.value] = []
-
-            self.make_id(max_id=Utils.INIT_ANTS_NUM)
+            if AI.game_round > 2:
+                self.make_id(INIT_ANTS_NUM + 1, 220)
+            elif AI.game_round == 1:
+                self.make_id()
             self.send_id()
 
         self.pos = (self.game.ant.currentX, self.game.ant.currentY)
@@ -144,7 +155,6 @@ class AI:
             self.direction = random.choice(list(Direction)[1:]).value
 
         if self.game.ant.antType == AntType.KARGAR.value:
-            
             self.direction = Direction.LEFT.value
         else:
             # todo sarbaz move
@@ -159,5 +169,4 @@ class AI:
 
         AI.game_round += 1
         AI.life_cycle += 1
-        print("IDS ARE", AI.ids, "MY ID IS", AI.id)
         return self.message, self.value, self.direction

@@ -1,6 +1,4 @@
 from copy import deepcopy
-# from typing import Tuple
-
 from graph import Node
 from Utils import get_view_distance_neighbors
 
