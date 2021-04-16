@@ -35,8 +35,8 @@ def fix(pos, w, h):
 
 
 def manhattan_dist(p, q, w, h) -> int:
-    x_diff = min(abs(p[0] - q[0]), h - abs(p[0] - q[0]))
-    y_diff = min(abs(p[1] - q[1]), w - abs(p[1] - q[1]))
+    x_diff = min(abs(p[0] - q[0]), w - abs(p[0] - q[0]))
+    y_diff = min(abs(p[1] - q[1]), h - abs(p[1] - q[1]))
     return x_diff + y_diff
 
 
