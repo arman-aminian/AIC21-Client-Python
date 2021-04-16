@@ -101,8 +101,30 @@ class AI:
             iid = random.randint(min_id, max_id)
         AI.id = iid
 
-    # def get_init_ants_next_move(self, id:int) -> int:
-    #     if AI.map
+    def get_next_pos(self, cur_pos, move):
+        if move == 1:
+            next_pos = (cur_pos[0] + 1, cur_pos[1])
+        elif move == 2:
+            next_pos = (cur_pos[0], cur_pos[1] - 1)
+        elif move == 3:
+            next_pos = (cur_pos[0] - 1, cur_pos[1])
+        elif move == 4:
+            next_pos = (cur_pos[0], cur_pos[1] + 1)
+        else:
+            return (-1, -1)
+
+        next_pos = ((next_pos[0] + self.game.mapWidth) % self.game.mapWidth,
+                    (next_pos[1] + self.game.mapHeight) % self.game.mapHeight)
+        return next_pos
+
+    def get_init_ants_next_move(self, ant_id: int) -> int:
+        default_moves = Utils.INIT_ANTS_MOVES[ant_id - 1]
+        for m in default_moves:
+            next_node = AI.map.nodes[self.get_next_pos(self.pos, m)]
+            if not next_node.wall:
+                return m
+        print("error on get_init_ants_next_move")
+        return 0
 
     def turn(self) -> (str, int, int):
         # TODO update map from the first cycle
@@ -148,7 +170,12 @@ class AI:
 
         if self.game.ant.antType == AntType.KARGAR.value:
             # AI.
-            self.direction = Direction.LEFT.value
+            m = self.get_init_ants_next_move(self.id)
+            if m > 0 & m < 5:
+                self.direction = m
+            else:
+                self.direction = Direction.LEFT
+                self.message = str(m)
         else:
             # todo sarbaz move
 
