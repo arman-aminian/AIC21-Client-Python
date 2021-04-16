@@ -10,7 +10,7 @@ class AI:
     life_cycle = 1
     map = None
     w, h = -1, -1
-    id = random.randint(1, Utils.INIT_ANTS_NUM)
+    id = 0
     ids = {}
     latest_pos = {}
     found_history = {}
@@ -77,6 +77,7 @@ class AI:
         if AI.life_cycle == 1:
             maps = [msg for msg in self.game.chatBox.allChats if '!' in
                     msg.text]
+
         for m in maps:
             ant_id, ant_pos, nodes = decode_nodes(m.text, AI.w, AI.h,
                                                   self.game.ant.viewDistance)
@@ -159,9 +160,9 @@ class AI:
             AI.ids[AntType.SARBAAZ.value] = []
             AI.ids[AntType.KARGAR.value] = []
             if AI.game_round > 2:
-                self.make_id(INIT_ANTS_NUM + 1, 220)
+                self.make_id(min_id=INIT_ANTS_NUM + 1)
             elif AI.game_round == 1:
-                self.make_id(max_id=Utils.INIT_ANTS_NUM)
+                self.make_id()
             self.send_id()
 
         self.pos = (self.game.ant.currentX, self.game.ant.currentY)
@@ -181,13 +182,12 @@ class AI:
             self.value = MESSAGE_VALUE["map"]
 
         if self.game.ant.antType == AntType.KARGAR.value:
-            # AI.
             m = self.get_init_ants_next_move(self.id)
             if m > 0 & m < 5:
                 self.direction = m
             else:
                 self.direction = Direction.get_random_direction()
-            self.message = str(self.pos[0]) + " " + str(self.pos[1]) + " " + str(m)
+            self.direction = Direction.get_random_direction()
         else:
             # todo sarbaz move
 
