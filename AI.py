@@ -182,7 +182,7 @@ class AI:
             self.value = MESSAGE_VALUE["map"]
 
         if self.game.ant.antType == AntType.KARGAR.value:
-            m = self.get_init_ants_next_move(self.id)
+            m = self.get_init_ants_next_move(AI.id)
             if m > 0 & m < 5:
                 self.direction = m
             else:
@@ -199,5 +199,4 @@ class AI:
 
         AI.game_round += 1
         AI.life_cycle += 1
-        print("IDS ARE", AI.ids, "MY ID IS", AI.id)
         return self.message, self.value, self.direction
