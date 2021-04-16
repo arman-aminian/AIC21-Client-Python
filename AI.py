@@ -71,8 +71,12 @@ class AI:
             AI.map.nodes[pos] = copy.deepcopy(n)
 
     def update_map_from_chat_box(self):
-        maps = [msg for msg in self.game.chatBox.allChats if '!' in
-                msg.text]
+        maps = [msg for msg in
+                self.game.chatBox.allChats[-MAX_MESSAGES_PER_TURN:] if '!' in
+                msg.text and msg.turn == AI.game_round - 1]
+        if AI.life_cycle == 1:
+            maps = [msg for msg in self.game.chatBox.allChats if '!' in
+                    msg.text]
         for m in maps:
             ant_id, ant_pos, nodes = decode_nodes(m.text, AI.w, AI.h,
                                                   self.game.ant.viewDistance)
@@ -112,7 +116,6 @@ class AI:
         AI.id = iid
 
     def turn(self) -> (str, int, int):
-        # TODO update map from the first cycle
         self.update_ids_from_chat_box()
 
         if AI.life_cycle > 1 and AI.id not in AI.ids[0] and \
@@ -140,10 +143,9 @@ class AI:
         AI.latest_pos[AI.id] = (self.pos, AI.game_round)
         self.search_neighbors()
         self.update_map_from_neighbors()
+        self.update_map_from_chat_box()
 
         if AI.life_cycle > 1:
-            # TODO update map only from the last cycle
-            self.update_map_from_chat_box()
             self.encoded_neighbors = encode_graph_nodes(self.pos,
                                                         self.new_neighbors,
                                                         AI.w, AI.h,
@@ -152,7 +154,6 @@ class AI:
             # TODO not discovered = guess node
             self.message = self.encoded_neighbors
             self.value = MESSAGE_VALUE["map"]
-            self.direction = random.choice(list(Direction)[1:]).value
 
         if self.game.ant.antType == AntType.KARGAR.value:
             self.direction = Direction.LEFT.value
