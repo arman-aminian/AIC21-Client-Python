@@ -32,6 +32,7 @@ def encode_node(n):
 
 def encode_graph_nodes(pos, nodes: dict, w, h, view, ant_id) -> str:
     neighbors = get_view_distance_neighbors(pos, w, h, view)
+    print("pos", pos, "ns", neighbors)
     arr = [[], [], [], [], [], []]  # for the values (b, g, aw, as, ew, es)
     s = chr(ant_id + CONSTANT) + pos_str(pos, w, h)
     for p, n in nodes.items():

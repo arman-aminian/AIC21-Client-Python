@@ -182,12 +182,15 @@ class AI:
             self.value = MESSAGE_VALUE["map"]
 
         if self.game.ant.antType == AntType.KARGAR.value:
-            m = self.get_init_ants_next_move(self.id)
-            if m > 0 & m < 5:
-                self.direction = m
+            print(self.game_round, "id", AI.id)
+            if AI.game_round != 1:
+                m = self.get_init_ants_next_move(AI.id)
+                print("move", m)
+                if 0 < m < 5:
+                    self.direction = m
             else:
+                # todo edit
                 self.direction = Direction.get_random_direction()
-            self.direction = Direction.get_random_direction()
         else:
             # todo sarbaz move
 
