@@ -174,8 +174,8 @@ class AI:
             if m > 0 & m < 5:
                 self.direction = m
             else:
-                self.direction = Direction.LEFT
-                self.message = str(m)
+                self.direction = Direction.get_random_direction()
+            self.message = str(self.pos[0]) + " " + str(self.pos[1]) + " " + str(m)
         else:
             # todo sarbaz move
 
