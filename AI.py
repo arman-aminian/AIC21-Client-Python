@@ -9,7 +9,7 @@ class AI:
     life_cycle = 1
     map = None
     w, h = -1, -1
-    id = random.randint(0, 100)
+    id = random.randint(1, Utils.INIT_ANTS_NUM)
     ids = {}
     latest_pos = {}
     found_history = {}
@@ -101,6 +101,9 @@ class AI:
             iid = random.randint(min_id, max_id)
         AI.id = iid
 
+    # def get_init_ants_next_move(self, id:int) -> int:
+    #     if AI.map
+
     def turn(self) -> (str, int, int):
         # TODO update map from the first cycle
         if self.life_cycle > 1:
@@ -144,16 +147,14 @@ class AI:
             self.direction = random.choice(list(Direction)[1:]).value
 
         if self.game.ant.antType == AntType.KARGAR.value:
-            
+            # AI.
             self.direction = Direction.LEFT.value
         else:
             # todo sarbaz move
-            # self.message = str(len(self.game.chatBox.allChats))
-            # l = len(self.game.chatBox.allChats)
-            # if l > 0:
-            #     self.message = str(self.game.chatBox.allChats[0].turn)
-            # else:
-            #     self.message = "nothing"
+
+            if AI.id <= Utils.INIT_ANTS_NUM:
+                self.direction = self.get_init_ants_next_move(AI.id)
+
             self.value = 5
             self.direction = Direction.RIGHT.value
 
