@@ -2,6 +2,7 @@ import Model
 
 
 INIT_ANTS_NUM = 4
+MAX_MESSAGES_PER_TURN = 5
 
 INIT_ANTS_MOVES = [[1, 2, 3, 4],
                    [4, 1, 2, 3],
