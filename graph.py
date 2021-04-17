@@ -46,9 +46,10 @@ class Node:
 
 class Graph:
     def __init__(self, dim, base_pos):
+        self.base_pos = base_pos
         self.dim = dim  # width, height
         self.base_founded = False
-        self.enemy_base = None
+        self.enemy_base_pos = None
         self.nodes = {}
         self.shortest_path_info = {}
         for i in range(dim[0]):
@@ -216,7 +217,7 @@ class Graph:
                         while last_node_pos != src.pos:
                             path.append(last_node_pos)
                             last_node_pos = parent[last_node_pos]
-                        return Utils.reverse_list(path)
+                        return list(reversed(path))
         return None
 
     def get_random_nodes(self):
