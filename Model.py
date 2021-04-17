@@ -107,7 +107,7 @@ class Map:
         if x < 0:
             x += self.width
         if y < 0:
-            y += self.width
+            y += self.height
         return self.cells[x][y]
 
 
