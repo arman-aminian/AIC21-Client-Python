@@ -341,17 +341,15 @@ class Direction(Enum):
 
     @staticmethod
     def get_value(string: str):
-        if string == "CENTER":
-            return Direction.CENTER
         if string == "RIGHT":
-            return Direction.RIGHT
+            return Direction.RIGHT.value
         if string == "UP":
-            return Direction.UP
+            return Direction.UP.value
         if string == "LEFT":
-            return Direction.LEFT
+            return Direction.LEFT.value
         if string == "DOWN":
-            return Direction.DOWN
-        return None
+            return Direction.DOWN.value
+        return Direction.CENTER.value
 
     @staticmethod
     def get_random_direction():
@@ -366,11 +364,11 @@ class CellType(Enum):
     @staticmethod
     def get_value(string: str):
         if string == "BASE":
-            return CellType.BASE
+            return CellType.BASE.value
         if string == "EMPTY":
-            return CellType.EMPTY
+            return CellType.EMPTY.value
         if string == "WALL":
-            return CellType.WALL
+            return CellType.WALL.value
         return None
 
 
@@ -381,9 +379,9 @@ class ResourceType(Enum):
     @staticmethod
     def get_value(string: str):
         if string == "BREAD":
-            return ResourceType.BREAD
+            return ResourceType.BREAD.value
         if string == "GRASS":
-            return ResourceType.GRASS
+            return ResourceType.GRASS.value
         return None
 
 
