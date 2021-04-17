@@ -5,9 +5,9 @@ INIT_ANTS_NUM = 4
 MAX_MESSAGES_PER_TURN = 5
 
 INIT_ANTS_MOVES = [[1, 2, 3, 4],
-                   [4, 1, 2, 3],
+                   [2, 3, 4, 1],
                    [3, 4, 1, 2],
-                   [2, 3, 4, 1]]
+                   [4, 1, 2, 3]]
 
 
 def reverse_list(lst):
