@@ -254,3 +254,9 @@ class Graph:
             path.append(self.nodes[pos])
             pos = parent[pos]
         return list(reversed(path))
+
+    def get_first_move_to_enemy_base(self, src_pos):
+        our_base = self.base_pos
+        their_base = self.enemy_base_pos or (self.dim[0] - 1 - our_base[0], self.dim[1] - 1 - our_base[1])
+        path = self.get_path(self.nodes[src_pos], self.nodes[their_base])
+        return path[0] if path else None
