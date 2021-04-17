@@ -235,7 +235,7 @@ class AI:
             # todo sarbaz move
 
             if AI.id <= Utils.INIT_ANTS_NUM:
-                self.direction = self.get_init_ants_next_move(AI.id)
+                self.direction = Direction.get_random_direction()
 
             self.value = 5
             self.direction = Direction.RIGHT.value
