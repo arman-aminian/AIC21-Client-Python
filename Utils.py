@@ -1,13 +1,22 @@
 import Model
 
-
 INIT_ANTS_NUM = 4
 MAX_MESSAGES_PER_TURN = 5
 
-INIT_ANTS_MOVES = [[1, 2, 3, 4],
-                   [2, 3, 4, 1],
-                   [3, 4, 1, 2],
-                   [4, 1, 2, 3]]
+INIT_STRAIGHT_ANTS_MOVES = [[1, 2, 3, 4],
+                            [2, 3, 4, 1],
+                            [3, 4, 1, 2],
+                            [4, 1, 2, 3]]
+
+INIT_CENTER_ANTS_MOVES1 = [[4, 1, 2, 3],  # left-up
+                           [2, 1, 4, 3],  # left-down
+                           [4, 3, 2, 1],  # right-up
+                           [2, 3, 4, 1]]  # right-down
+
+INIT_CENTER_ANTS_MOVES2 = [[1, 4, 2, 3],  # left-up
+                           [1, 2, 4, 3],  # left-down
+                           [3, 4, 2, 1],  # right-up
+                           [3, 2, 4, 1]]  # right-down
 
 
 def reverse_list(lst):
