@@ -68,19 +68,15 @@ class Graph:
                     )
 
     def step(self, src, dest):
-        path = self.shortest_path(src, dest)
-        if path is not None:
-            next_pos = path[1]
-            if next_pos[0] - src[0] in [1, -(self.dim[0] - 1)]:
-                return "RIGHT"
-            if next_pos[0] - src[0] in [-1, self.dim[0] - 1]:
-                return "LEFT"
-            if next_pos[1] - src[1] in [-1, self.dim[1] - 1]:
-                return "UP"
-            if next_pos[1] - src[1] in [1, -(self.dim[1] - 1)]:
-                return "DOWN"
-        else:
-            return "NONE"
+        next_pos = dest
+        if next_pos[0] - src[0] in [1, -(self.dim[0] - 1)]:
+            return "RIGHT"
+        if next_pos[0] - src[0] in [-1, self.dim[0] - 1]:
+            return "LEFT"
+        if next_pos[1] - src[1] in [-1, self.dim[1] - 1]:
+            return "UP"
+        if next_pos[1] - src[1] in [1, -(self.dim[1] - 1)]:
+            return "DOWN"
 
     def shortest_path(self, src, dest):
         q = [[src]]
@@ -268,4 +264,9 @@ class Graph:
         our_base = self.base_pos
         their_base = self.enemy_base_pos or (self.dim[0] - 1 - our_base[0], self.dim[1] - 1 - our_base[1])
         path = self.get_path(self.nodes[src_pos], self.nodes[their_base])
-        return path[0] if path else None
+        return self.step(src_pos, path[0].pos) if path else "None"
+
+    def get_first_move_to_opposite_node(self, src_pos):
+        opposite_node_pos = (self.dim[0] - 1 - src_pos[0], self.dim[1] - 1 - src_pos[1])
+        path = self.get_path(self.nodes[src_pos], self.nodes[opposite_node_pos])
+        return self.step(src_pos, path[0].pos) if path else "None"
