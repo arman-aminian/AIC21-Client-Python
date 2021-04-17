@@ -182,54 +182,61 @@ class AI:
 
         if self.game.ant.antType == AntType.KARGAR.value:
             if AI.game_round != 1:
-                if self.game.baseX < (self.game.mapWidth / 2):
-                    if self.game.baseY < (self.game.mapHeight / 2):
-                        # left-up region
-                        if AI.id == 1 or AI.id == 4:
-                            m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
-                        else:
-                            if self.game_round % 2 == 1:
-                                m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[0])
+                if AI.id <= Utils.INIT_ANTS_NUM:
+                    if self.game.baseX < (self.game.mapWidth / 2):
+                        if self.game.baseY < (self.game.mapHeight / 2):
+                            # left-up region
+                            if AI.id == 1 or AI.id == 4:
+                                m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
                             else:
-                                m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES2[0])
-                        print("left-up region : ", m)
+                                if self.game_round % 2 == 1:
+                                    m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[0])
+                                else:
+                                    m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES2[0])
+                            print("left-up region : ", m)
+                        else:
+                            # left-down region
+                            if AI.id == 1 or AI.id == 2:
+                                m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
+                            else:
+                                if self.game_round % 2 == 1:
+                                    m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[1])
+                                else:
+                                    m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES2[1])
+                            print("left-down region : ", m)
                     else:
-                        # left-down region
-                        if AI.id == 1 or AI.id == 2:
-                            m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
-                        else:
-                            if self.game_round % 2 == 1:
-                                m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[1])
+                        if self.game.baseY < (self.game.mapHeight / 2):
+                            # right-up region
+                            if AI.id == 3 or AI.id == 4:
+                                m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
                             else:
-                                m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES2[1])
-                        print("left-down region : ", m)
-                else:
-                    if self.game.baseY < (self.game.mapHeight / 2):
-                        # right-up region
-                        if AI.id == 3 or AI.id == 4:
-                            m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
+                                if self.game_round % 2 == 1:
+                                    m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[2])
+                                else:
+                                    m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES2[2])
+                            print("right-up region : ", m)
                         else:
-                            if self.game_round % 2 == 1:
-                                m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[2])
+                            # right-down region
+                            if AI.id == 2 or AI.id == 3:
+                                m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
                             else:
-                                m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES2[2])
-                        print("right-up region : ", m)
-                    else:
-                        # right-down region
-                        if AI.id == 2 or AI.id == 3:
-                            m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
-                        else:
-                            if self.game_round % 2 == 1:
-                                m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[3])
-                            else:
-                                m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES2[3])
-                        print("right-down region : ", m)
+                                if self.game_round % 2 == 1:
+                                    m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[3])
+                                else:
+                                    m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES2[3])
+                            print("right-down region : ", m)
 
-                print("id:", AI.id, ", move:", m)
-                if m < 5:
-                    self.direction = m
+                    print("id:", AI.id, ", move:", m)
+                    if m < 5:
+                        self.direction = m
+                    else:
+                        print("something went wrong, init ants move :", m, "from id:", AI.id)
+                        self.direction = Direction.get_random_direction()
+                else:
+                    # other ants
+                    self.direction = Direction.get_random_direction()
             else:
-                # todo edit
+                # first move
                 self.direction = Direction.get_random_direction()
         else:
             # todo sarbaz move
