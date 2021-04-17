@@ -1,17 +1,14 @@
 import Model
 
-
 INIT_ANTS_NUM = 4
 MAX_MESSAGES_PER_TURN = 5
 
-INIT_ANTS_MOVES = [[1, 2, 3, 4],
-                   [4, 1, 2, 3],
-                   [3, 4, 1, 2],
-                   [2, 3, 4, 1]]
-
-
-def reverse_list(lst):
-    return [ele for ele in reversed(lst)]
+INIT_ANTS_MOVES = [
+    [1, 2, 3, 4],
+    [4, 1, 2, 3],
+    [3, 4, 1, 2],
+    [2, 3, 4, 1]
+]
 
 
 def get_next_move(cur, path):
