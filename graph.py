@@ -45,6 +45,8 @@ class Node:
 
 
 class Graph:
+    TSP_NODE_LIMIT = 5
+
     def __init__(self, dim, base_pos):
         self.base_pos = base_pos
         self.dim = dim  # width, height
@@ -232,14 +234,14 @@ class Graph:
         for node in self.nodes.values():
             if node.grass > 0:
                 grass_nodes.append(node)
-        return sorted(grass_nodes, key=lambda n: n.grass_value(src, dest, self), reverse=True)[:20]
+        return sorted(grass_nodes, key=lambda n: n.grass_value(src, dest, self), reverse=True)[:self.TSP_NODE_LIMIT]
 
     def get_nearest_bread_nodes(self, src, dest):
         bread_nodes = []
         for node in self.nodes.values():
             if node.bread > 0:
                 bread_nodes.append(node)
-        return sorted(bread_nodes, key=lambda n: n.bread_value(src, dest, self), reverse=True)[:20]
+        return sorted(bread_nodes, key=lambda n: n.bread_value(src, dest, self), reverse=True)[:self.TSP_NODE_LIMIT]
 
     def get_shortest_distance(self, src, dest, default=None):
         return self.shortest_path_info[src.pos]['dist'].get(dest.pos, default)
