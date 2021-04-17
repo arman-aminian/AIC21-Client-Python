@@ -132,14 +132,6 @@ class AI:
                     (next_pos[1] + self.game.mapHeight) % self.game.mapHeight)
         return next_pos
 
-    def get_init_straight_ants_next_move(self, ant_id: int) -> int:
-        for m in default_moves:
-            next_node = AI.map.nodes[self.get_next_pos(self.pos, m)]
-            if not next_node.wall:
-                return m
-        print("error on get_init_ants_next_move")
-        return 0
-
     def get_init_ants_next_move(self, preferred_moves) -> int:
         for m in preferred_moves:
             next_node = AI.map.nodes[self.get_next_pos(self.pos, m)]
