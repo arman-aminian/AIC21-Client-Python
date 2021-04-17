@@ -132,7 +132,7 @@ class AI:
                     (next_pos[1] + self.game.mapHeight) % self.game.mapHeight)
         return next_pos
 
-    def get_init_ants_next_move(self, ant_id: int) -> int:
+    def get_init_straight_ants_next_move(self, ant_id: int) -> int:
         default_moves = Utils.INIT_ANTS_MOVES[ant_id - 1]
         for m in default_moves:
             next_node = AI.map.nodes[self.get_next_pos(self.pos, m)]
@@ -182,21 +182,19 @@ class AI:
             self.value = MESSAGE_VALUE["map"]
 
         if self.game.ant.antType == AntType.KARGAR.value:
-            print("map", self.game.mapHeight, self.game.mapHeight/2, self.game.mapWidth, self.game.mapHeight/2)
-            print(self.game_round, "id", AI.id)
             if AI.game_round != 1:
                 if self.game.baseX < (self.game.mapWidth / 2):
                     if self.game.baseY < (self.game.mapHeight / 2):
                         # left-up region
                         if AI.id == 1 or AI.id == 4:
-                            m = self.get_init_ants_next_move(AI.id)
+                            m = self.get_init_straight_ants_next_move(AI.id)
                         else:
                             m = Direction.CENTER.value
                         print("left-up region : ", m)
                     else:
                         # left-down region
                         if AI.id == 1 or AI.id == 2:
-                            m = self.get_init_ants_next_move(AI.id)
+                            m = self.get_init_straight_ants_next_move(AI.id)
                         else:
                             m = Direction.CENTER.value
                         print("left-down region : ", m)
@@ -204,19 +202,19 @@ class AI:
                     if self.game.baseY < (self.game.mapHeight / 2):
                         # right-up region
                         if AI.id == 3 or AI.id == 4:
-                            m = self.get_init_ants_next_move(AI.id)
+                            m = self.get_init_straight_ants_next_move(AI.id)
                         else:
                             m = Direction.CENTER.value
                         print("right-up region : ", m)
                     else:
                         # right-down region
                         if AI.id == 2 or AI.id == 3:
-                            m = self.get_init_ants_next_move(AI.id)
+                            m = self.get_init_straight_ants_next_move(AI.id)
                         else:
                             m = Direction.CENTER.value
                         print("right-down region : ", m)
 
-                print("id", AI.id, "move", m)
+                print("id:", AI.id, ", move:", m)
                 if m < 5:
                     self.direction = m
             else:
@@ -233,5 +231,4 @@ class AI:
 
         AI.game_round += 1
         AI.life_cycle += 1
-        print("IDS ARE", AI.ids, "MY ID IS", AI.id)
         return self.message, self.value, self.direction
