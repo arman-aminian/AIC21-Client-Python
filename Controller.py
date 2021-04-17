@@ -38,6 +38,9 @@ class Controller:
         elif message[ServerConstants.KEY_TYPE] == ServerConstants.MESSAGE_TYPE_KILL:
             exit(4)
 
+        elif message[ServerConstants.KEY_TYPE] == ServerConstants.MESSAGE_TYPE_DUMMY:
+            pass
+
     def launch_on_thread(self, world):
         # try:
         self.handle_turn_message(world)
