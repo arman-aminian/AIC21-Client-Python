@@ -50,7 +50,6 @@ class Graph:
     def __init__(self, dim, base_pos):
         self.base_pos = base_pos
         self.dim = dim  # width, height
-        self.base_founded = False
         self.enemy_base_pos = None
         self.nodes = {}
         self.shortest_path_info = {}
@@ -155,7 +154,17 @@ class Graph:
 
     def guess_node(self, node):
         # todo: make guessing better
-        return Node(pos=node.pos, discovered=False, wall=random.choice([True, False, False, False]))
+        opposite_node_pos = (self.dim[0] - 1 - node.pos[0], self.dim[1] - 1 - node.pos[1])
+        opposite_node = self.nodes[opposite_node_pos]
+        if not opposite_node.discovered or random.randint(1, 5) != 1:
+            return Node(pos=node.pos, discovered=False, wall=random.choice([True, False, False, False]))
+        return Node(
+            pos=node.pos,
+            discovered=False,
+            wall=opposite_node.wall,
+            bread=opposite_node.bread,
+            grass=opposite_node.grass
+        )
 
     def get_node(self, pos):
         return self.nodes[pos] if self.nodes[pos].discovered else self.guess_node(self.nodes[pos])
