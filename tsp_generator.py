@@ -1,5 +1,5 @@
 import math
-from itertools import chain
+from itertools import chain, groupby
 
 
 def get_tsp(src_pos, dest_pos, graph):
@@ -133,6 +133,6 @@ def get_path_from_tsp_info(tsp_info, name_of_node_object, graph):
         actual_path.extend(graph.get_shortest_path_from_shortest_path_info(path[i - 1], path[i]))
 
     return {
-        'path': actual_path,
+        'path': [el[0] for el in groupby(actual_path)],
         'value': dp[best_mask][number_of_dist_vertex - 1],
     }

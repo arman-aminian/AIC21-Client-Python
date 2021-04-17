@@ -45,10 +45,12 @@ class Node:
 
 
 class Graph:
+    TSP_NODE_LIMIT = 5
+
     def __init__(self, dim, base_pos):
+        self.base_pos = base_pos
         self.dim = dim  # width, height
-        self.base_founded = False
-        self.enemy_base = None
+        self.enemy_base_pos = None
         self.nodes = {}
         self.shortest_path_info = {}
         for i in range(dim[0]):
@@ -66,19 +68,15 @@ class Graph:
                     )
 
     def step(self, src, dest):
-        path = self.shortest_path(src, dest)
-        if path is not None:
-            next_pos = path[1]
-            if next_pos[0] - src[0] in [1, -(self.dim[0] - 1)]:
-                return "RIGHT"
-            if next_pos[0] - src[0] in [-1, self.dim[0] - 1]:
-                return "LEFT"
-            if next_pos[1] - src[1] in [-1, self.dim[1] - 1]:
-                return "UP"
-            if next_pos[1] - src[1] in [1, -(self.dim[1] - 1)]:
-                return "DOWN"
-        else:
-            return "NONE"
+        next_pos = dest
+        if next_pos[0] - src[0] in [1, -(self.dim[0] - 1)]:
+            return "RIGHT"
+        if next_pos[0] - src[0] in [-1, self.dim[0] - 1]:
+            return "LEFT"
+        if next_pos[1] - src[1] in [-1, self.dim[1] - 1]:
+            return "UP"
+        if next_pos[1] - src[1] in [1, -(self.dim[1] - 1)]:
+            return "DOWN"
 
     def shortest_path(self, src, dest):
         q = [[src]]
@@ -152,7 +150,17 @@ class Graph:
 
     def guess_node(self, node):
         # todo: make guessing better
-        return Node(pos=node.pos, discovered=False, wall=random.choice([True, False, False, False]))
+        opposite_node_pos = (self.dim[0] - 1 - node.pos[0], self.dim[1] - 1 - node.pos[1])
+        opposite_node = self.nodes[opposite_node_pos]
+        if not opposite_node.discovered or random.randint(1, 5) != 1:
+            return Node(pos=node.pos, discovered=False, wall=random.choice([True, False, False, False]))
+        return Node(
+            pos=node.pos,
+            discovered=False,
+            wall=opposite_node.wall,
+            bread=opposite_node.bread,
+            grass=opposite_node.grass
+        )
 
     def get_node(self, pos):
         return self.nodes[pos] if self.nodes[pos].discovered else self.guess_node(self.nodes[pos])
@@ -216,7 +224,7 @@ class Graph:
                         while last_node_pos != src.pos:
                             path.append(last_node_pos)
                             last_node_pos = parent[last_node_pos]
-                        return Utils.reverse_list(path)
+                        return list(reversed(path))
         return None
 
     def get_random_nodes(self):
@@ -231,14 +239,14 @@ class Graph:
         for node in self.nodes.values():
             if node.grass > 0:
                 grass_nodes.append(node)
-        return sorted(grass_nodes, key=lambda n: n.grass_value(src, dest, self), reverse=True)[:20]
+        return sorted(grass_nodes, key=lambda n: n.grass_value(src, dest, self), reverse=True)[:self.TSP_NODE_LIMIT]
 
     def get_nearest_bread_nodes(self, src, dest):
         bread_nodes = []
         for node in self.nodes.values():
             if node.bread > 0:
                 bread_nodes.append(node)
-        return sorted(bread_nodes, key=lambda n: n.bread_value(src, dest, self), reverse=True)[:20]
+        return sorted(bread_nodes, key=lambda n: n.bread_value(src, dest, self), reverse=True)[:self.TSP_NODE_LIMIT]
 
     def get_shortest_distance(self, src, dest, default=None):
         return self.shortest_path_info[src.pos]['dist'].get(dest.pos, default)
@@ -251,3 +259,14 @@ class Graph:
             path.append(self.nodes[pos])
             pos = parent[pos]
         return list(reversed(path))
+
+    def get_first_move_to_enemy_base(self, src_pos):
+        our_base = self.base_pos
+        their_base = self.enemy_base_pos or (self.dim[0] - 1 - our_base[0], self.dim[1] - 1 - our_base[1])
+        path = self.get_path(self.nodes[src_pos], self.nodes[their_base])
+        return self.step(src_pos, path[0].pos) if path else "None"
+
+    def get_first_move_to_opposite_node(self, src_pos):
+        opposite_node_pos = (self.dim[0] - 1 - src_pos[0], self.dim[1] - 1 - src_pos[1])
+        path = self.get_path(self.nodes[src_pos], self.nodes[opposite_node_pos])
+        return self.step(src_pos, path[0].pos) if path else "None"
