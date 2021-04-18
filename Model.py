@@ -399,6 +399,7 @@ class ServerConstants:
     MESSAGE_TYPE_INIT = "3"
     MESSAGE_TYPE_TURN = "4"
     MESSAGE_TYPE_KILL = "7"
+    MESSAGE_TYPE_DUMMY = "8"
 
 
 class AntTeam(Enum):
