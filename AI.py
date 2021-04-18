@@ -186,80 +186,79 @@ class AI:
             self.message = self.encoded_neighbors
             self.value = MESSAGE_VALUE["map"]
 
-        if self.game.ant.antType == AntType.KARGAR.value:
-            if AI.game_round != 1:
-                if AI.id <= Utils.INIT_ANTS_NUM:
-                    if self.game.baseX < (self.game.mapWidth / 2):
-                        if self.game.baseY < (self.game.mapHeight / 2):
-                            # left-up region
-                            if AI.id == 1 or AI.id == 4:
-                                m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
-                            else:
-                                if self.game_round % 2 == 1:
-                                    m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[0])
-                                else:
-                                    m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES2[0])
-                            print("left-up region : ", m)
-                        else:
-                            # left-down region
-                            if AI.id == 1 or AI.id == 2:
-                                m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
-                            else:
-                                if self.game_round % 2 == 1:
-                                    m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[1])
-                                else:
-                                    m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES2[1])
-                            print("left-down region : ", m)
-                    else:
-                        if self.game.baseY < (self.game.mapHeight / 2):
-                            # right-up region
-                            if AI.id == 3 or AI.id == 4:
-                                m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
-                            else:
-                                if self.game_round % 2 == 1:
-                                    m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[2])
-                                else:
-                                    m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES2[2])
-                            print("right-up region : ", m)
-                        else:
-                            # right-down region
-                            if AI.id == 2 or AI.id == 3:
-                                m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
-                            else:
-                                if self.game_round % 2 == 1:
-                                    m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[3])
-                                else:
-                                    m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES2[3])
-                            print("right-down region : ", m)
+        if AI.game_round == 1:
+            self.direction = Direction.get_random_direction()
 
-                    print("id:", AI.id, ", move:", m)
-                    if m < 5:
-                        self.direction = m
+        elif self.game.ant.antType == AntType.KARGAR.value:
+            if AI.id <= Utils.INIT_ANTS_NUM:
+                if self.game.baseX < (self.game.mapWidth / 2):
+                    if self.game.baseY < (self.game.mapHeight / 2):
+                        # left-up region
+                        if AI.id == 1 or AI.id == 4:
+                            m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
+                        else:
+                            if self.game_round % 2 == 1:
+                                m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[0])
+                            else:
+                                m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES2[0])
+                        print("left-up region : ", m)
                     else:
-                        print("something went wrong, init ants move :", m, "from id:", AI.id)
-                        self.direction = Direction.get_random_direction()
+                        # left-down region
+                        if AI.id == 1 or AI.id == 2:
+                            m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
+                        else:
+                            if self.game_round % 2 == 1:
+                                m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[1])
+                            else:
+                                m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES2[1])
+                        print("left-down region : ", m)
                 else:
-                    # other ants
-                    if AI.state == WorkerState.Null:
-                        self.determine_state()
-                    if AI.state == WorkerState.Exploring:
-                        self.explore()
-                    elif AI.state == WorkerState.BreadOnly:
-                        pass
-                    elif AI.state == WorkerState.GrassOnly:
-                        pass
+                    if self.game.baseY < (self.game.mapHeight / 2):
+                        # right-up region
+                        if AI.id == 3 or AI.id == 4:
+                            m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
+                        else:
+                            if self.game_round % 2 == 1:
+                                m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[2])
+                            else:
+                                m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES2[2])
+                        print("right-up region : ", m)
+                    else:
+                        # right-down region
+                        if AI.id == 2 or AI.id == 3:
+                            m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
+                        else:
+                            if self.game_round % 2 == 1:
+                                m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[3])
+                            else:
+                                m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES2[3])
+                        print("right-down region : ", m)
+
+                print("id:", AI.id, ", move:", m)
+                if m < 5:
+                    self.direction = m
+                else:
+                    print("something went wrong, init ants move :", m, "from id:", AI.id)
                     self.direction = Direction.get_random_direction()
             else:
-                # first move
+                if AI.state == WorkerState.Null:
+                    self.determine_state()
+                    
+                if AI.state == WorkerState.Exploring:
+                    self.direction = self.explore()
+                elif AI.state == WorkerState.BreadOnly:
+                    # TODO based on tsp
+                    pass
+                elif AI.state == WorkerState.GrassOnly:
+                    # TODO based on tsp
+                    pass
+                
                 self.direction = Direction.get_random_direction()
-        else:
+                
+        elif self.game.ant.antType == AntType.SARBAAZ.value:
             # todo sarbaz move
-
-            if AI.id <= Utils.INIT_ANTS_NUM:
-                self.direction = Direction.get_random_direction()
-
             self.value = 5
-            self.direction = Direction.RIGHT.value
+            self.direction = Direction.get_random_direction()
 
         AI.game_round += 1
         AI.life_cycle += 1
@@ -267,10 +266,102 @@ class AI:
 
     def determine_state(self):
         # TODO determine state based on bread/grass
-        AI.state = WorkerState.Exploring
+        total_grass = sum([v.grass for k, v in AI.map.items()])
+        total_bread = sum([v.bread for k, v in AI.map.items()])
+        diff = total_grass - total_bread
+        if -20 <= diff <= 20 or diff >= 30:
+            AI.state = WorkerState.GrassOnly
+        elif diff <= -30:
+            AI.state = WorkerState.BreadOnly
+        else:
+            AI.state = WorkerState.Exploring
 
     def explore(self):
         # TODO
         # move towards the direction which results into more discovery
         # if all directions are the same, move towards the non-discovered area
-        pass
+        
+        # second version
+        size = 4
+        while self.is_radius_fully_discovered(size):
+            size += 1
+            
+        # right, up, left, down
+        scores = self.calculate_score(size)
+        # TODO add the extra step when two sides have the same scores
+        return scores.index(max(scores)) + 1
+        
+        # first version
+        # # right -> up -> left -> down
+        # points = [fix((self.pos[0] + 1, self.pos[1]), AI.w, AI.h),
+        #           fix((self.pos[0], self.pos[1] + 1), AI.w, AI.h),
+        #           fix((self.pos[0] - 1, self.pos[1]), AI.w, AI.h),
+        #           fix((self.pos[0], self.pos[1] - 1), AI.w, AI.h)]
+        # num_non_discovered = []
+        # for p in points:
+        #     new_positions = get_view_distance_neighbors(p, AI.w, AI.h, self.game.ant.viewDistance)
+        #     n = sum([pos for pos in new_positions if
+        #              not AI.map.nodes[pos].discovered])
+        #     num_non_discovered.append(n)
+        #
+        # if num_non_discovered.count(max(num_non_discovered)) == 1:
+        #     return num_non_discovered.index(max(num_non_discovered)) + 1
+        #
+        # # do it for all the points in the radius
+        # self.total_non_discovered_points()
+
+    def is_radius_fully_discovered(self, size):
+        for i in range(self.pos[0] - size, self.pos[0] + size + 1):
+            for j in range(self.pos[1] - size, self.pos[1] + size + 1):
+                pos = tuple(map(sum, zip(self.pos, (i, j))))
+                pos = fix(pos, AI.w, AI.h)
+                if not AI.map.nodes[pos].discovered:
+                    return False
+        return True
+
+    def calculate_score(self, size):
+        # right -> up -> left -> down
+        d = [[(0, -size), (size, size)],
+             [(-size, -size), (size, 0)],
+             [(-size, -size), (0, size)],
+             [(-size, 0), (size, size)]]
+        scores = []
+        # calculate the base scores based on number of non-discovered cells
+        for k, dd in enumerate(d):
+            start = tuple(map(sum, zip(self.pos, dd[0])))
+            start = fix(start, AI.w, AI.h)
+            finish = tuple(map(sum, zip(self.pos, dd[1])))
+            finish = fix(finish, AI.w, AI.h)
+            for i in range(start[0], finish[0] + 1):
+                for j in range(start[1], finish[1] + 1):
+                    pos = fix((i, j), AI.w, AI.h)
+                    if not AI.map.nodes[pos].discovered:
+                        scores[k] += 1
+        
+        # remove a direction's score if we are facing a wall
+        # right -> up -> left -> down
+        d = [(1, 0), (0, -1), (-1, 0), (0, 1)]
+        for i, dd in enumerate(d):
+            pos = tuple(map(sum, zip(self.pos, dd)))
+            pos = fix(pos, AI.w, AI.h)
+            if AI.map.nodes[pos].discovered and AI.map.nodes[pos].wall:
+                scores[(i + 1) % 4] = scores[i] if scores[(i + 1) % 4] != -1 else -1
+                scores[(i + 3) % 4] = scores[i] if scores[(i + 3) % 4] != -1 else -1
+                scores[i] = -1
+            elif not AI.map.nodes[pos].discovered and AI.map.nodes[pos].wall:
+                print("HUGE MOTHERFUCKING ERROR!")
+                
+        return scores
+
+    # first version
+    # def total_non_discovered_points(self, src, dest):
+    #     paths = shortest_path(src, dest, AI.w, AI.h)
+    #     num_discovered = [0] * len(paths)
+    #     for i, path in enumerate(paths):
+    #         temp_map = copy.deepcopy(AI.map)
+    #         for pos in path:
+    #             new_positions = get_view_distance_neighbors(pos, AI.w, AI.h, self.game.ant.viewDistance)
+    #             n = sum([p for p in new_positions if not temp_map[p].discovered])
+    #             num_discovered[i] += n
+    #             for p in new_positions:
+    #                 temp_map[p].discovered = True

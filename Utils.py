@@ -57,3 +57,40 @@ def get_view_distance_neighbors(pos, w, h, view: int) -> list:
             if manhattan_dist(pos, p, w, h) <= view:
                 ret.append(p)
     return sorted(ret)
+
+
+def shortest_path(src, dest, w, h):
+    if src[0] == dest[0]:  # up and down
+        up = []
+        down = []
+        i = src[1]
+        while i != dest[1]:
+            up.append(fix((src[0], i + 1), w, h))
+            i = up[-1][1]
+        
+        i = src[1]
+        while i != dest[1]:
+            down.append(fix((src[0], i - 1), w, h))
+            i = down[-1][1]
+        
+        return up if len(up) <= len(down) else down
+    
+    if src[1] == dest[1]:  # left and right
+        left = []
+        right = []
+        i = src[0]
+        while i != dest[0]:
+            right.append(fix((i + 1, src[1]), w, h))
+            i = right[-1][0]
+        
+        i = src[0]
+        while i != dest[0]:
+            left.append(fix((i - 1, src[1]), w, h))
+            i = left[-1][0]
+        
+        return right if len(right) <= len(left) else left
+    
+    path1 = shortest_path(src, (dest[0], src[1]), w, h) + shortest_path(
+        (dest[0], src[1]), dest, w, h)
+    path2 = shortest_path(src, (src[0], dest[1]), w, h) + shortest_path(
+        (src[0], dest[1]), dest, w, h)
