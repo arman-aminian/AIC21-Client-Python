@@ -189,6 +189,11 @@ class AI:
                             # left-up region
                             if AI.id == 1 or AI.id == 4:
                                 m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
+                            elif AI.id == 2:
+                                if self.pos[0] < self.pos[1]:
+                                    m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[1])
+                                else:
+                                    m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[2])
                             else:
                                 if self.game_round % 2 == 1:
                                     m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[0])
@@ -199,6 +204,11 @@ class AI:
                             # left-down region
                             if AI.id == 1 or AI.id == 2:
                                 m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
+                            elif AI.id == 3:
+                                if self.pos[0] < self.h - self.pos[1]:
+                                    m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[3])
+                                else:
+                                    m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[2])
                             else:
                                 if self.game_round % 2 == 1:
                                     m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[1])
@@ -210,6 +220,11 @@ class AI:
                             # right-up region
                             if AI.id == 3 or AI.id == 4:
                                 m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
+                            elif AI.id == 2:
+                                if self.w - self.pos[0] < self.pos[1]:
+                                    m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[1])
+                                else:
+                                    m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[0])
                             else:
                                 if self.game_round % 2 == 1:
                                     m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[2])
@@ -220,6 +235,11 @@ class AI:
                             # right-down region
                             if AI.id == 2 or AI.id == 3:
                                 m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
+                            elif AI.id == 1:
+                                if self.w - self.pos[0] < self.h - self.pos[1]:
+                                    m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[3])
+                                else:
+                                    m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[0])
                             else:
                                 if self.game_round % 2 == 1:
                                     m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[3])
