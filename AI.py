@@ -3,6 +3,7 @@ from Model import *
 from Utils import *
 from graph import *
 from message.map_message import *
+from state import *
 
 
 class AI:
@@ -14,6 +15,7 @@ class AI:
     ids = {}
     latest_pos = {}
     found_history = {}
+    state = None
 
     def __init__(self):
         # Current Game State
@@ -126,7 +128,7 @@ class AI:
         elif move == 4:
             next_pos = (cur_pos[0], cur_pos[1] + 1)
         else:
-            return (-1, -1)
+            return -1, -1
 
         next_pos = ((next_pos[0] + self.game.mapWidth) % self.game.mapWidth,
                     (next_pos[1] + self.game.mapHeight) % self.game.mapHeight)
@@ -154,6 +156,10 @@ class AI:
                 AI.game_round = self.game.chatBox.allChats[-1].turn + 1
 
         if AI.life_cycle == 1:
+            if self.game.ant.antType == AntType.SARBAAZ.value:
+                AI.state = WorkerState.Null
+            elif self.game.ant.antType == AntType.KARGAR.value:
+                AI.state = SoldierState.Null
             AI.w, AI.h = self.game.mapWidth, self.game.mapHeight
             AI.map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
             AI.ids[AntType.SARBAAZ.value] = []
@@ -234,6 +240,14 @@ class AI:
                         self.direction = Direction.get_random_direction()
                 else:
                     # other ants
+                    if AI.state == WorkerState.Null:
+                        self.determine_state()
+                    if AI.state == WorkerState.Exploring:
+                        self.explore()
+                    elif AI.state == WorkerState.BreadOnly:
+                        pass
+                    elif AI.state == WorkerState.GrassOnly:
+                        pass
                     self.direction = Direction.get_random_direction()
             else:
                 # first move
@@ -250,3 +264,13 @@ class AI:
         AI.game_round += 1
         AI.life_cycle += 1
         return self.message, self.value, self.direction
+
+    def determine_state(self):
+        # TODO determine state based on bread/grass
+        AI.state = WorkerState.Exploring
+
+    def explore(self):
+        # TODO
+        # move towards the direction which results into more discovery
+        # if all directions are the same, move towards the non-discovered area
+        pass
