@@ -96,7 +96,7 @@ def get_path_from_tsp_info(tsp_info, name_of_node_object, graph, limit):
         mask = (i << 1) | 1 | (1 << (number_of_dist_vertex - 1))
         number_of_obj = 0
         value = dp[mask][number_of_dist_vertex - 1]
-        if value < best_value:
+        if best_mask and value < best_value:
             continue
         for j in range(number_of_dist_vertex):
             if mask & (1 << j):
