@@ -3,6 +3,7 @@ from Model import *
 from Utils import *
 from graph import *
 from message.map_message import *
+from tsp_generator import get_tsp_first_move, get_limit
 
 
 class AI:
@@ -256,8 +257,16 @@ class AI:
                 else:
                     # other ants
                     self.direction = Direction.get_random_direction()
-
-                # todo test mehdi tsp
+                # todo: Delete this, this is test
+                name_of_object = random.choice(['bread', 'grass'])
+                print(name_of_object)
+                self.direction = get_tsp_first_move(
+                    src_pos=self.pos,
+                    dest_pos=AI.map.base_pos,
+                    name_of_object=name_of_object,
+                    graph=AI.map,
+                    limit=get_limit(name_of_object, min=5)
+                )
             else:
                 # first move
                 self.direction = Direction.get_random_direction()
