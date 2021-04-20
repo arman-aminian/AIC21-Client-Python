@@ -37,13 +37,13 @@ class Node:
 
     # todo: make get value better(use dest)
     # todo: make default dist better
-    def grass_value(self, src, dest, graph):
+    def grass_value(self, src, dest, graph, number=0):
         distance = graph.get_shortest_distance(self, src, 'grass', default=math.inf)
-        return -distance * self.DISTANCE_WEIGH + min(GRASS_LIMIT, self.grass + src.grass) * self.GRASS_WEIGHT
+        return -distance * self.DISTANCE_WEIGH + min(self.GRASS_LIMIT, self.grass + src.grass) * self.GRASS_WEIGHT
 
-    def bread_value(self, src, dest, graph):
+    def bread_value(self, src, dest, graph, number=0):
         distance = graph.get_shortest_distance(self, src, 'bread', default=math.inf)
-        return -distance * self.DISTANCE_WEIGH + min(BREAD_LIMIT, src.bread + self.bread) * self.BREAD_WEIGHT
+        return -distance * self.DISTANCE_WEIGH + min(self.BREAD_LIMIT, src.bread + self.bread + number) * self.BREAD_WEIGHT
 
 
 class Graph:
@@ -243,19 +243,19 @@ class Graph:
                 self.nodes[pos], 'bread', number_of_object.get('bread', 0)
             )
 
-    def get_nearest_grass_nodes(self, src, dest):
+    def get_nearest_grass_nodes(self, src, dest, number):
         grass_nodes = []
         for node in self.nodes.values():
             if node.grass > 0 and node.pos != src.pos and node.pos != dest.pos:
                 grass_nodes.append(node)
-        return sorted(grass_nodes, key=lambda n: n.grass_value(src, dest, self), reverse=True)[:self.TSP_NODE_LIMIT]
+        return sorted(grass_nodes, key=lambda n: n.grass_value(src, dest, self, number), reverse=True)[:self.TSP_NODE_LIMIT]
 
-    def get_nearest_bread_nodes(self, src, dest):
+    def get_nearest_bread_nodes(self, src, dest, number):
         bread_nodes = []
         for node in self.nodes.values():
             if node.bread > 0 and node.pos != src.pos and node.pos != dest.pos:
                 bread_nodes.append(node)
-        return sorted(bread_nodes, key=lambda n: n.bread_value(src, dest, self), reverse=True)[:self.TSP_NODE_LIMIT]
+        return sorted(bread_nodes, key=lambda n: n.bread_value(src, dest, self, number), reverse=True)[:self.TSP_NODE_LIMIT]
 
     def get_shortest_distance(self, src, dest, name_of_object, default=None):
         return self.shortest_path_info[name_of_object][src.pos]['dist'].get(dest.pos, default)

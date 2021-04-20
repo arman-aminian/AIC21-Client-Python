@@ -7,8 +7,8 @@ from Model import Direction, ResourceType
 def get_tsp(src_pos, dest_pos, graph, number_of_object):
     graph.find_all_shortest_path(number_of_object)
 
-    bread_tsp = make_tsp(graph.nodes[src_pos], graph.nodes[dest_pos], 'bread', graph)
-    grass_tsp = make_tsp(graph.nodes[src_pos], graph.nodes[dest_pos], 'grass', graph)
+    bread_tsp = make_tsp(graph.nodes[src_pos], graph.nodes[dest_pos], 'bread', graph, number_of_object.get('bread', 0))
+    grass_tsp = make_tsp(graph.nodes[src_pos], graph.nodes[dest_pos], 'grass', graph, number_of_object.get('grass', 0))
 
     return {
         'tsp_bread': bread_tsp,
@@ -16,7 +16,7 @@ def get_tsp(src_pos, dest_pos, graph, number_of_object):
     }
 
 
-def make_dist_graph(src, dest, name_of_node_object, graph, dist_nodes):
+def make_dist_graph(src, dest, name_of_node_object, graph, dist_nodes, number_of_object):
     number_of_dist_vertex = len(dist_nodes) + 2
 
     dist = [number_of_dist_vertex * [-math.inf] for _ in range(number_of_dist_vertex)]
@@ -24,22 +24,22 @@ def make_dist_graph(src, dest, name_of_node_object, graph, dist_nodes):
     dist_src = 0
     dist_dest = number_of_dist_vertex - 1
 
-    dist[dist_src][dist_dest] = getattr(src, f'{name_of_node_object}_value')(src, dest, graph)
+    dist[dist_src][dist_dest] = getattr(src, f'{name_of_node_object}_value')(src, dest, graph, number_of_object)
     for i in range(number_of_dist_vertex - 2):
         node1 = dist_nodes[i]
-        dist[dist_src][i + 1] = getattr(node1, f'{name_of_node_object}_value')(src, dest, graph)
-        dist[i + 1][dist_dest] = getattr(dest, f'{name_of_node_object}_value')(node1, dest, graph)
+        dist[dist_src][i + 1] = getattr(node1, f'{name_of_node_object}_value')(src, dest, graph, number_of_object)
+        dist[i + 1][dist_dest] = getattr(dest, f'{name_of_node_object}_value')(node1, dest, graph, number_of_object)
         for j in range(number_of_dist_vertex - 2):
             node2 = dist_nodes[j]
-            dist[i + 1][j + 1] = getattr(node2, f'{name_of_node_object}_value')(node1, dest, graph)
+            dist[i + 1][j + 1] = getattr(node2, f'{name_of_node_object}_value')(node1, dest, graph, number_of_object)
 
     return dist
 
 
-def make_tsp(src, dest, name_of_node_object, graph):
-    dist_nodes = getattr(graph, f'get_nearest_{name_of_node_object}_nodes')(src, dest)
+def make_tsp(src, dest, name_of_node_object, graph, number_of_object):
+    dist_nodes = getattr(graph, f'get_nearest_{name_of_node_object}_nodes')(src, dest, number_of_object)
 
-    dist = make_dist_graph(src, dest, name_of_node_object, graph, dist_nodes)
+    dist = make_dist_graph(src, dest, name_of_node_object, graph, dist_nodes, number_of_object)
 
     number_of_dist_vertex = len(dist_nodes) + 2
 
