@@ -75,10 +75,37 @@ def make_tsp(src, dest, name_of_node_object, graph, number_of_object):
 
 
 def get_tsp_path(src_pos, dest_pos, graph, limit, number_of_object):
-    tsp_info = get_tsp(src_pos, dest_pos, graph, number_of_object)
+    number_of_bread = number_of_object.get('bread', 0)
+    number_of_grass = number_of_object.get('grass', 0)
 
-    bread_path_from_tsp_info = get_path_from_tsp_info(tsp_info, 'bread', graph, limit, number_of_object.get('bread', 0))
-    grass_path_from_tsp_info = get_path_from_tsp_info(tsp_info, 'grass', graph, limit, number_of_object.get('grass', 0))
+    if number_of_grass >= limit.get('grass').get('min'):
+        res = {
+            'path': graph.get_path(
+                graph.nodes[src_pos], graph.nodes[dest_pos]
+            ),
+            'value': math.inf
+        }
+        return {
+            'bread_path_from_tsp_info': res,
+            'grass_path_from_tsp_info': res
+        }
+
+    if number_of_bread >= limit.get('bread').get('min'):
+        print('here')
+        res = {
+            'path': graph.get_path(
+                graph.nodes[src_pos], graph.nodes[dest_pos]
+            ),
+            'value': math.inf
+        }
+        return {
+            'bread_path_from_tsp_info': res,
+            'grass_path_from_tsp_info': res
+        }
+
+    tsp_info = get_tsp(src_pos, dest_pos, graph, number_of_object)
+    bread_path_from_tsp_info = get_path_from_tsp_info(tsp_info, 'bread', graph, limit, number_of_bread)
+    grass_path_from_tsp_info = get_path_from_tsp_info(tsp_info, 'grass', graph, limit, number_of_grass)
 
     return {
         'bread_path_from_tsp_info': bread_path_from_tsp_info,
@@ -190,4 +217,5 @@ def get_limit(**kwargs):
 
 
 def get_number_of_object(current_resource):
-    return {ResourceType(current_resource.type).name.lower(): current_resource.type} if current_resource.type != 2 else {}
+    return {
+        ResourceType(current_resource.type).name.lower(): current_resource.type} if current_resource.type != 2 else {}

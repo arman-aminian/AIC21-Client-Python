@@ -218,7 +218,7 @@ class Graph:
 
             for neighbor in neighbors:
                 next_node = self.nodes[neighbor]
-                if parent[next_node.pos] is None:
+                if parent.get(next_node.pos) is None:
                     parent[next_node.pos] = current_node.pos
                     q.append(next_node)
                     if next_node.pos == dest.pos:
@@ -226,7 +226,7 @@ class Graph:
                         last_node_pos = next_node.pos
 
                         while last_node_pos != src.pos:
-                            path.append(last_node_pos)
+                            path.append(self.nodes[last_node_pos])
                             last_node_pos = parent[last_node_pos]
                         return list(reversed(path))
         return None
