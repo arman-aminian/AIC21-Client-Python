@@ -94,6 +94,8 @@ class AI:
                    self.game.chatBox.allChats[-MAX_MESSAGES_PER_TURN:] if
                    msg.text.startswith("id") and msg.turn == AI.game_round - 1]
         if AI.life_cycle == 1:
+            AI.ids[AntType.SARBAAZ.value] = []
+            AI.ids[AntType.KARGAR.value] = []
             id_msgs = [msg.text for msg in self.game.chatBox.allChats if
                        msg.text.startswith("id")]
 
@@ -228,8 +230,6 @@ class AI:
         if AI.life_cycle == 1:
             AI.w, AI.h = self.game.mapWidth, self.game.mapHeight
             AI.map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
-            AI.ids[AntType.SARBAAZ.value] = []
-            AI.ids[AntType.KARGAR.value] = []
             if AI.game_round > 2:
                 self.make_id(min_id=INIT_ANTS_NUM + 1)
             elif AI.game_round == 1:
@@ -261,7 +261,6 @@ class AI:
                     self.direction = Direction.get_random_direction()
                 # todo: Delete this, this is test
                 AI.last_name_of_object = AI.last_name_of_object or random.choice(['bread', 'grass'])
-                print(AI.last_name_of_object)
 
                 if self.game_round > 5:
                     x, AI.last_name_of_object = get_tsp_first_move(
@@ -273,7 +272,6 @@ class AI:
                         number_of_object=get_number_of_object(self.game.ant.currentResource),
                     )
                     self.direction = x
-                    print("pos:", self.pos, "move:", x)
             else:
                 # first move
                 self.direction = Direction.get_random_direction()
@@ -285,8 +283,6 @@ class AI:
 
             self.value = 5
             self.direction = Direction.RIGHT.value
-
-        print("turn", AI.game_round, "pos", self.pos, "dir", self.direction)
 
         AI.game_round += 1
         AI.life_cycle += 1
