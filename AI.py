@@ -20,7 +20,7 @@ class AI:
     def __init__(self):
         # Current Game State
         self.game: Game = None
-
+        self.last_name_of_object = None
         # Answer
         self.message: str = None
         self.direction: int = None
@@ -259,16 +259,16 @@ class AI:
                     # other ants
                     self.direction = Direction.get_random_direction()
                 # todo: Delete this, this is test
-                name_of_object = random.choice(['bread', 'grass'])
-                print(name_of_object)
+                self.last_name_of_object = self.last_name_of_object or random.choice(['bread', 'grass'])
+                print(self.last_name_of_object)
 
                 if self.game_round > 5:
-                    x = get_tsp_first_move(
+                    x, self.last_name_of_object = get_tsp_first_move(
                         src_pos=self.pos,
                         dest_pos=AI.map.base_pos,
-                        name_of_object=name_of_object,
+                        name_of_object=self.last_name_of_object,
                         graph=AI.map,
-                        limit=get_limit(name_of_object, min=2)
+                        limit=get_limit(self.last_name_of_object, min=2)
                     )
                     self.direction = x
                     print("pos:", self.pos, "move:", x)

@@ -154,8 +154,11 @@ def get_tsp_first_move(src_pos, dest_pos, graph, name_of_object, limit=None):
     tsp_path = all_tsp.get(f'{name_of_object}_path_from_tsp_info') or all_tsp.get(
         f'{"bread" if name_of_object == "grass" else "grass"}_path_from_tsp_info'
     )
+    last_name_of_object = name_of_object if all_tsp.get(f'{name_of_object}_path_from_tsp_info') \
+        else "bread" if name_of_object == "grass" else "grass"
+
     if not tsp_path or not tsp_path.get('path'):
-        return Direction.get_value('None')
+        return Direction.get_value('None'), None
     p = []
     last = src_pos
     print([i.pos for i in tsp_path.get('path')])
@@ -163,7 +166,7 @@ def get_tsp_first_move(src_pos, dest_pos, graph, name_of_object, limit=None):
         p.append(graph.step(last, i.pos))
         last = i.pos
     print(p)
-    return Direction.get_value(graph.step(src_pos, tsp_path.get('path')[0].pos))
+    return Direction.get_value(graph.step(src_pos, tsp_path.get('path')[0].pos)), last_name_of_object
 
 
 def get_limit(name_of_object, **kwargs):
