@@ -91,7 +91,6 @@ def get_tsp_path(src_pos, dest_pos, graph, limit, number_of_object):
         }
 
     if number_of_bread >= limit.get('bread').get('min'):
-        print('here')
         res = {
             'path': graph.get_path(
                 graph.nodes[src_pos], graph.nodes[dest_pos]
@@ -176,10 +175,6 @@ def get_tsp_first_move(src_pos, dest_pos, graph, name_of_object, limit=None, num
         limit['bread'] = {'min': 1}
     if not limit.get('grass'):
         limit['grass'] = {'min': 1}
-    # print('graphhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh')
-    # print(graph.nodes)
-    # print(src_pos, dest_pos)
-    # print('graphhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh')
 
     all_tsp = get_tsp_path(src_pos, dest_pos, graph, limit, number_of_object)
     tsp_path = all_tsp.get(f'{name_of_object}_path_from_tsp_info') or all_tsp.get(
@@ -191,12 +186,6 @@ def get_tsp_first_move(src_pos, dest_pos, graph, name_of_object, limit=None, num
     if not tsp_path or not tsp_path.get('path'):
         return Direction.get_value('None'), None
     p = []
-    last = src_pos
-    print([i.pos for i in tsp_path.get('path')])
-    for i in tsp_path.get('path'):
-        p.append(graph.step(last, i.pos))
-        last = i.pos
-    print(p)
     return Direction.get_value(graph.step(src_pos, tsp_path.get('path')[0].pos)), last_name_of_object
 
 
@@ -218,4 +207,4 @@ def get_limit(**kwargs):
 
 def get_number_of_object(current_resource):
     return {
-        ResourceType(current_resource.type).name.lower(): current_resource.type} if current_resource.type != 2 else {}
+        ResourceType(current_resource.type).name.lower(): current_resource.value} if current_resource.type != 2 else {}
