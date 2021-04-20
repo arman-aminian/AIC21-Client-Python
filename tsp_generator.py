@@ -27,8 +27,8 @@ def make_dist_graph(src, dest, name_of_node_object, graph, dist_nodes):
     dist[dist_src][dist_dest] = getattr(src, f'{name_of_node_object}_value')(src, dest, graph)
     for i in range(number_of_dist_vertex - 2):
         node1 = dist_nodes[i]
-        dist[dist_src][i] = getattr(node1, f'{name_of_node_object}_value')(src, dest, graph)
-        dist[i][dist_dest] = getattr(dest, f'{name_of_node_object}_value')(node1, dest, graph)
+        dist[dist_src][i + 1] = getattr(node1, f'{name_of_node_object}_value')(src, dest, graph)
+        dist[i + 1][dist_dest] = getattr(dest, f'{name_of_node_object}_value')(node1, dest, graph)
         for j in range(number_of_dist_vertex - 2):
             node2 = dist_nodes[j]
             dist[i + 1][j + 1] = getattr(node2, f'{name_of_node_object}_value')(node1, dest, graph)
@@ -38,6 +38,7 @@ def make_dist_graph(src, dest, name_of_node_object, graph, dist_nodes):
 
 def make_tsp(src, dest, name_of_node_object, graph):
     dist_nodes = getattr(graph, f'get_nearest_{name_of_node_object}_nodes')(src, dest)
+
     dist = make_dist_graph(src, dest, name_of_node_object, graph, dist_nodes)
 
     number_of_dist_vertex = len(dist_nodes) + 2
@@ -75,6 +76,7 @@ def make_tsp(src, dest, name_of_node_object, graph):
 
 def get_tsp_path(src_pos, dest_pos, graph, limit):
     tsp_info = get_tsp(src_pos, dest_pos, graph)
+
     bread_path_from_tsp_info = get_path_from_tsp_info(tsp_info, 'bread', graph, limit)
     grass_path_from_tsp_info = get_path_from_tsp_info(tsp_info, 'grass', graph, limit)
 
@@ -89,7 +91,6 @@ def get_path_from_tsp_info(tsp_info, name_of_node_object, graph, limit):
     dp_path = tsp_info.get(f'tsp_{name_of_node_object}').get('dp_path')
     dist_nodes = tsp_info.get(f'tsp_{name_of_node_object}').get('dist_nodes')
     number_of_dist_vertex = len(dist_nodes)
-
     best_mask = None
     best_value = 0
     for i in range(1 << (number_of_dist_vertex - 2)):
@@ -116,14 +117,12 @@ def get_path_from_tsp_info(tsp_info, name_of_node_object, graph, limit):
         new_mask = mask - (1 << last)
         last = dp_path[mask][last]
         mask = new_mask
-
     path.append(last)
-    path.append(dist_nodes[0].pos)
-    path = list(reversed(path))
     actual_path = []
 
     for i in range(1, len(path)):
-        actual_path.extend(graph.get_shortest_path_from_shortest_path_info(path[i - 1], path[i]))
+        actual_path.extend(
+            graph.get_shortest_path_from_shortest_path_info(dist_nodes[path[i - 1]], dist_nodes[path[i]]))
 
     return {
         'path': [el[0] for el in groupby(actual_path)],
@@ -149,9 +148,16 @@ def get_tsp_first_move(src_pos, dest_pos, graph, name_of_object, limit=None):
     tsp_path = all_tsp.get(f'{name_of_object}_path_from_tsp_info') or all_tsp.get(
         f'{"bread" if name_of_object == "grass" else "grass"}_path_from_tsp_info'
     )
-    if not tsp_path:
+    if not tsp_path or not tsp_path.get('path'):
         return Direction.get_value('None')
-    return Direction.get_value(graph.step(src_pos, tsp_path[1]))
+    p = []
+    last = src_pos
+    # print([i.pos for i in tsp_path.get('path')])
+    # for i in tsp_path.get('path'):
+    #     p.append(graph.step(last, i.pos))
+    #     last = i.pos
+    # return p
+    return Direction.get_value(graph.step(src_pos, tsp_path.get('path')[0].pos))
 
 
 def get_limit(name_of_object, **kwargs):

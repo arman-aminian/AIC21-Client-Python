@@ -237,14 +237,14 @@ class Graph:
     def get_nearest_grass_nodes(self, src, dest):
         grass_nodes = []
         for node in self.nodes.values():
-            if node.grass > 0:
+            if node.grass > 0 and node.pos != src.pos and node.pos != dest.pos:
                 grass_nodes.append(node)
         return sorted(grass_nodes, key=lambda n: n.grass_value(src, dest, self), reverse=True)[:self.TSP_NODE_LIMIT]
 
     def get_nearest_bread_nodes(self, src, dest):
         bread_nodes = []
         for node in self.nodes.values():
-            if node.bread > 0:
+            if node.bread > 0 and node.pos != src.pos and node.pos != dest.pos:
                 bread_nodes.append(node)
         return sorted(bread_nodes, key=lambda n: n.bread_value(src, dest, self), reverse=True)[:self.TSP_NODE_LIMIT]
 
@@ -252,9 +252,9 @@ class Graph:
         return self.shortest_path_info[src.pos]['dist'].get(dest.pos, default)
 
     def get_shortest_path_from_shortest_path_info(self, src, dest):
-        parent = self.shortest_path_info['parent']
+        parent = self.shortest_path_info[src.pos].get('parent', [])
         path = []
-        pos = src.pos
+        pos = dest.pos
         while parent[pos] != pos:
             path.append(self.nodes[pos])
             pos = parent[pos]
