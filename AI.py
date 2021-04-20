@@ -4,6 +4,7 @@ from Utils import *
 from graph import *
 from message.map_message import *
 from state import *
+from tsp_generator import get_tsp_first_move, get_limit
 
 
 class AI:
@@ -83,7 +84,7 @@ class AI:
         for m in maps:
             ant_id, ant_pos, nodes = decode_nodes(m.text, AI.w, AI.h,
                                                   self.game.ant.viewDistance)
-            AI.latest_pos[ant_pos] = (ant_id, m.turn)
+            AI.latest_pos[ant_id] = (ant_pos, m.turn)
             for pos, n in nodes.items():
                 if n != AI.map.nodes[pos]:
                     AI.map.nodes[pos] = copy.deepcopy(n)
@@ -137,10 +138,79 @@ class AI:
     def get_init_ants_next_move(self, preferred_moves) -> int:
         for m in preferred_moves:
             next_node = AI.map.nodes[self.get_next_pos(self.pos, m)]
-            if not next_node.wall:
+            if (not next_node.wall) and (self.get_next_pos(self.pos, m) != AI.latest_pos[AI.id]):
                 return m
         print("error on get_init_ants_next_move")
-        return 0
+        return Direction.get_random_direction()
+
+    def get_init_ant_final_move(self):
+        if self.game.baseX < (self.game.mapWidth / 2):
+            if self.game.baseY < (self.game.mapHeight / 2):
+                # left-up region
+                if AI.id == 1 or AI.id == 4:
+                    m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
+                elif AI.id == 2:
+                    if self.pos[0] < self.pos[1]:
+                        m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[1])
+                    else:
+                        m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[2])
+                else:
+                    if self.game_round % 2 == 1:
+                        m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[0])
+                    else:
+                        m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES2[0])
+                print("left-up region : ", m)
+            else:
+                # left-down region
+                if AI.id == 1 or AI.id == 2:
+                    m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
+                elif AI.id == 3:
+                    if self.pos[0] < self.h - self.pos[1]:
+                        m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[3])
+                    else:
+                        m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[2])
+                else:
+                    if self.game_round % 2 == 1:
+                        m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[1])
+                    else:
+                        m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES2[1])
+                print("left-down region : ", m)
+        else:
+            if self.game.baseY < (self.game.mapHeight / 2):
+                # right-up region
+                if AI.id == 3 or AI.id == 4:
+                    m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
+                elif AI.id == 2:
+                    if self.w - self.pos[0] < self.pos[1]:
+                        m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[1])
+                    else:
+                        m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[0])
+                else:
+                    if self.game_round % 2 == 1:
+                        m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[2])
+                    else:
+                        m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES2[2])
+                print("right-up region : ", m)
+            else:
+                # right-down region
+                if AI.id == 2 or AI.id == 3:
+                    m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
+                elif AI.id == 1:
+                    if self.w - self.pos[0] < self.h - self.pos[1]:
+                        m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[3])
+                    else:
+                        m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[0])
+                else:
+                    if self.game_round % 2 == 1:
+                        m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[3])
+                    else:
+                        m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES2[3])
+                print("right-down region : ", m)
+        if m < 5:
+            return m
+        else:
+            print("something went wrong, init ants move :", m, "from id:", AI.id)
+            return Direction.get_random_direction()
 
     def turn(self) -> (str, int, int):
         self.update_ids_from_chat_box()
@@ -156,10 +226,6 @@ class AI:
                 AI.game_round = self.game.chatBox.allChats[-1].turn + 1
 
         if AI.life_cycle == 1:
-            if self.game.ant.antType == AntType.SARBAAZ.value:
-                AI.state = WorkerState.Null
-            elif self.game.ant.antType == AntType.KARGAR.value:
-                AI.state = SoldierState.Null
             AI.w, AI.h = self.game.mapWidth, self.game.mapHeight
             AI.map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
             AI.ids[AntType.SARBAAZ.value] = []
@@ -186,60 +252,27 @@ class AI:
             self.message = self.encoded_neighbors
             self.value = MESSAGE_VALUE["map"]
 
-        if AI.game_round == 1:
-            self.direction = Direction.get_random_direction()
-
-        elif self.game.ant.antType == AntType.KARGAR.value:
-            if AI.id <= Utils.INIT_ANTS_NUM:
-                if self.game.baseX < (self.game.mapWidth / 2):
-                    if self.game.baseY < (self.game.mapHeight / 2):
-                        # left-up region
-                        if AI.id == 1 or AI.id == 4:
-                            m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
-                        else:
-                            if self.game_round % 2 == 1:
-                                m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[0])
-                            else:
-                                m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES2[0])
-                        print("left-up region : ", m)
-                    else:
-                        # left-down region
-                        if AI.id == 1 or AI.id == 2:
-                            m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
-                        else:
-                            if self.game_round % 2 == 1:
-                                m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[1])
-                            else:
-                                m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES2[1])
-                        print("left-down region : ", m)
+        if self.game.ant.antType == AntType.KARGAR.value:
+            if AI.game_round != 1:
+                if AI.id <= Utils.INIT_ANTS_NUM:
+                    self.direction = self.get_init_ant_final_move()
                 else:
-                    if self.game.baseY < (self.game.mapHeight / 2):
-                        # right-up region
-                        if AI.id == 3 or AI.id == 4:
-                            m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
-                        else:
-                            if self.game_round % 2 == 1:
-                                m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[2])
-                            else:
-                                m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES2[2])
-                        print("right-up region : ", m)
-                    else:
-                        # right-down region
-                        if AI.id == 2 or AI.id == 3:
-                            m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
-                        else:
-                            if self.game_round % 2 == 1:
-                                m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[3])
-                            else:
-                                m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES2[3])
-                        print("right-down region : ", m)
-
-                print("id:", AI.id, ", move:", m)
-                if m < 5:
-                    self.direction = m
-                else:
-                    print("something went wrong, init ants move :", m, "from id:", AI.id)
+                    # other ants
                     self.direction = Direction.get_random_direction()
+                # todo: Delete this, this is test
+                name_of_object = random.choice(['bread', 'grass'])
+                print(name_of_object)
+
+                if self.game_round > 5:
+                    x = get_tsp_first_move(
+                        src_pos=self.pos,
+                        dest_pos=AI.map.base_pos,
+                        name_of_object=name_of_object,
+                        graph=AI.map,
+                        limit=get_limit(name_of_object, min=2)
+                    )
+                    self.direction = x
+                    print("pos:", self.pos, "move:", x)
             else:
                 if AI.state == WorkerState.Null:
                     self.determine_state()
