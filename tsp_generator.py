@@ -118,6 +118,7 @@ def get_path_from_tsp_info(tsp_info, name_of_node_object, graph, limit):
         last = dp_path[mask][last]
         mask = new_mask
     path.append(last)
+    path = list(reversed(path))
     actual_path = []
 
     for i in range(1, len(path)):
@@ -144,6 +145,11 @@ def get_tsp_first_move(src_pos, dest_pos, graph, name_of_object, limit=None):
         limit['bread'] = {'min': 1}
     if not limit.get('grass'):
         limit['grass'] = {'min': 1}
+    # print('graphhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh')
+    # print(graph.nodes)
+    # print(src_pos, dest_pos)
+    # print('graphhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh')
+
     all_tsp = get_tsp_path(src_pos, dest_pos, graph, limit)
     tsp_path = all_tsp.get(f'{name_of_object}_path_from_tsp_info') or all_tsp.get(
         f'{"bread" if name_of_object == "grass" else "grass"}_path_from_tsp_info'
@@ -152,11 +158,11 @@ def get_tsp_first_move(src_pos, dest_pos, graph, name_of_object, limit=None):
         return Direction.get_value('None')
     p = []
     last = src_pos
-    # print([i.pos for i in tsp_path.get('path')])
-    # for i in tsp_path.get('path'):
-    #     p.append(graph.step(last, i.pos))
-    #     last = i.pos
-    # return p
+    print([i.pos for i in tsp_path.get('path')])
+    for i in tsp_path.get('path'):
+        p.append(graph.step(last, i.pos))
+        last = i.pos
+    print(p)
     return Direction.get_value(graph.step(src_pos, tsp_path.get('path')[0].pos))
 
 
