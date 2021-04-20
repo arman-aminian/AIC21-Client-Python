@@ -43,7 +43,8 @@ class Node:
 
     def bread_value(self, src, dest, graph, number=0):
         distance = graph.get_shortest_distance(self, src, 'bread', default=math.inf)
-        return -distance * self.DISTANCE_WEIGH + min(self.BREAD_LIMIT, src.bread + self.bread + number) * self.BREAD_WEIGHT
+        return -distance * self.DISTANCE_WEIGH + min(self.BREAD_LIMIT,
+                                                     src.bread + self.bread + number) * self.BREAD_WEIGHT
 
 
 class Graph:
@@ -130,6 +131,13 @@ class Graph:
                      self.nodes[pos].discovered]
         return neighbors
 
+    def get_neighbors_with_not_discovered_nodes(self, pos):
+        if self.nodes[pos].wall:
+            return []
+        neighbors = [self.up(pos), self.right(pos), self.down(pos), self.left(pos)]
+        neighbors = [n for n in neighbors if not self.nodes[n].wall]
+        return neighbors
+
     def right(self, pos):
         if pos[0] == self.dim[0] - 1:
             return 0, pos[1]
@@ -186,7 +194,7 @@ class Graph:
 
         while q:
             current_node = q.pop(0)
-            neighbors = self.get_neighbors(current_node.pos)
+            neighbors = self.get_neighbors_with_not_discovered_nodes(current_node.pos)
             in_queue[current_node.pos] = False
 
             for neighbor in neighbors:
@@ -214,7 +222,7 @@ class Graph:
 
         while q:
             current_node = q.pop(0)
-            neighbors = self.get_neighbors(current_node.pos)
+            neighbors = self.get_neighbors_with_not_discovered_nodes(current_node.pos)
 
             for neighbor in neighbors:
                 next_node = self.nodes[neighbor]
@@ -248,14 +256,16 @@ class Graph:
         for node in self.nodes.values():
             if node.grass > 0 and node.pos != src.pos and node.pos != dest.pos:
                 grass_nodes.append(node)
-        return sorted(grass_nodes, key=lambda n: n.grass_value(src, dest, self, number), reverse=True)[:self.TSP_NODE_LIMIT]
+        return sorted(grass_nodes, key=lambda n: n.grass_value(src, dest, self, number), reverse=True)[
+               :self.TSP_NODE_LIMIT]
 
     def get_nearest_bread_nodes(self, src, dest, number):
         bread_nodes = []
         for node in self.nodes.values():
             if node.bread > 0 and node.pos != src.pos and node.pos != dest.pos:
                 bread_nodes.append(node)
-        return sorted(bread_nodes, key=lambda n: n.bread_value(src, dest, self, number), reverse=True)[:self.TSP_NODE_LIMIT]
+        return sorted(bread_nodes, key=lambda n: n.bread_value(src, dest, self, number), reverse=True)[
+               :self.TSP_NODE_LIMIT]
 
     def get_shortest_distance(self, src, dest, name_of_object, default=None):
         return self.shortest_path_info[name_of_object][src.pos]['dist'].get(dest.pos, default)
