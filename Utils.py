@@ -1,3 +1,5 @@
+import time
+
 import Model
 
 INIT_ANTS_NUM = 4
@@ -57,3 +59,16 @@ def get_view_distance_neighbors(pos, w, h, view: int) -> list:
             if manhattan_dist(pos, p, w, h) <= view:
                 ret.append(p)
     return sorted(ret)
+
+
+def time_measure(fn):
+    def wrapper(*args, **kwargs):
+        now = time.time()
+        res = fn(*args, **kwargs)
+        delay = time.time() - now
+
+        print(f'{fn.__name__} took {delay} seconds!')
+
+        return res
+
+    return wrapper
