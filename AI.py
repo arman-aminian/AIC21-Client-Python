@@ -15,8 +15,7 @@ class AI:
     ids = {}
     latest_pos = {}
     found_history = {}
-    prev_pos = (-1, -1)
-    ant_mode = INIT_MODE
+    state = None
 
     def __init__(self):
         # Current Game State
@@ -84,7 +83,7 @@ class AI:
         for m in maps:
             ant_id, ant_pos, nodes = decode_nodes(m.text, AI.w, AI.h,
                                                   self.game.ant.viewDistance)
-            AI.latest_pos[ant_pos] = (ant_id, m.turn)
+            AI.latest_pos[ant_id] = (ant_pos, m.turn)
             for pos, n in nodes.items():
                 if n != AI.map.nodes[pos]:
                     AI.map.nodes[pos] = copy.deepcopy(n)
@@ -138,7 +137,7 @@ class AI:
     def get_init_ants_next_move(self, preferred_moves) -> int:
         for m in preferred_moves:
             next_node = AI.map.nodes[self.get_next_pos(self.pos, m)]
-            if (not next_node.wall) and (self.get_next_pos(self.pos, m) != AI.prev_pos):
+            if (not next_node.wall) and (self.get_next_pos(self.pos, m) != AI.latest_pos[AI.id]):
                 return m
         print("error on get_init_ants_next_move")
         return Direction.get_random_direction()
@@ -285,7 +284,6 @@ class AI:
             self.value = 5
             self.direction = Direction.RIGHT.value
 
-        AI.prev_pos = self.pos
         AI.game_round += 1
         AI.life_cycle += 1
         return self.message, self.value, self.direction
