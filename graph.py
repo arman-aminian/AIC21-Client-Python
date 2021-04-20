@@ -170,13 +170,13 @@ class Graph:
         weight = src.get_distance(dest)
         return weight
 
-    def get_shortest_path(self, src, name_of_other_object):
+    def get_shortest_path(self, src, name_of_other_object, number_of_object):
         q = [src]
         in_queue = {src.pos: True}
         dist = {src.pos: 0}
         parent = {src.pos: src.pos}
 
-        if src.wall or getattr(src, name_of_other_object) > 0:
+        if src.wall or (getattr(src, name_of_other_object) > 0 and number_of_object == 0):
             return {
                 'dist': dist,
                 'parent': parent,
@@ -189,7 +189,7 @@ class Graph:
 
             for neighbor in neighbors:
                 next_node = self.nodes[neighbor]
-                if getattr(next_node, name_of_other_object) > 0:
+                if getattr(next_node, name_of_other_object) > 0 and number_of_object == 0:
                     continue
                 weight = self.get_weight(current_node, next_node)
                 if dist.get(next_node.pos) is None or weight + dist[current_node.pos] < dist.get(next_node.pos):
@@ -232,10 +232,14 @@ class Graph:
     def get_random_nodes(self):
         return {pos: self.get_node(pos) for pos in self.nodes.keys()}
 
-    def find_all_shortest_path(self):
+    def find_all_shortest_path(self, number_of_object):
         for pos in self.nodes.keys():
-            self.shortest_path_info['bread'][pos] = self.get_shortest_path(self.nodes[pos], 'grass')
-            self.shortest_path_info['grass'][pos] = self.get_shortest_path(self.nodes[pos], 'bread')
+            self.shortest_path_info['bread'][pos] = self.get_shortest_path(
+                self.nodes[pos], 'grass', number_of_object.get('bread', 0)
+            )
+            self.shortest_path_info['grass'][pos] = self.get_shortest_path(
+                self.nodes[pos], 'bread', number_of_object.get('bread', 0)
+            )
 
     def get_nearest_grass_nodes(self, src, dest):
         grass_nodes = []

@@ -3,7 +3,7 @@ from Model import *
 from Utils import *
 from graph import *
 from message.map_message import *
-from tsp_generator import get_tsp_first_move, get_limit
+from tsp_generator import get_tsp_first_move, get_limit, get_number_of_object
 
 
 class AI:
@@ -268,7 +268,8 @@ class AI:
                         dest_pos=AI.map.base_pos,
                         name_of_object=self.last_name_of_object,
                         graph=AI.map,
-                        limit=get_limit(self.last_name_of_object, min=2)
+                        limit=get_limit(bread_min=2, grass_min=2),
+                        number_of_object=get_number_of_object(self.game.ant.currentResource)
                     )
                     self.direction = x
                     print("pos:", self.pos, "move:", x)
