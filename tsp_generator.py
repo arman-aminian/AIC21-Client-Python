@@ -123,7 +123,10 @@ def get_path_from_tsp_info(tsp_info, name_of_node_object, graph, limit):
 
     for i in range(1, len(path)):
         actual_path.extend(
-            graph.get_shortest_path_from_shortest_path_info(dist_nodes[path[i - 1]], dist_nodes[path[i]]))
+            graph.get_shortest_path_from_shortest_path_info(
+                dist_nodes[path[i - 1]], dist_nodes[path[i]], name_of_node_object
+            )
+        )
 
     return {
         'path': [el[0] for el in groupby(actual_path)],
