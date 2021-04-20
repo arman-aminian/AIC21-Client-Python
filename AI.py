@@ -3,7 +3,7 @@ from Model import *
 from Utils import *
 from graph import *
 from message.map_message import *
-from tsp_generator import get_tsp_first_move, get_limit
+from tsp_generator import get_tsp_first_move, get_limit, get_number_of_object
 
 
 class AI:
@@ -16,6 +16,7 @@ class AI:
     latest_pos = {}
     found_history = {}
     state = None
+    last_name_of_object = None
 
     def __init__(self):
         # Current Game State
@@ -259,17 +260,17 @@ class AI:
                     # other ants
                     self.direction = Direction.get_random_direction()
                 # todo: Delete this, this is test
-                name_of_object = random.choice(['bread', 'grass'])
-                print(name_of_object)
+                AI.last_name_of_object = AI.last_name_of_object or random.choice(['bread', 'grass'])
+                print(AI.last_name_of_object)
 
                 if self.game_round > 5:
-                    print("round:", self.game_round)
-                    x = get_tsp_first_move(
+                    x, AI.last_name_of_object = get_tsp_first_move(
                         src_pos=self.pos,
                         dest_pos=AI.map.base_pos,
-                        name_of_object=name_of_object,
+                        name_of_object=AI.last_name_of_object,
                         graph=AI.map,
-                        limit=get_limit(name_of_object, min=2)
+                        limit=get_limit(bread_min=2, grass_min=2),
+                        number_of_object=get_number_of_object(self.game.ant.currentResource),
                     )
                     self.direction = x
                     print("pos:", self.pos, "move:", x)
@@ -284,6 +285,8 @@ class AI:
 
             self.value = 5
             self.direction = Direction.RIGHT.value
+
+        print("turn", AI.game_round, "pos", self.pos, "dir", self.direction)
 
         AI.game_round += 1
         AI.life_cycle += 1

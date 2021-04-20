@@ -36,11 +36,11 @@ class Node:
     # todo: make get value better(use dest)
     # todo: make default dist better
     def grass_value(self, src, dest, graph):
-        distance = graph.get_shortest_distance(self, src, default=math.inf)
+        distance = graph.get_shortest_distance(self, src, 'grass', default=math.inf)
         return -distance * self.DISTANCE_WEIGH + self.grass * self.GRASS_WEIGHT + src.grass * src.GRASS_WEIGHT
 
     def bread_value(self, src, dest, graph):
-        distance = graph.get_shortest_distance(self, src, default=math.inf)
+        distance = graph.get_shortest_distance(self, src, 'bread', default=math.inf)
         return -distance * self.DISTANCE_WEIGH + self.bread * self.BREAD_WEIGHT + src.bread * src.BREAD_WEIGHT
 
 
@@ -52,7 +52,7 @@ class Graph:
         self.dim = dim  # width, height
         self.enemy_base_pos = None
         self.nodes = {}
-        self.shortest_path_info = {}
+        self.shortest_path_info = {'bread': {}, 'grass': {}}
         for i in range(dim[0]):
             for j in range(dim[1]):
                 if (i, j) == base_pos:
@@ -170,13 +170,13 @@ class Graph:
         weight = src.get_distance(dest)
         return weight
 
-    def get_shortest_path(self, src):
+    def get_shortest_path(self, src, name_of_other_object, number_of_object):
         q = [src]
         in_queue = {src.pos: True}
         dist = {src.pos: 0}
         parent = {src.pos: src.pos}
 
-        if src.wall:
+        if src.wall or (getattr(src, name_of_other_object) > 0 and number_of_object == 0):
             return {
                 'dist': dist,
                 'parent': parent,
@@ -189,6 +189,8 @@ class Graph:
 
             for neighbor in neighbors:
                 next_node = self.nodes[neighbor]
+                if getattr(next_node, name_of_other_object) > 0 and number_of_object == 0:
+                    continue
                 weight = self.get_weight(current_node, next_node)
                 if dist.get(next_node.pos) is None or weight + dist[current_node.pos] < dist.get(next_node.pos):
                     dist[next_node.pos] = weight + dist[current_node.pos]
@@ -230,31 +232,36 @@ class Graph:
     def get_random_nodes(self):
         return {pos: self.get_node(pos) for pos in self.nodes.keys()}
 
-    def find_all_shortest_path(self):
+    def find_all_shortest_path(self, number_of_object):
         for pos in self.nodes.keys():
-            self.shortest_path_info[pos] = self.get_shortest_path(self.nodes[pos])
+            self.shortest_path_info['bread'][pos] = self.get_shortest_path(
+                self.nodes[pos], 'grass', number_of_object.get('bread', 0)
+            )
+            self.shortest_path_info['grass'][pos] = self.get_shortest_path(
+                self.nodes[pos], 'bread', number_of_object.get('bread', 0)
+            )
 
     def get_nearest_grass_nodes(self, src, dest):
         grass_nodes = []
         for node in self.nodes.values():
-            if node.grass > 0:
+            if node.grass > 0 and node.pos != src.pos and node.pos != dest.pos:
                 grass_nodes.append(node)
         return sorted(grass_nodes, key=lambda n: n.grass_value(src, dest, self), reverse=True)[:self.TSP_NODE_LIMIT]
 
     def get_nearest_bread_nodes(self, src, dest):
         bread_nodes = []
         for node in self.nodes.values():
-            if node.bread > 0:
+            if node.bread > 0 and node.pos != src.pos and node.pos != dest.pos:
                 bread_nodes.append(node)
         return sorted(bread_nodes, key=lambda n: n.bread_value(src, dest, self), reverse=True)[:self.TSP_NODE_LIMIT]
 
-    def get_shortest_distance(self, src, dest, default=None):
-        return self.shortest_path_info[src.pos]['dist'].get(dest.pos, default)
+    def get_shortest_distance(self, src, dest, name_of_object, default=None):
+        return self.shortest_path_info[name_of_object][src.pos]['dist'].get(dest.pos, default)
 
-    def get_shortest_path_from_shortest_path_info(self, src, dest):
-        parent = self.shortest_path_info['parent']
+    def get_shortest_path_from_shortest_path_info(self, src, dest, name_of_object):
+        parent = self.shortest_path_info[name_of_object][src.pos].get('parent', [])
         path = []
-        pos = src.pos
+        pos = dest.pos
         while parent[pos] != pos:
             path.append(self.nodes[pos])
             pos = parent[pos]

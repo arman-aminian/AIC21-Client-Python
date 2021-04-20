@@ -8,6 +8,8 @@ dist/*
 Controller.spec
 .vscode/*
 .idea/*
+python-binary
+
 
 # Created by https://www.toptal.com/developers/gitignore/api/pycharm,git
 # Edit at https://www.toptal.com/developers/gitignore?templates=pycharm,git
