@@ -263,6 +263,7 @@ class AI:
                 print(name_of_object)
 
                 if self.game_round > 5:
+                    print("round:", self.game_round)
                     x = get_tsp_first_move(
                         src_pos=self.pos,
                         dest_pos=AI.map.base_pos,
