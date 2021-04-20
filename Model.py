@@ -355,6 +355,10 @@ class Direction(Enum):
     def get_random_direction():
         return randint(1, 4)
 
+    @staticmethod
+    def get_string(dir_val: int):
+        return Direction(dir_val).name
+
 
 class CellType(Enum):
     BASE = 0

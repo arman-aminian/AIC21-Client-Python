@@ -15,8 +15,8 @@ class AI:
     id = 0
     ids = {}
     latest_pos = {}
-    found_history = {}
-    state = None
+    found_history = set()
+    state = WorkerState.Null
 
     def __init__(self):
         # Current Game State
@@ -102,11 +102,6 @@ class AI:
             msg_id = int(m[3:])
             if msg_id not in AI.ids[0] and msg_id not in AI.ids[1]:
                 AI.ids[msg_type].append(msg_id)
-
-        if AI.game_round == 2:
-            AI.id = sorted(AI.ids[self.game.ant.antType]).index(AI.id) + 1
-            AI.ids[0] = [x for x in range(1, len(AI.ids[0]) + 1)]
-            AI.ids[1] = [x for x in range(1, len(AI.ids[1]) + 1)]
 
     def send_id(self):
         self.message = "id" + str(self.game.ant.antType) + str(AI.id)
@@ -213,7 +208,15 @@ class AI:
             return Direction.get_random_direction()
 
     def turn(self) -> (str, int, int):
+        print("ROUND START!")
         self.update_ids_from_chat_box()
+        
+        if AI.game_round == 2:
+            prev_id = AI.id
+            AI.id = sorted(AI.ids[self.game.ant.antType]).index(AI.id) + 1
+            AI.ids[0] = [x for x in range(1, len(AI.ids[0]) + 1)]
+            AI.ids[1] = [x for x in range(1, len(AI.ids[1]) + 1)]
+            AI.latest_pos[AI.id] = AI.latest_pos[prev_id]
 
         if AI.life_cycle > 1 and AI.id not in AI.ids[0] and \
                 AI.id not in AI.ids[1]:
@@ -235,12 +238,15 @@ class AI:
             elif AI.game_round == 1:
                 self.make_id()
             self.send_id()
+            AI.latest_pos[AI.id] = ((-1, -1), -1)
 
         self.pos = (self.game.ant.currentX, self.game.ant.currentY)
-        AI.latest_pos[AI.id] = (self.pos, AI.game_round)
         self.search_neighbors()
         self.update_map_from_neighbors()
         self.update_map_from_chat_box()
+
+        print("known cells", [k for k, v in AI.map.nodes.items() if v.discovered])
+        print("history", AI.found_history)
 
         if AI.life_cycle > 1:
             self.encoded_neighbors = encode_graph_nodes(self.pos,
@@ -252,40 +258,25 @@ class AI:
             self.message = self.encoded_neighbors
             self.value = MESSAGE_VALUE["map"]
 
-        if self.game.ant.antType == AntType.KARGAR.value:
-            if AI.game_round != 1:
-                if AI.id <= Utils.INIT_ANTS_NUM:
-                    self.direction = self.get_init_ant_final_move()
-                else:
-                    # other ants
-                    self.direction = Direction.get_random_direction()
-                # todo: Delete this, this is test
-                name_of_object = random.choice(['bread', 'grass'])
-                print(name_of_object)
+        if AI.game_round == 1:
+            self.direction = Direction.get_random_direction()
 
-                if self.game_round > 5:
-                    x = get_tsp_first_move(
-                        src_pos=self.pos,
-                        dest_pos=AI.map.base_pos,
-                        name_of_object=name_of_object,
-                        graph=AI.map,
-                        limit=get_limit(name_of_object, min=2)
-                    )
-                    self.direction = x
-                    print("pos:", self.pos, "move:", x)
+        elif self.game.ant.antType == AntType.KARGAR.value:
+            # if AI.id <= Utils.INIT_ANTS_NUM:
+            #     self.direction = self.get_init_ant_final_move()
+            # else:
+            if AI.state == WorkerState.Null:
+                self.determine_state()
+
+            if AI.state == WorkerState.Exploring:
+                self.direction = self.explore()
+            elif AI.state == WorkerState.BreadOnly:
+                # TODO based on tsp
+                pass
+            elif AI.state == WorkerState.GrassOnly:
+                # TODO based on tsp
+                pass
             else:
-                if AI.state == WorkerState.Null:
-                    self.determine_state()
-                    
-                if AI.state == WorkerState.Exploring:
-                    self.direction = self.explore()
-                elif AI.state == WorkerState.BreadOnly:
-                    # TODO based on tsp
-                    pass
-                elif AI.state == WorkerState.GrassOnly:
-                    # TODO based on tsp
-                    pass
-                
                 self.direction = Direction.get_random_direction()
                 
         elif self.game.ant.antType == AntType.SARBAAZ.value:
@@ -293,27 +284,28 @@ class AI:
             self.value = 5
             self.direction = Direction.get_random_direction()
 
+        print("turn", AI.game_round, "id", AI.id, "pos", self.pos,
+              "state", AI.state, "dir", Direction.get_string(self.direction))
+        
+        AI.latest_pos[AI.id] = (self.pos, AI.game_round)
         AI.game_round += 1
         AI.life_cycle += 1
         return self.message, self.value, self.direction
 
     def determine_state(self):
-        # TODO determine state based on bread/grass
-        total_grass = sum([v.grass for k, v in AI.map.items()])
-        total_bread = sum([v.bread for k, v in AI.map.items()])
-        diff = total_grass - total_bread
-        if -20 <= diff <= 20 or diff >= 30:
-            AI.state = WorkerState.GrassOnly
-        elif diff <= -30:
-            AI.state = WorkerState.BreadOnly
-        else:
-            AI.state = WorkerState.Exploring
+        # TODO discuss the logic and improve
+        AI.state = WorkerState.Exploring
+        # total_grass = sum([v.grass for k, v in AI.map.items()])
+        # total_bread = sum([v.bread for k, v in AI.map.items()])
+        # diff = total_grass - total_bread
+        # if -20 <= diff <= 20 or diff >= 30:
+        #     AI.state = WorkerState.GrassOnly
+        # elif diff <= -30:
+        #     AI.state = WorkerState.BreadOnly
+        # else:
+        #     AI.state = WorkerState.Exploring
 
     def explore(self):
-        # TODO
-        # move towards the direction which results into more discovery
-        # if all directions are the same, move towards the non-discovered area
-        
         # second version
         size = 4
         while self.is_radius_fully_discovered(size):
@@ -321,8 +313,16 @@ class AI:
             
         # right, up, left, down
         scores = self.calculate_score(size)
+        print("scores, right up left down", scores)
         # TODO add the extra step when two sides have the same scores
-        return scores.index(max(scores)) + 1
+        d = [(1, 0), (0, -1), (-1, 0), (0, 1)]
+        possible_pos = [fix(tuple(map(sum, zip(self.pos, dd))), AI.w, AI.h)
+                        for dd in d]
+        same_score_indices = [i + 1 for i, s in enumerate(scores)
+                              if s == max(scores) and
+                              possible_pos[i] != AI.latest_pos[AI.id][0]]
+        return random.choice(same_score_indices) if same_score_indices else \
+            scores.index(max(scores)) + 1
         
         # first version
         # # right -> up -> left -> down
@@ -358,29 +358,31 @@ class AI:
              [(-size, -size), (size, 0)],
              [(-size, -size), (0, size)],
              [(-size, 0), (size, size)]]
-        scores = []
+        scores = [0, 0, 0, 0]
         # calculate the base scores based on number of non-discovered cells
         for k, dd in enumerate(d):
             start = tuple(map(sum, zip(self.pos, dd[0])))
-            start = fix(start, AI.w, AI.h)
             finish = tuple(map(sum, zip(self.pos, dd[1])))
-            finish = fix(finish, AI.w, AI.h)
             for i in range(start[0], finish[0] + 1):
                 for j in range(start[1], finish[1] + 1):
                     pos = fix((i, j), AI.w, AI.h)
                     if not AI.map.nodes[pos].discovered:
                         scores[k] += 1
+                    if AI.map.nodes[pos].discovered and pos != self.pos:
+                        scores[k] -= 1
+                        scores[k] -= int(AI.map.nodes[pos].ally_workers > 0)
         
         # remove a direction's score if we are facing a wall
+        # based on path existence (check 3 neighbor walls)
         # right -> up -> left -> down
         d = [(1, 0), (0, -1), (-1, 0), (0, 1)]
         for i, dd in enumerate(d):
             pos = tuple(map(sum, zip(self.pos, dd)))
             pos = fix(pos, AI.w, AI.h)
             if AI.map.nodes[pos].discovered and AI.map.nodes[pos].wall:
-                scores[(i + 1) % 4] = scores[i] if scores[(i + 1) % 4] != -1 else -1
-                scores[(i + 3) % 4] = scores[i] if scores[(i + 3) % 4] != -1 else -1
-                scores[i] = -1
+                scores[(i + 1) % 4] = scores[i] if scores[(i + 1) % 4] != -500 else -500
+                scores[(i + 3) % 4] = scores[i] if scores[(i + 3) % 4] != -500 else -500
+                scores[i] = -500
             elif not AI.map.nodes[pos].discovered and AI.map.nodes[pos].wall:
                 print("HUGE MOTHERFUCKING ERROR!")
                 
