@@ -1,3 +1,5 @@
+import time
+
 import Model
 
 INIT_ANTS_NUM = 4
@@ -17,6 +19,12 @@ INIT_CENTER_ANTS_MOVES2 = [[1, 4, 2, 3],  # left-up
                            [1, 2, 4, 3],  # left-down
                            [3, 4, 2, 1],  # right-up
                            [3, 2, 4, 1]]  # right-down
+
+INIT_MODE = 0
+COLLECT_MODE = 1
+DISCOVER_MODE = 2
+INIT_COLLECT_MODE = 3
+INIT_DISCOVER_MODE = 4
 
 
 def reverse_list(lst):
@@ -94,3 +102,16 @@ def shortest_path(src, dest, w, h):
         (dest[0], src[1]), dest, w, h)
     path2 = shortest_path(src, (src[0], dest[1]), w, h) + shortest_path(
         (src[0], dest[1]), dest, w, h)
+
+
+def time_measure(fn):
+    def wrapper(*args, **kwargs):
+        now = time.time()
+        res = fn(*args, **kwargs)
+        delay = time.time() - now
+
+        print(f'{fn.__name__} took {delay} seconds!')
+
+        return res
+
+    return wrapper

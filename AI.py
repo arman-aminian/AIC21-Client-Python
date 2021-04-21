@@ -3,8 +3,8 @@ from Model import *
 from Utils import *
 from graph import *
 from message.map_message import *
+from tsp_generator import get_tsp_first_move, get_limit, get_number_of_object
 from state import *
-from tsp_generator import get_tsp_first_move, get_limit
 
 
 class AI:
@@ -17,6 +17,8 @@ class AI:
     latest_pos = {}
     found_history = set()
     state = WorkerState.Null
+    last_name_of_object = None
+    mode = Utils.INIT_MODE
 
     def __init__(self):
         # Current Game State
@@ -94,6 +96,8 @@ class AI:
                    self.game.chatBox.allChats[-MAX_MESSAGES_PER_TURN:] if
                    msg.text.startswith("id") and msg.turn == AI.game_round - 1]
         if AI.life_cycle == 1:
+            AI.ids[AntType.SARBAAZ.value] = []
+            AI.ids[AntType.KARGAR.value] = []
             id_msgs = [msg.text for msg in self.game.chatBox.allChats if
                        msg.text.startswith("id")]
 
@@ -143,13 +147,16 @@ class AI:
             if self.game.baseY < (self.game.mapHeight / 2):
                 # left-up region
                 if AI.id == 1 or AI.id == 4:
+                    AI.mode = Utils.INIT_COLLECT_MODE
                     m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
                 elif AI.id == 2:
+                    AI.mode = Utils.INIT_COLLECT_MODE
                     if self.pos[0] < self.pos[1]:
                         m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[1])
                     else:
                         m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[2])
                 else:
+                    AI.mode = Utils.INIT_DISCOVER_MODE
                     if self.game_round % 2 == 1:
                         m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[0])
                     else:
@@ -158,13 +165,16 @@ class AI:
             else:
                 # left-down region
                 if AI.id == 1 or AI.id == 2:
+                    AI.mode = Utils.INIT_COLLECT_MODE
                     m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
                 elif AI.id == 3:
+                    AI.mode = Utils.INIT_COLLECT_MODE
                     if self.pos[0] < self.h - self.pos[1]:
                         m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[3])
                     else:
                         m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[2])
                 else:
+                    AI.mode = Utils.INIT_DISCOVER_MODE
                     if self.game_round % 2 == 1:
                         m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[1])
                     else:
@@ -174,13 +184,16 @@ class AI:
             if self.game.baseY < (self.game.mapHeight / 2):
                 # right-up region
                 if AI.id == 3 or AI.id == 4:
+                    AI.mode = Utils.INIT_COLLECT_MODE
                     m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
                 elif AI.id == 2:
+                    AI.mode = Utils.INIT_COLLECT_MODE
                     if self.w - self.pos[0] < self.pos[1]:
                         m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[1])
                     else:
                         m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[0])
                 else:
+                    AI.mode = Utils.INIT_DISCOVER_MODE
                     if self.game_round % 2 == 1:
                         m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[2])
                     else:
@@ -189,13 +202,16 @@ class AI:
             else:
                 # right-down region
                 if AI.id == 2 or AI.id == 3:
+                    AI.mode = Utils.INIT_COLLECT_MODE
                     m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
                 elif AI.id == 1:
+                    AI.mode = Utils.INIT_COLLECT_MODE
                     if self.w - self.pos[0] < self.h - self.pos[1]:
                         m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[3])
                     else:
                         m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[0])
                 else:
+                    AI.mode = Utils.INIT_DISCOVER_MODE
                     if self.game_round % 2 == 1:
                         m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[3])
                     else:
@@ -206,6 +222,23 @@ class AI:
         else:
             print("something went wrong, init ants move :", m, "from id:", AI.id)
             return Direction.get_random_direction()
+
+    def has_resource_in_own_map(self, res_type: int, res_num=10):
+        own_map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
+        for p in self.found_history:
+            own_map.nodes[p] = AI.map.nodes[p]
+        if res_type == ResourceType.BREAD:
+            if own_map.total_bread_number() >= res_num:
+                return res_type
+        elif res_type == ResourceType.GRASS.value:
+            if own_map.total_grass_number() >= res_num:
+                return res_type
+        elif own_map.total_bread_number() >= res_num:
+            return ResourceType.BREAD.value
+        elif own_map.total_grass_number() >= res_num:
+            return ResourceType.GRASS.value
+        else:
+            return None
 
     def turn(self) -> (str, int, int):
         print("ROUND START!")
@@ -231,8 +264,6 @@ class AI:
         if AI.life_cycle == 1:
             AI.w, AI.h = self.game.mapWidth, self.game.mapHeight
             AI.map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
-            AI.ids[AntType.SARBAAZ.value] = []
-            AI.ids[AntType.KARGAR.value] = []
             if AI.game_round > 2:
                 self.make_id(min_id=INIT_ANTS_NUM + 1)
             elif AI.game_round == 1:
@@ -258,9 +289,32 @@ class AI:
             self.message = self.encoded_neighbors
             self.value = MESSAGE_VALUE["map"]
 
-        if AI.game_round == 1:
-            self.direction = Direction.get_random_direction()
+        if self.game.ant.antType == AntType.KARGAR.value:
+            if AI.game_round != 1:
+                print("res:", self.game.ant.currentResource.type)
+                if AI.id <= Utils.INIT_ANTS_NUM:
+                    if AI.mode == INIT_DISCOVER_MODE:
+                        self.direction = self.get_init_ant_final_move()
+                    elif AI.mode == INIT_MODE or AI.mode == INIT_COLLECT_MODE:
+                        self.direction = Direction.get_random_direction()
+                        # if self.game.ant.currentResource
+                        #     if self.
+                else:
+                    # other ants
+                    self.direction = Direction.get_random_direction()
+                # todo: Delete this, this is test
+                AI.last_name_of_object = AI.last_name_of_object or random.choice(['bread', 'grass'])
 
+                if self.game_round > 5:
+                    x, AI.last_name_of_object = get_tsp_first_move(
+                        src_pos=self.pos,
+                        dest_pos=AI.map.base_pos,
+                        name_of_object=AI.last_name_of_object,
+                        graph=AI.map,
+                        limit=get_limit(bread_min=2, grass_min=2),
+                        number_of_object=get_number_of_object(self.game.ant.currentResource),
+                    )
+                    self.direction = x
         elif self.game.ant.antType == AntType.KARGAR.value:
             # if AI.id <= Utils.INIT_ANTS_NUM:
             #     self.direction = self.get_init_ant_final_move()
@@ -277,6 +331,7 @@ class AI:
                 # TODO based on tsp
                 pass
             else:
+                # first move
                 self.direction = Direction.get_random_direction()
                 
         elif self.game.ant.antType == AntType.SARBAAZ.value:
