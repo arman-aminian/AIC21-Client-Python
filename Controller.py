@@ -68,7 +68,7 @@ class Controller:
         start = time.time() * 1000
         (message, value, direction) = self.client.turn()
         diff = time.time() * 1000 - start
-        if diff > 3000:
+        if diff > 2000:
             pass
         elif diff > 500:
             self.send_direction_message(Direction.CENTER.value)
