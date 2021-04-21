@@ -227,6 +227,12 @@ class AI:
             print("something went wrong, init ants move :", m, "from id:", AI.id)
             return Direction.get_random_direction()
 
+    # def has_resource_in_own_map(self, res_type=RESOURCE_TYPE_ANY, res_num=10):
+    #     own_map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
+    #     for p in self.found_history:
+    #         own_map.nodes[p] = AI.map.nodes[p]
+    #     own_map.
+
     def turn(self) -> (str, int, int):
         self.update_ids_from_chat_box()
 
@@ -268,7 +274,10 @@ class AI:
         if self.game.ant.antType == AntType.KARGAR.value:
             if AI.game_round != 1:
                 if AI.id <= Utils.INIT_ANTS_NUM:
-                    self.direction = self.get_init_ant_final_move()
+                    if AI.mode == INIT_DISCOVER_MODE:
+                        self.direction = self.get_init_ant_final_move()
+                    # elif AI.mode == INIT_MODE or  AI.mode == INIT_COLLECT_MODE:
+                    #     if self.
                 else:
                     # other ants
                     self.direction = Direction.get_random_direction()

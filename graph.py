@@ -81,6 +81,18 @@ class Graph:
         if next_pos[1] - src[1] in [1, -(self.dim[1] - 1)]:
             return "DOWN"
 
+    def total_grass_number(self):
+        res = 0
+        for pos in self.nodes.keys():
+            res = res + self.nodes[pos].grass
+        return res
+
+    def total_bread_number(self):
+        res = 0
+        for pos in self.nodes.keys():
+            res = res + self.nodes[pos].bread
+        return res
+
     def shortest_path(self, src, dest):
         q = [[src]]
         visited = []
