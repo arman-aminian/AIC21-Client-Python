@@ -18,7 +18,6 @@ class AI:
     found_history = set()
     state = WorkerState.Null
     last_name_of_object = None
-    mode = Utils.INIT_MODE
 
     def __init__(self):
         # Current Game State
@@ -147,16 +146,16 @@ class AI:
             if self.game.baseY < (self.game.mapHeight / 2):
                 # left-up region
                 if AI.id == 1 or AI.id == 4:
-                    AI.mode = Utils.INIT_COLLECT_MODE
+                    AI.state = WorkerState.InitCollecting
                     m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
                 elif AI.id == 2:
-                    AI.mode = Utils.INIT_COLLECT_MODE
+                    AI.state = WorkerState.InitCollecting
                     if self.pos[0] < self.pos[1]:
                         m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[1])
                     else:
                         m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[2])
                 else:
-                    AI.mode = Utils.INIT_DISCOVER_MODE
+                    AI.state = WorkerState.InitExploring
                     if self.game_round % 2 == 1:
                         m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[0])
                     else:
@@ -165,16 +164,16 @@ class AI:
             else:
                 # left-down region
                 if AI.id == 1 or AI.id == 2:
-                    AI.mode = Utils.INIT_COLLECT_MODE
+                    AI.state = WorkerState.InitCollecting
                     m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
                 elif AI.id == 3:
-                    AI.mode = Utils.INIT_COLLECT_MODE
+                    AI.state = WorkerState.InitExploring
                     if self.pos[0] < self.h - self.pos[1]:
                         m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[3])
                     else:
                         m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[2])
                 else:
-                    AI.mode = Utils.INIT_DISCOVER_MODE
+                    AI.state = WorkerState.InitExploring
                     if self.game_round % 2 == 1:
                         m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[1])
                     else:
@@ -184,16 +183,16 @@ class AI:
             if self.game.baseY < (self.game.mapHeight / 2):
                 # right-up region
                 if AI.id == 3 or AI.id == 4:
-                    AI.mode = Utils.INIT_COLLECT_MODE
+                    AI.state = WorkerState.InitCollecting
                     m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
                 elif AI.id == 2:
-                    AI.mode = Utils.INIT_COLLECT_MODE
+                    AI.state = WorkerState.InitCollecting
                     if self.w - self.pos[0] < self.pos[1]:
                         m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[1])
                     else:
                         m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[0])
                 else:
-                    AI.mode = Utils.INIT_DISCOVER_MODE
+                    AI.state = WorkerState.InitExploring
                     if self.game_round % 2 == 1:
                         m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[2])
                     else:
@@ -202,16 +201,16 @@ class AI:
             else:
                 # right-down region
                 if AI.id == 2 or AI.id == 3:
-                    AI.mode = Utils.INIT_COLLECT_MODE
+                    AI.state = WorkerState.InitCollecting
                     m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
                 elif AI.id == 1:
-                    AI.mode = Utils.INIT_COLLECT_MODE
+                    AI.state = WorkerState.InitCollecting
                     if self.w - self.pos[0] < self.h - self.pos[1]:
                         m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[3])
                     else:
                         m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[0])
                 else:
-                    AI.mode = Utils.INIT_DISCOVER_MODE
+                    AI.state = WorkerState.InitExploring
                     if self.game_round % 2 == 1:
                         m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[3])
                     else:
@@ -295,9 +294,9 @@ class AI:
         elif self.game.ant.antType == AntType.KARGAR.value:
             print("res:", self.game.ant.currentResource.type)
             if AI.id <= Utils.INIT_ANTS_NUM:
-                if AI.mode == INIT_DISCOVER_MODE:
+                if AI.state == WorkerState.InitExploring:
                     self.direction = self.get_init_ant_final_move()
-                elif AI.mode == INIT_MODE or AI.mode == INIT_COLLECT_MODE:
+                elif AI.state == WorkerState.Null or AI.state == WorkerState.InitCollecting:
                     self.direction = Direction.get_random_direction()
                     # if self.game.ant.currentResource
                     #     if self.

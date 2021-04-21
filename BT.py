@@ -4,12 +4,15 @@ from Model import Direction
 from Utils import get_view_distance_neighbors, time_measure
 
 
+MAX_DISTANCE = 10
+
+
 class BT:
     def __init__(self, graph, cur):
         self.start = time.time()
         self.graph = graph
         self.best_path = None
-        self.path = 10 * [-1]
+        self.path = MAX_DISTANCE * [-1]
         self.best = None
         self.visited = set(get_view_distance_neighbors(cur, self.graph.dim[0], self.graph.dim[1], 4))
 
@@ -27,7 +30,7 @@ class BT:
             # print(self.path)
             self.best_path = self.path.copy()
             self.best = now
-        if dist == 10:
+        if dist == MAX_DISTANCE:
             return
 
         neighbors = self.graph.get_neighbors_with_not_discovered_nodes(cur)

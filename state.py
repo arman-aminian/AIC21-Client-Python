@@ -7,6 +7,9 @@ class WorkerState(Enum):
     BreadOnly = 1
     GrassOnly = 2
     GoingBase = 3
+    Collecting = 4
+    InitCollecting = 5
+    InitExploring = 6
 
 
 class SoldierState(Enum):
