@@ -289,51 +289,47 @@ class AI:
             self.message = self.encoded_neighbors
             self.value = MESSAGE_VALUE["map"]
 
-        if self.game.ant.antType == AntType.KARGAR.value:
-            if AI.game_round != 1:
-                print("res:", self.game.ant.currentResource.type)
-                if AI.id <= Utils.INIT_ANTS_NUM:
-                    if AI.mode == INIT_DISCOVER_MODE:
-                        self.direction = self.get_init_ant_final_move()
-                    elif AI.mode == INIT_MODE or AI.mode == INIT_COLLECT_MODE:
-                        self.direction = Direction.get_random_direction()
-                        # if self.game.ant.currentResource
-                        #     if self.
-                else:
-                    # other ants
-                    self.direction = Direction.get_random_direction()
-                # todo: Delete this, this is test
-                AI.last_name_of_object = AI.last_name_of_object or random.choice(['bread', 'grass'])
+        if AI.game_round == 1:
+            self.direction = Direction.get_random_direction()
 
-                if self.game_round > 5:
-                    x, AI.last_name_of_object = get_tsp_first_move(
-                        src_pos=self.pos,
-                        dest_pos=AI.map.base_pos,
-                        name_of_object=AI.last_name_of_object,
-                        graph=AI.map,
-                        limit=get_limit(bread_min=2, grass_min=2),
-                        number_of_object=get_number_of_object(self.game.ant.currentResource),
-                    )
-                    self.direction = x
         elif self.game.ant.antType == AntType.KARGAR.value:
-            # if AI.id <= Utils.INIT_ANTS_NUM:
-            #     self.direction = self.get_init_ant_final_move()
-            # else:
-            if AI.state == WorkerState.Null:
-                self.determine_state()
-
-            if AI.state == WorkerState.Exploring:
-                self.direction = self.explore()
-            elif AI.state == WorkerState.BreadOnly:
-                # TODO based on tsp
-                pass
-            elif AI.state == WorkerState.GrassOnly:
-                # TODO based on tsp
-                pass
+            print("res:", self.game.ant.currentResource.type)
+            if AI.id <= Utils.INIT_ANTS_NUM:
+                if AI.mode == INIT_DISCOVER_MODE:
+                    self.direction = self.get_init_ant_final_move()
+                elif AI.mode == INIT_MODE or AI.mode == INIT_COLLECT_MODE:
+                    self.direction = Direction.get_random_direction()
+                    # if self.game.ant.currentResource
+                    #     if self.
             else:
-                # first move
-                self.direction = Direction.get_random_direction()
-                
+                if AI.state == WorkerState.Null:
+                    self.determine_state()
+    
+                if AI.state == WorkerState.Exploring:
+                    self.direction = self.explore()
+                elif AI.state == WorkerState.BreadOnly:
+                    # TODO based on tsp
+                    pass
+                elif AI.state == WorkerState.GrassOnly:
+                    # TODO based on tsp
+                    pass
+                else:
+                    # first move
+                    self.direction = Direction.get_random_direction()
+                    
+            # todo: Delete this, this is test
+            AI.last_name_of_object = AI.last_name_of_object or random.choice(['bread', 'grass'])
+
+            if self.game_round > 5:
+                x, AI.last_name_of_object = get_tsp_first_move(
+                    src_pos=self.pos,
+                    dest_pos=AI.map.base_pos,
+                    name_of_object=AI.last_name_of_object,
+                    graph=AI.map,
+                    limit=get_limit(bread_min=2, grass_min=2),
+                    number_of_object=get_number_of_object(self.game.ant.currentResource),
+                )
+                self.direction = x
         elif self.game.ant.antType == AntType.SARBAAZ.value:
             # todo sarbaz move
             self.value = 5
