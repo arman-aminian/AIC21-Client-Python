@@ -20,6 +20,12 @@ INIT_CENTER_ANTS_MOVES2 = [[1, 4, 2, 3],  # left-up
                            [3, 4, 2, 1],  # right-up
                            [3, 2, 4, 1]]  # right-down
 
+INIT_MODE = 0
+COLLECT_MODE = 1
+DISCOVER_MODE = 2
+INIT_COLLECT_MODE = 3
+INIT_DISCOVER_MODE = 4
+
 
 def reverse_list(lst):
     return [ele for ele in reversed(lst)]
