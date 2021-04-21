@@ -242,7 +242,7 @@ class AI:
     def turn(self) -> (str, int, int):
         print("ROUND START!")
         self.update_ids_from_chat_box()
-        
+
         if AI.game_round == 2:
             prev_id = AI.id
             AI.id = sorted(AI.ids[self.game.ant.antType]).index(AI.id) + 1
@@ -297,13 +297,53 @@ class AI:
                 if AI.state == WorkerState.InitExploring:
                     self.direction = self.get_init_ant_final_move()
                 elif AI.state == WorkerState.Null or AI.state == WorkerState.InitCollecting:
-                    self.direction = Direction.get_random_direction()
-                    # if self.game.ant.currentResource
-                    #     if self.
+                    if self.game.ant.currentResource.type == ResourceType.BREAD:
+                        if self.has_resource_in_own_map(ResourceType.BREAD.value, self.game.ant.currentResource.value)\
+                                == ResourceType.BREAD:
+                            self.direction, AI.last_name_of_object = get_tsp_first_move(
+                                src_pos=self.pos,
+                                dest_pos=AI.map.base_pos,
+                                name_of_object=AI.last_name_of_object,
+                                graph=AI.map,
+                                limit=get_limit(
+                                    bread_min=GameConfig.generate_kargar - self.game.ant.currentResource.value,
+                                    grass_min=0
+                                ),
+                                number_of_object=get_number_of_object(self.game.ant.currentResource),
+                            )
+                    elif self.game.ant.currentResource.type == ResourceType.GRASS:
+                        if self.has_resource_in_own_map(ResourceType.GRASS.value, self.game.ant.currentResource.value)\
+                                == ResourceType.GRASS:
+                            self.direction, AI.last_name_of_object = get_tsp_first_move(
+                                src_pos=self.pos,
+                                dest_pos=AI.map.base_pos,
+                                name_of_object=AI.last_name_of_object,
+                                graph=AI.map,
+                                limit=get_limit(
+                                    bread_min=0,
+                                    grass_min=GameConfig.generate_sarbaaz - self.game.ant.currentResource.value
+                                ),
+                                number_of_object=get_number_of_object(self.game.ant.currentResource),
+                            )
+                    elif self.has_resource_in_own_map(2, self.game.ant.currentResource.value):
+                        self.direction, AI.last_name_of_object = get_tsp_first_move(
+                            src_pos=self.pos,
+                            dest_pos=AI.map.base_pos,
+                            name_of_object=AI.last_name_of_object,
+                            graph=AI.map,
+                            limit=get_limit(
+                                bread_min=GameConfig.generate_kargar - self.game.ant.currentResource.value,
+                                grass_min=0
+                            ),
+                            number_of_object=get_number_of_object(self.game.ant.currentResource),
+                        )
+                    else:
+                        self.direction = self.get_init_ant_final_move()
+
             else:
                 if AI.state == WorkerState.Null:
                     self.determine_state()
-    
+
                 if AI.state == WorkerState.Exploring:
                     self.direction = self.explore()
                 elif AI.state == WorkerState.BreadOnly:
@@ -315,7 +355,7 @@ class AI:
                 else:
                     # first move
                     self.direction = Direction.get_random_direction()
-                    
+
             # todo: Delete this, this is test
             AI.last_name_of_object = AI.last_name_of_object or random.choice(['bread', 'grass'])
 
@@ -336,7 +376,7 @@ class AI:
 
         print("turn", AI.game_round, "id", AI.id, "pos", self.pos,
               "state", AI.state, "dir", Direction.get_string(self.direction))
-        
+
         AI.latest_pos[AI.id] = (self.pos, AI.game_round)
         AI.game_round += 1
         AI.life_cycle += 1
@@ -360,7 +400,7 @@ class AI:
         size = 4
         while self.is_radius_fully_discovered(size):
             size += 1
-            
+
         # right, up, left, down
         scores = self.calculate_score(size)
         print("scores, right up left down", scores)
@@ -373,7 +413,7 @@ class AI:
                               possible_pos[i] != AI.latest_pos[AI.id][0]]
         return random.choice(same_score_indices) if same_score_indices else \
             scores.index(max(scores)) + 1
-        
+
         # first version
         # # right -> up -> left -> down
         # points = [fix((self.pos[0] + 1, self.pos[1]), AI.w, AI.h),
@@ -421,7 +461,7 @@ class AI:
                     if AI.map.nodes[pos].discovered and pos != self.pos:
                         scores[k] -= 1
                         scores[k] -= int(AI.map.nodes[pos].ally_workers > 0)
-        
+
         # remove a direction's score if we are facing a wall
         # based on path existence (check 3 neighbor walls)
         # right -> up -> left -> down
@@ -435,7 +475,7 @@ class AI:
                 scores[i] = -500
             elif not AI.map.nodes[pos].discovered and AI.map.nodes[pos].wall:
                 print("HUGE MOTHERFUCKING ERROR!")
-                
+
         return scores
 
     # first version
