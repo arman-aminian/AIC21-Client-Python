@@ -226,6 +226,7 @@ class AI:
         own_map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
         for p in self.found_history:
             own_map.nodes[p] = AI.map.nodes[p]
+        print(self.found_history)
         if res_type == ResourceType.BREAD:
             if own_map.total_bread_number() >= res_num:
                 return res_type
@@ -298,8 +299,10 @@ class AI:
                     self.direction = self.get_init_ant_final_move()
                 elif AI.state == WorkerState.Null or AI.state == WorkerState.InitCollecting:
                     if self.game.ant.currentResource.type == ResourceType.BREAD:
-                        if self.has_resource_in_own_map(ResourceType.BREAD.value, self.game.ant.currentResource.value)\
+                        if self.has_resource_in_own_map(ResourceType.BREAD.value,
+                                                        GameConfig.generate_kargar - self.game.ant.currentResource.value) \
                                 == ResourceType.BREAD:
+                            print("has res to find")
                             self.direction, AI.last_name_of_object = get_tsp_first_move(
                                 src_pos=self.pos,
                                 dest_pos=AI.map.base_pos,
@@ -312,10 +315,13 @@ class AI:
                                 number_of_object=get_number_of_object(self.game.ant.currentResource),
                             )
                         else:
+                            print("has not other res")
                             self.direction = self.get_init_ant_final_move()
                     elif self.game.ant.currentResource.type == ResourceType.GRASS:
-                        if self.has_resource_in_own_map(ResourceType.GRASS.value, self.game.ant.currentResource.value)\
+                        if self.has_resource_in_own_map(ResourceType.GRASS.value,
+                                                        GameConfig.generate_sarbaaz - self.game.ant.currentResource.value) \
                                 == ResourceType.GRASS:
+                            print("has res to find")
                             self.direction, AI.last_name_of_object = get_tsp_first_move(
                                 src_pos=self.pos,
                                 dest_pos=AI.map.base_pos,
@@ -328,9 +334,13 @@ class AI:
                                 number_of_object=get_number_of_object(self.game.ant.currentResource),
                             )
                         else:
+                            print("has not to find")
                             self.direction = self.get_init_ant_final_move()
-                    elif self.has_resource_in_own_map(2, self.game.ant.currentResource.value)\
+                    elif self.has_resource_in_own_map(
+                            2,
+                            GameConfig.generate_kargar - self.game.ant.currentResource.value) \
                             == ResourceType.BREAD:
+                        print("has not res but has path")
                         self.direction, AI.last_name_of_object = get_tsp_first_move(
                             src_pos=self.pos,
                             dest_pos=AI.map.base_pos,
@@ -342,8 +352,11 @@ class AI:
                             ),
                             number_of_object=get_number_of_object(self.game.ant.currentResource),
                         )
-                    elif self.has_resource_in_own_map(2, self.game.ant.currentResource.value)\
+                    elif self.has_resource_in_own_map(
+                            2,
+                            GameConfig.generate_sarbaaz - self.game.ant.currentResource.value) \
                             == ResourceType.GRASS:
+                        print("has not res but has path")
                         self.direction, AI.last_name_of_object = get_tsp_first_move(
                             src_pos=self.pos,
                             dest_pos=AI.map.base_pos,
@@ -356,6 +369,7 @@ class AI:
                             number_of_object=get_number_of_object(self.game.ant.currentResource),
                         )
                     else:
+                        print("has not res and no path")
                         self.direction = self.get_init_ant_final_move()
 
             else:
@@ -373,20 +387,20 @@ class AI:
                 else:
                     # first move
                     self.direction = Direction.get_random_direction()
-
-            # todo: Delete this, this is test
-            AI.last_name_of_object = AI.last_name_of_object or random.choice(['bread', 'grass'])
-
-            if self.game_round > 5:
-                x, AI.last_name_of_object = get_tsp_first_move(
-                    src_pos=self.pos,
-                    dest_pos=AI.map.base_pos,
-                    name_of_object=AI.last_name_of_object,
-                    graph=AI.map,
-                    limit=get_limit(bread_min=2, grass_min=2),
-                    number_of_object=get_number_of_object(self.game.ant.currentResource),
-                )
-                self.direction = x
+            #
+            # # todo: Delete this, this is test
+            # AI.last_name_of_object = AI.last_name_of_object or random.choice(['bread', 'grass'])
+            #
+            # if self.game_round > 5:
+            #     x, AI.last_name_of_object = get_tsp_first_move(
+            #         src_pos=self.pos,
+            #         dest_pos=AI.map.base_pos,
+            #         name_of_object=AI.last_name_of_object,
+            #         graph=AI.map,
+            #         limit=get_limit(bread_min=2, grass_min=2),
+            #         number_of_object=get_number_of_object(self.game.ant.currentResource),
+            #     )
+            #     self.direction = x
         elif self.game.ant.antType == AntType.SARBAAZ.value:
             # todo sarbaz move
             self.value = 5
