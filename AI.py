@@ -306,11 +306,13 @@ class AI:
                                 name_of_object=AI.last_name_of_object,
                                 graph=AI.map,
                                 limit=get_limit(
-                                    bread_min=GameConfig.generate_kargar - self.game.ant.currentResource.value,
-                                    grass_min=0
+                                    bread_min=GameConfig.generate_kargar,
+                                    grass_min=math.inf
                                 ),
                                 number_of_object=get_number_of_object(self.game.ant.currentResource),
                             )
+                        else:
+                            self.direction = self.get_init_ant_final_move()
                     elif self.game.ant.currentResource.type == ResourceType.GRASS:
                         if self.has_resource_in_own_map(ResourceType.GRASS.value, self.game.ant.currentResource.value)\
                                 == ResourceType.GRASS:
@@ -320,20 +322,36 @@ class AI:
                                 name_of_object=AI.last_name_of_object,
                                 graph=AI.map,
                                 limit=get_limit(
-                                    bread_min=0,
-                                    grass_min=GameConfig.generate_sarbaaz - self.game.ant.currentResource.value
+                                    bread_min=math.inf,
+                                    grass_min=GameConfig.generate_sarbaaz
                                 ),
                                 number_of_object=get_number_of_object(self.game.ant.currentResource),
                             )
-                    elif self.has_resource_in_own_map(2, self.game.ant.currentResource.value):
+                        else:
+                            self.direction = self.get_init_ant_final_move()
+                    elif self.has_resource_in_own_map(2, self.game.ant.currentResource.value)\
+                            == ResourceType.BREAD:
                         self.direction, AI.last_name_of_object = get_tsp_first_move(
                             src_pos=self.pos,
                             dest_pos=AI.map.base_pos,
                             name_of_object=AI.last_name_of_object,
                             graph=AI.map,
                             limit=get_limit(
-                                bread_min=GameConfig.generate_kargar - self.game.ant.currentResource.value,
+                                bread_min=GameConfig.generate_kargar,
                                 grass_min=0
+                            ),
+                            number_of_object=get_number_of_object(self.game.ant.currentResource),
+                        )
+                    elif self.has_resource_in_own_map(2, self.game.ant.currentResource.value)\
+                            == ResourceType.GRASS:
+                        self.direction, AI.last_name_of_object = get_tsp_first_move(
+                            src_pos=self.pos,
+                            dest_pos=AI.map.base_pos,
+                            name_of_object=AI.last_name_of_object,
+                            graph=AI.map,
+                            limit=get_limit(
+                                bread_min=0,
+                                grass_min=GameConfig.generate_sarbaaz
                             ),
                             number_of_object=get_number_of_object(self.game.ant.currentResource),
                         )
