@@ -5,9 +5,10 @@ import traceback
 from queue import Queue
 from threading import Thread
 from AI import AI
-from Model import CurrentState, GameConfig, ServerConstants, Game
+from Model import CurrentState, Direction, Game, GameConfig, ServerConstants
 from Network import Network
 import json
+import time
 
 
 class Controller:
@@ -64,11 +65,18 @@ class Controller:
         game.initGameConfig(self.gameConfig)
         game.setCurrentState(currentState)
         self.client.game = game
+        start = time.time() * 1000
         (message, value, direction) = self.client.turn()
-        if direction is not None:
-            self.send_direction_message(direction)
-        if message is not None and value is not None:
-            self.send_chat_message(message, value)
+        diff = time.time() * 1000 - start
+        if diff > 3000:
+            pass
+        elif diff > 500:
+            self.send_direction_message(Direction.CENTER.value)
+        else:
+            if direction is not None:
+                self.send_direction_message(direction)
+            if message is not None and value is not None:
+                self.send_chat_message(message, value)
         self.send_end_message()
 
     def handle_init_message(self, message):
