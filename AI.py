@@ -227,11 +227,22 @@ class AI:
             print("something went wrong, init ants move :", m, "from id:", AI.id)
             return Direction.get_random_direction()
 
-    # def has_resource_in_own_map(self, res_type=RESOURCE_TYPE_ANY, res_num=10):
-    #     own_map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
-    #     for p in self.found_history:
-    #         own_map.nodes[p] = AI.map.nodes[p]
-    #     own_map.
+    def has_resource_in_own_map(self, res_type=RESOURCE_TYPE_ANY, res_num=10):
+        own_map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
+        for p in self.found_history:
+            own_map.nodes[p] = AI.map.nodes[p]
+        if res_type == RESOURCE_TYPE_BREAD:
+            if own_map.total_bread_number() >= res_num:
+                return res_type
+        elif res_type == RESOURCE_TYPE_GRASS:
+            if own_map.total_grass_number() >= res_num:
+                return res_type
+        elif own_map.total_bread_number() >= res_num:
+                return RESOURCE_TYPE_BREAD
+        elif own_map.total_grass_number() >= res_num:
+                return RESOURCE_TYPE_GRASS
+        else:
+            return None
 
     def turn(self) -> (str, int, int):
         self.update_ids_from_chat_box()
