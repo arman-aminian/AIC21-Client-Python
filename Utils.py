@@ -26,10 +26,6 @@ DISCOVER_MODE = 2
 INIT_COLLECT_MODE = 3
 INIT_DISCOVER_MODE = 4
 
-RESOURCE_TYPE_ANY = "any"
-RESOURCE_TYPE_GRASS = "grass"
-RESOURCE_TYPE_BREAD = "bread"
-
 
 def reverse_list(lst):
     return [ele for ele in reversed(lst)]

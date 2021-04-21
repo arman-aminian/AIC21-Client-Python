@@ -227,20 +227,20 @@ class AI:
             print("something went wrong, init ants move :", m, "from id:", AI.id)
             return Direction.get_random_direction()
 
-    def has_resource_in_own_map(self, res_type=RESOURCE_TYPE_ANY, res_num=10):
+    def has_resource_in_own_map(self, res_type: int, res_num=10):
         own_map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
         for p in self.found_history:
             own_map.nodes[p] = AI.map.nodes[p]
-        if res_type == RESOURCE_TYPE_BREAD:
+        if res_type == ResourceType.BREAD:
             if own_map.total_bread_number() >= res_num:
                 return res_type
-        elif res_type == RESOURCE_TYPE_GRASS:
+        elif res_type == ResourceType.GRASS.value:
             if own_map.total_grass_number() >= res_num:
                 return res_type
         elif own_map.total_bread_number() >= res_num:
-                return RESOURCE_TYPE_BREAD
+            return ResourceType.BREAD.value
         elif own_map.total_grass_number() >= res_num:
-                return RESOURCE_TYPE_GRASS
+            return ResourceType.GRASS.value
         else:
             return None
 
@@ -284,11 +284,14 @@ class AI:
 
         if self.game.ant.antType == AntType.KARGAR.value:
             if AI.game_round != 1:
+                print("res:", self.game.ant.currentResource.type)
                 if AI.id <= Utils.INIT_ANTS_NUM:
                     if AI.mode == INIT_DISCOVER_MODE:
                         self.direction = self.get_init_ant_final_move()
-                    # elif AI.mode == INIT_MODE or  AI.mode == INIT_COLLECT_MODE:
-                    #     if self.
+                    elif AI.mode == INIT_MODE or AI.mode == INIT_COLLECT_MODE:
+                        self.direction = Direction.get_random_direction()
+                        # if self.game.ant.currentResource
+                        #     if self.
                 else:
                     # other ants
                     self.direction = Direction.get_random_direction()
