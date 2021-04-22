@@ -6,7 +6,6 @@ from Utils import time_measure
 
 
 def get_tsp(src_pos, dest_pos, graph, number_of_object, name_of_object):
-    graph.find_all_shortest_path(number_of_object, name_of_object)
 
     tsp = make_tsp(
         graph.nodes[src_pos], graph.nodes[dest_pos], name_of_object, graph, number_of_object.get(name_of_object, 0)
@@ -39,6 +38,7 @@ def make_dist_graph(src, dest, name_of_node_object, graph, dist_nodes, number_of
 
 def make_tsp(src, dest, name_of_node_object, graph, number_of_object):
     dist_nodes = getattr(graph, f'get_nearest_{name_of_node_object}_nodes')(src, dest, number_of_object)
+    graph.find_all_shortest_path(number_of_object, name_of_node_object, list(chain([src], dist_nodes, [dest])))
 
     dist = make_dist_graph(src, dest, name_of_node_object, graph, dist_nodes, number_of_object)
 

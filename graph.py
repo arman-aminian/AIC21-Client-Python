@@ -255,8 +255,9 @@ class Graph:
     def get_random_nodes(self):
         return {pos: self.get_node(pos) for pos in self.nodes.keys()}
 
-    def find_all_shortest_path(self, number_of_object, name_of_object):
-        for pos in self.nodes.keys():
+    def find_all_shortest_path(self, number_of_object, name_of_object, nodes):
+        for node in nodes:
+            pos = node.pos
             self.shortest_path_info['bread'][pos] = self.get_shortest_path(
                 self.nodes[pos], 'bread' if name_of_object == 'grass' else 'grass', number_of_object.get(name_of_object, 0)
             )
@@ -307,4 +308,3 @@ class Graph:
         opposite_node_pos = (self.dim[0] - 1 - src_pos[0], self.dim[1] - 1 - src_pos[1])
         path = self.get_path(self.nodes[src_pos], self.nodes[opposite_node_pos])
         return self.step(src_pos, path[0].pos) if path else "None"
-    
