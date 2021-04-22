@@ -99,6 +99,9 @@ def get_tsp_path(src_pos, dest_pos, graph, limit, number_of_object, name_of_obje
 
 
 def get_path_from_tsp_info(tsp_info, name_of_node_object, graph, limit, number_of_object):
+    if tsp_info is None:
+        return None
+
     dp = tsp_info.get(f'tsp_{name_of_node_object}').get('dp')
     dp_path = tsp_info.get(f'tsp_{name_of_node_object}').get('dp_path')
     dist_nodes = tsp_info.get(f'tsp_{name_of_node_object}').get('dist_nodes')
