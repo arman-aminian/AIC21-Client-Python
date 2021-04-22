@@ -265,10 +265,10 @@ class Graph:
     def get_nearest_grass_nodes(self, src, dest, number):
         grass_nodes = []
         for node in self.nodes.values():
-            if node.grass > 0 and node.pos != src.pos and node.pos != dest.pos and self.get_shortest_path(
-                    node.pos, dest, 'grass'
-            ) is not None and self.get_shortest_path(
-                    src, node.pos, 'grass'
+            if node.grass > 0 and node.pos != src.pos and node.pos != dest.pos and self.get_shortest_distance(
+                    node, dest, 'grass'
+            ) is not None and self.get_shortest_distance(
+                    src, node, 'grass'
             ) is not None:
                 grass_nodes.append(node)
         return sorted(grass_nodes, key=lambda n: n.grass_value(src, dest, self, number), reverse=True)[
