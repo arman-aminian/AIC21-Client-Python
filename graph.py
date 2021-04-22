@@ -302,3 +302,4 @@ class Graph:
         opposite_node_pos = (self.dim[0] - 1 - src_pos[0], self.dim[1] - 1 - src_pos[1])
         path = self.get_path(self.nodes[src_pos], self.nodes[opposite_node_pos])
         return self.step(src_pos, path[0].pos) if path else "None"
+    

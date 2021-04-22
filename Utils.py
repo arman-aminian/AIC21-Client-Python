@@ -24,6 +24,10 @@ GENERATE_KARGAR = 10
 GENERATE_SARBAAZ = 10
 WORKER_MAX_CARRYING_RESOURCE_AMOUNT = 10
 
+BASE_DMG = 3
+SOLDIER_DMG = 2
+HP = [8, 6]  # soldier, worker
+
 
 def reverse_list(lst):
     return [ele for ele in reversed(lst)]
@@ -55,12 +59,14 @@ def manhattan_dist(p, q, w, h) -> int:
     return x_diff + y_diff
 
 
-def get_view_distance_neighbors(pos, w, h, view: int) -> list:
+def get_view_distance_neighbors(pos, w, h, view: int, exact: bool = False):
     ret = []
     for i in range(-view, view + 1):
         for j in range(-view, view + 1):
             p = fix((pos[0] + i, pos[1] + j), w, h)
-            if manhattan_dist(pos, p, w, h) <= view:
+            if exact and manhattan_dist(pos, p, w, h) == view:
+                ret.append(p)
+            elif not exact and manhattan_dist(pos, p, w, h) <= view:
                 ret.append(p)
     return sorted(ret)
 
@@ -107,9 +113,16 @@ def time_measure(fn):
         now = time.time()
         res = fn(*args, **kwargs)
         delay = time.time() - now
-
+        
         print(f'{fn.__name__} took {delay} seconds!')
-
+        
         return res
-
+    
     return wrapper
+
+
+def add_pos_dir(pos, direction, w, h):
+    temp = [(0, 0), (1, 0), (0, -1), (-1, 0), (0, 1)]
+    new_pos = tuple(map(sum, zip(pos, temp[direction])))
+    new_pos = fix(new_pos, w, h)
+    return new_pos

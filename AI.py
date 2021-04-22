@@ -21,6 +21,9 @@ class AI:
     soldier_state = SoldierState.Null
     soldier_init_random_dir = None
     last_name_of_object = None
+    possible_base_cells = []
+    soldier_gathering_targets = set()
+    prev_round_resource = 0
 
     def __init__(self):
         # Current Game State
@@ -35,6 +38,7 @@ class AI:
         self.pos = (-1, -1)
         self.new_neighbors = {}
         self.encoded_neighbors = ""
+        self.shot = False
 
     def search_neighbors(self):
         # TODO improve by creating the list of indices instead of all the cells
@@ -68,7 +72,52 @@ class AI:
 
         self.new_neighbors = {n.pos: n for n in neighbor_nodes if
                               AI.map.nodes[n.pos] != n}
+        if AI.life_cycle > 1:
+            self.value = self.determine_value(neighbor_cells, neighbor_nodes)
         AI.found_history.update(set(self.new_neighbors.keys()))
+
+    def determine_value(self, neighbor_cells, neighbor_nodes):
+        for n in neighbor_cells:
+            if n.type == CellType.BASE and (n.x, n.y) != AI.map.base_pos and \
+                    AI.map.enemy_base_pos is None:
+                AI.map.enemy_base_pos = (n.x, n.y)
+                return 10
+    
+        sum_bg = 0
+        for n in neighbor_nodes:
+            if not AI.map.nodes[n.pos].discovered and \
+                    (n.bread > 0 or n.grass > 0):
+                sum_bg += n.bread
+                sum_bg += n.grass
+        if sum_bg >= 40:
+            return 8
+        elif 0 < sum_bg < 40:
+            return 7
+        
+        total_disc = 0
+        for n in neighbor_nodes:
+            if not AI.map.nodes[n.pos].discovered:
+                total_disc += 1
+        if total_disc >= 5:
+            return 6
+
+        total_soldiers = 0
+        for n in neighbor_nodes:
+            if AI.map.nodes[n.pos].enemy_soldiers < n.enemy_soldiers:
+                total_soldiers += 1
+        if total_soldiers > 0:
+            return 5
+        
+        if 0 < total_disc < 5:
+            return 4
+        
+        if self.game.ant.antType == AntType.KARGAR.value and self.pos in self.new_neighbors.keys():
+            if self.new_neighbors[self.pos].bread < AI.map.nodes[self.pos].bread \
+                    or self.new_neighbors[self.pos].grass < AI.map.nodes[self.pos].grass:
+                if self.game.ant.currentResource.value > AI.prev_round_resource:
+                    return 3
+                
+        return 2
 
     def update_map_from_neighbors(self):
         if not self.new_neighbors:
@@ -86,12 +135,17 @@ class AI:
                     msg.text]
 
         for m in maps:
-            ant_id, ant_pos, nodes = decode_nodes(m.text, AI.w, AI.h,
-                                                  self.game.ant.viewDistance)
+            ant_id, ant_pos, ant_dir, \
+                ant_shot, nodes = decode_nodes(m.text, AI.w, AI.h,
+                                               self.game.ant.viewDistance)
             AI.latest_pos[ant_id] = (ant_pos, m.turn)
             for pos, n in nodes.items():
                 if n != AI.map.nodes[pos]:
                     AI.map.nodes[pos] = copy.deepcopy(n)
+                    
+            if ant_shot:
+                target = add_pos_dir(ant_pos, ant_dir, AI.w, AI.h)
+                AI.soldier_gathering_targets.add(target)
 
     def update_ids_from_chat_box(self):
         id_msgs = [msg.text for msg in
@@ -340,6 +394,9 @@ class AI:
     def turn(self) -> (str, int, int):
         print("ROUND START!", AI.worker_state)
         self.update_ids_from_chat_box()
+        
+        if AI.game_round > 5:
+            self.check_for_base()
 
         if AI.game_round == 2:
             prev_id = AI.id
@@ -375,16 +432,6 @@ class AI:
 
         print("known cells", [k for k, v in AI.map.nodes.items() if v.discovered])
         print("history", AI.found_history)
-
-        if AI.life_cycle > 1:
-            self.encoded_neighbors = encode_graph_nodes(self.pos,
-                                                        self.new_neighbors,
-                                                        AI.w, AI.h,
-                                                        self.game.viewDistance,
-                                                        AI.id)
-            # TODO not discovered = guess node
-            self.message = self.encoded_neighbors
-            self.value = MESSAGE_VALUE["map"]
 
         if AI.game_round == 1:
             self.direction = Direction.get_random_direction()
@@ -457,11 +504,24 @@ class AI:
             #     self.direction = AI.soldier_init_random_dir
 
         print("turn", AI.game_round, "id", AI.id, "pos", self.pos,
-              "state", AI.worker_state, "dir", self.direction)
+              "state", AI.worker_state,
+              "dir", Direction.get_string(self.direction),
+              "map value", self.value)
         
         AI.latest_pos[AI.id] = (self.pos, AI.game_round)
+        if AI.life_cycle > 1:
+            self.encoded_neighbors = encode_graph_nodes(self.pos,
+                                                        self.new_neighbors,
+                                                        AI.w, AI.h,
+                                                        self.game.viewDistance,
+                                                        AI.id, self.direction,
+                                                        self.shot)
+            # TODO not discovered = guess node
+            self.message = self.encoded_neighbors
+            
         AI.game_round += 1
         AI.life_cycle += 1
+        AI.prev_round_resource = self.game.ant.currentResource.value
         return self.message, self.value, self.direction
 
     def determine_worker_state(self):
@@ -581,3 +641,36 @@ class AI:
         if AI.life_cycle < 5:
             AI.soldier_state = SoldierState.FirstFewRounds
             AI.soldier_init_random_dir = Direction.get_random_direction()
+            
+    def check_for_base(self):
+        hp = self.game.ant.health
+        base_hp = HP[self.game.ant.antType]
+        neighbors = get_view_distance_neighbors(self.pos, AI.w, AI.h,
+                                                self.game.ant.viewDistance)
+        es = sum([AI.map.nodes[v].enemy_soldiers for v in neighbors if
+                  AI.map.nodes[v].enemy_soldiers > 0])
+        cond = (hp == base_hp - BASE_DMG and es == 0) or \
+               (hp == base_hp - BASE_DMG - SOLDIER_DMG and es == 1)
+        if cond:
+            self.shot = True
+            self.value = 9
+            
+    def find_possible_base_cells(self):
+        for target in AI.soldier_gathering_targets:
+            possible_cells = Utils.get_view_distance_neighbors(target, AI.w,
+                                                               AI.h, 6, True)
+            possible_cells = [p for p in possible_cells if
+                              not AI.map.nodes[p].discovered and
+                              not AI.map.nodes[p].wall]
+            AI.possible_base_cells = list(set(AI.possible_base_cells)
+                                          .intersection(possible_cells))
+            if not AI.possible_base_cells:
+                print("HUGE MOTHERFUCKING ERROR!")
+
+    def chosse_best_target(self):
+        if len(AI.soldier_gathering_targets) == 1:
+            return next(iter(AI.soldier_gathering_targets))
+        elif len(AI.soldier_gathering_targets) > 1:
+            costs = []
+            # for target in AI.soldier_gathering_targets:
+            #     costs.append(AI.map.)
