@@ -430,6 +430,10 @@ class AI:
                 else:
                     # first move
                     self.direction = Direction.get_random_direction()
+
+                if self.direction == 0 or self.direction is None:
+                    print("random ant move")
+                    self.direction = Direction.get_random_direction()
             #
             # # todo: Delete this, this is test
             # AI.last_name_of_object = AI.last_name_of_object or random.choice(['bread', 'grass'])
