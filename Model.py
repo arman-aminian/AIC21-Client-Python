@@ -341,6 +341,8 @@ class Direction(Enum):
 
     @staticmethod
     def get_value(string: str):
+        if string == "CENTER":
+            return Direction.CENTER.value
         if string == "RIGHT":
             return Direction.RIGHT.value
         if string == "UP":
@@ -349,7 +351,7 @@ class Direction(Enum):
             return Direction.LEFT.value
         if string == "DOWN":
             return Direction.DOWN.value
-        return Direction.CENTER.value
+        return None
 
     @staticmethod
     def get_random_direction():

@@ -4,7 +4,7 @@ from Model import Direction
 from Utils import get_view_distance_neighbors, time_measure
 
 
-MAX_DISTANCE = 10
+MAX_DISTANCE = 6
 
 
 class BT:
@@ -14,7 +14,8 @@ class BT:
         self.best_path = None
         self.path = MAX_DISTANCE * [-1]
         self.best = None
-        self.visited = set(get_view_distance_neighbors(cur, self.graph.dim[0], self.graph.dim[1], 4))
+        self.visited = set(get_view_distance_neighbors(cur, self.graph.dim[0],
+                                                       self.graph.dim[1], 4))
 
         for pos, node in graph.nodes.items():
             if node.discovered:
@@ -36,7 +37,8 @@ class BT:
         neighbors = self.graph.get_neighbors_with_not_discovered_nodes(cur)
         # print(neighbors)
         for next_node in neighbors:
-            vis = set(get_view_distance_neighbors(next_node, self.graph.dim[0], self.graph.dim[1], 4))
+            vis = set(get_view_distance_neighbors(next_node, self.graph.dim[0],
+                                                  self.graph.dim[1], 4))
             not_changed = self.visited.copy()
             if len(vis & not_changed) == len(vis):
                 continue
@@ -50,6 +52,9 @@ class BT:
 def solve_bt(graph, pos):
     self = BT(graph, pos)
     self.bt(pos, 0)
+    self.best_path = [p for p in self.best_path if p != -1]
     if not self.best_path:
+        print("FUCKED UP")
         return 0
+    print(self.best_path)
     return Direction.get_value(self.graph.step(pos, self.best_path[0]))

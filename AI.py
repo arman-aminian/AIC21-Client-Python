@@ -5,6 +5,7 @@ from graph import *
 from message.map_message import *
 from tsp_generator import get_tsp_first_move, get_limit, get_number_of_object
 from state import *
+from BT import *
 
 
 class AI:
@@ -16,7 +17,9 @@ class AI:
     ids = {}
     latest_pos = {}
     found_history = set()
-    state = WorkerState.Null
+    worker_state = WorkerState.Null
+    soldier_state = SoldierState.Null
+    soldier_init_random_dir = None
     last_name_of_object = None
 
     def __init__(self):
@@ -146,16 +149,16 @@ class AI:
             if self.game.baseY < (self.game.mapHeight / 2):
                 # left-up region
                 if AI.id == 1 or AI.id == 4:
-                    AI.state = WorkerState.InitCollecting
+                    AI.worker_state = WorkerState.InitCollecting
                     m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
                 elif AI.id == 2:
-                    AI.state = WorkerState.InitCollecting
+                    AI.worker_state = WorkerState.InitCollecting
                     if self.pos[0] < self.pos[1]:
                         m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[1])
                     else:
                         m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[2])
                 else:
-                    AI.state = WorkerState.InitExploring
+                    AI.worker_state = WorkerState.InitExploring
                     if self.game_round % 2 == 1:
                         m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[0])
                     else:
@@ -164,16 +167,16 @@ class AI:
             else:
                 # left-down region
                 if AI.id == 1 or AI.id == 2:
-                    AI.state = WorkerState.InitCollecting
+                    AI.worker_state = WorkerState.InitCollecting
                     m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
                 elif AI.id == 3:
-                    AI.state = WorkerState.InitExploring
+                    AI.worker_state = WorkerState.InitExploring
                     if self.pos[0] < self.h - self.pos[1]:
                         m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[3])
                     else:
                         m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[2])
                 else:
-                    AI.state = WorkerState.InitExploring
+                    AI.worker_state = WorkerState.InitExploring
                     if self.game_round % 2 == 1:
                         m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[1])
                     else:
@@ -183,16 +186,16 @@ class AI:
             if self.game.baseY < (self.game.mapHeight / 2):
                 # right-up region
                 if AI.id == 3 or AI.id == 4:
-                    AI.state = WorkerState.InitCollecting
+                    AI.worker_state = WorkerState.InitCollecting
                     m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
                 elif AI.id == 2:
-                    AI.state = WorkerState.InitCollecting
+                    AI.worker_state = WorkerState.InitCollecting
                     if self.w - self.pos[0] < self.pos[1]:
                         m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[1])
                     else:
                         m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[0])
                 else:
-                    AI.state = WorkerState.InitExploring
+                    AI.worker_state = WorkerState.InitExploring
                     if self.game_round % 2 == 1:
                         m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[2])
                     else:
@@ -201,16 +204,16 @@ class AI:
             else:
                 # right-down region
                 if AI.id == 2 or AI.id == 3:
-                    AI.state = WorkerState.InitCollecting
+                    AI.worker_state = WorkerState.InitCollecting
                     m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
                 elif AI.id == 1:
-                    AI.state = WorkerState.InitCollecting
+                    AI.worker_state = WorkerState.InitCollecting
                     if self.w - self.pos[0] < self.h - self.pos[1]:
                         m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[3])
                     else:
                         m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[0])
                 else:
-                    AI.state = WorkerState.InitExploring
+                    AI.worker_state = WorkerState.InitExploring
                     if self.game_round % 2 == 1:
                         m = self.get_init_ants_next_move(Utils.INIT_CENTER_ANTS_MOVES1[3])
                     else:
@@ -278,6 +281,9 @@ class AI:
         self.update_map_from_neighbors()
         self.update_map_from_chat_box()
 
+        print("known cells", [k for k, v in AI.map.nodes.items() if v.discovered])
+        print("history", AI.found_history)
+
         if AI.life_cycle > 1:
             self.encoded_neighbors = encode_graph_nodes(self.pos,
                                                         self.new_neighbors,
@@ -293,16 +299,16 @@ class AI:
 
         elif self.game.ant.antType == AntType.KARGAR.value:
             if AI.id <= Utils.INIT_ANTS_NUM:
-                if AI.state == WorkerState.InitExploring:
+                if AI.worker_state == WorkerState.InitExploring:
                     self.direction = self.get_init_ant_final_move()
-                elif AI.state == WorkerState.Null or AI.state == WorkerState.InitCollecting:
+                elif AI.worker_state == WorkerState.Null or AI.worker_state == WorkerState.InitCollecting:
                     own_map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
                     for p in self.found_history:
                         own_map.nodes[p] = AI.map.nodes[p]
                     if self.game.ant.currentResource.type == ResourceType.BREAD:
                         if self.game.ant.currentResource.value == WORKER_MAX_CARRYING_RESOURCE_AMOUNT:
                             path = AI.map.get_path(self.pos, AI.map.base_pos)
-                            self.direction = AI.map.step(self.pos, path[0].pos)
+                            self.direction = Direction.get_value(AI.map.step(self.pos, path[0].pos))
                         if self.has_resource_in_own_map(ResourceType.BREAD.value,
                                                         GENERATE_KARGAR - self.game.ant.currentResource.value) \
                                 == ResourceType.BREAD.value:
@@ -324,7 +330,7 @@ class AI:
                     elif self.game.ant.currentResource.type == ResourceType.GRASS:
                         if self.game.ant.currentResource.value == WORKER_MAX_CARRYING_RESOURCE_AMOUNT:
                             path = AI.map.get_path(self.pos, AI.map.base_pos)
-                            self.direction = AI.map.step(self.pos, path[0].pos)
+                            self.direction = Direction.get_value(AI.map.step(self.pos, path[0].pos))
                         if self.has_resource_in_own_map(ResourceType.GRASS.value,
                                                         GENERATE_SARBAAZ - self.game.ant.currentResource.value) \
                                 == ResourceType.GRASS.value:
@@ -380,15 +386,15 @@ class AI:
                         self.direction = self.get_init_ant_final_move()
 
             else:
-                if AI.state == WorkerState.Null:
-                    self.determine_state()
-
-                if AI.state == WorkerState.Exploring:
-                    self.direction = self.explore()
-                elif AI.state == WorkerState.BreadOnly:
+                if AI.worker_state == WorkerState.Null:
+                    self.determine_worker_state()
+    
+                if AI.worker_state == WorkerState.Exploring:
+                    self.direction = self.worker_explore()
+                elif AI.worker_state == WorkerState.BreadOnly:
                     # TODO based on tsp
                     pass
-                elif AI.state == WorkerState.GrassOnly:
+                elif AI.worker_state == WorkerState.GrassOnly:
                     # TODO based on tsp
                     pass
                 else:
@@ -409,21 +415,23 @@ class AI:
             #     )
             #     self.direction = x
         elif self.game.ant.antType == AntType.SARBAAZ.value:
-            # todo sarbaz move
-            self.value = 5
-            self.direction = Direction.get_random_direction()
+            if AI.soldier_state == SoldierState.Null:
+                self.determine_soldier_state()
+                
+            if AI.soldier_state == SoldierState.FirstFewRounds:
+                self.direction = AI.soldier_init_random_dir
 
         print("turn", AI.game_round, "id", AI.id, "pos", self.pos,
-              "state", AI.state, "dir", Direction.get_string(self.direction))
-
+              "state", AI.worker_state, "dir", Direction.get_string(self.direction))
+        
         AI.latest_pos[AI.id] = (self.pos, AI.game_round)
         AI.game_round += 1
         AI.life_cycle += 1
         return self.message, self.value, self.direction
 
-    def determine_state(self):
+    def determine_worker_state(self):
         # TODO discuss the logic and improve
-        AI.state = WorkerState.Exploring
+        AI.worker_state = WorkerState.Exploring
         # total_grass = sum([v.grass for k, v in AI.map.items()])
         # total_bread = sum([v.bread for k, v in AI.map.items()])
         # diff = total_grass - total_bread
@@ -434,25 +442,29 @@ class AI:
         # else:
         #     AI.state = WorkerState.Exploring
 
-    def explore(self):
+    def worker_explore(self):
+        # third version (BT)
+        d = solve_bt(AI.map, self.pos)
+        return d
+        
         # second version
-        size = 4
-        while self.is_radius_fully_discovered(size):
-            size += 1
-
-        # right, up, left, down
-        scores = self.calculate_score(size)
-        print("scores, right up left down", scores)
-        # TODO add the extra step when two sides have the same scores
-        d = [(1, 0), (0, -1), (-1, 0), (0, 1)]
-        possible_pos = [fix(tuple(map(sum, zip(self.pos, dd))), AI.w, AI.h)
-                        for dd in d]
-        same_score_indices = [i + 1 for i, s in enumerate(scores)
-                              if s == max(scores) and
-                              possible_pos[i] != AI.latest_pos[AI.id][0]]
-        return random.choice(same_score_indices) if same_score_indices else \
-            scores.index(max(scores)) + 1
-
+        # size = 4
+        # while self.is_radius_fully_discovered(size):
+        #     size += 1
+        #
+        # # right, up, left, down
+        # scores = self.calculate_score(size)
+        # print("scores, right up left down", scores)
+        # # TODO add the extra step when two sides have the same scores
+        # d = [(1, 0), (0, -1), (-1, 0), (0, 1)]
+        # possible_pos = [fix(tuple(map(sum, zip(self.pos, dd))), AI.w, AI.h)
+        #                 for dd in d]
+        # same_score_indices = [i + 1 for i, s in enumerate(scores)
+        #                       if s == max(scores) and
+        #                       possible_pos[i] != AI.latest_pos[AI.id][0]]
+        # return random.choice(same_score_indices) if same_score_indices else \
+        #     scores.index(max(scores)) + 1
+        
         # first version
         # # right -> up -> left -> down
         # points = [fix((self.pos[0] + 1, self.pos[1]), AI.w, AI.h),
@@ -529,3 +541,8 @@ class AI:
     #             num_discovered[i] += n
     #             for p in new_positions:
     #                 temp_map[p].discovered = True
+    
+    def determine_soldier_state(self):
+        if AI.life_cycle < 5:
+            AI.soldier_state = SoldierState.FirstFewRounds
+            AI.soldier_init_random_dir = Direction.get_random_direction()

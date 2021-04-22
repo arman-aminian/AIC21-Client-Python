@@ -16,5 +16,6 @@ class SoldierState(Enum):
     Null = -1
     FindingBase = 0
     HelpingWorker = 1
-    AttackPreparation = 2
-    Defence = 3
+    PreparingForAttack = 2
+    Defending = 3
+    FirstFewRounds = 4
