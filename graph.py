@@ -277,10 +277,10 @@ class Graph:
     def get_nearest_bread_nodes(self, src, dest, number):
         bread_nodes = []
         for node in self.nodes.values():
-            if node.bread > 0 and node.pos != src.pos and node.pos != dest.pos and self.get_shortest_path(
-                    node.pos, dest, 'bread'
-            ) is not None and self.get_shortest_path(
-                    src, node.pos, 'bread'
+            if node.bread > 0 and node.pos != src.pos and node.pos != dest.pos and self.get_shortest_distance(
+                    node, dest, 'bread'
+            ) is not None and self.get_shortest_distance(
+                    src, node, 'bread'
             ) is not None:
                 bread_nodes.append(node)
         return sorted(bread_nodes, key=lambda n: n.bread_value(src, dest, self, number), reverse=True)[
