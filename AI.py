@@ -304,7 +304,7 @@ class AI:
                             self.direction, AI.last_name_of_object = get_tsp_first_move(
                                 src_pos=self.pos,
                                 dest_pos=AI.map.base_pos,
-                                name_of_object=AI.last_name_of_object,
+                                name_of_object='bread',
                                 graph=AI.map,
                                 limit=get_limit(
                                     bread_min=GameConfig.generate_kargar,
@@ -323,7 +323,7 @@ class AI:
                             self.direction, AI.last_name_of_object = get_tsp_first_move(
                                 src_pos=self.pos,
                                 dest_pos=AI.map.base_pos,
-                                name_of_object=AI.last_name_of_object,
+                                name_of_object='grass',
                                 graph=AI.map,
                                 limit=get_limit(
                                     bread_min=math.inf,
@@ -342,7 +342,7 @@ class AI:
                         self.direction, AI.last_name_of_object = get_tsp_first_move(
                             src_pos=self.pos,
                             dest_pos=AI.map.base_pos,
-                            name_of_object=AI.last_name_of_object,
+                            name_of_object='bread',
                             graph=AI.map,
                             limit=get_limit(
                                 bread_min=GameConfig.generate_kargar,
@@ -358,7 +358,7 @@ class AI:
                         self.direction, AI.last_name_of_object = get_tsp_first_move(
                             src_pos=self.pos,
                             dest_pos=AI.map.base_pos,
-                            name_of_object=AI.last_name_of_object,
+                            name_of_object='grass',
                             graph=AI.map,
                             limit=get_limit(
                                 bread_min=math.inf,
