@@ -296,7 +296,13 @@ class AI:
                 if AI.state == WorkerState.InitExploring:
                     self.direction = self.get_init_ant_final_move()
                 elif AI.state == WorkerState.Null or AI.state == WorkerState.InitCollecting:
+                    own_map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
+                    for p in self.found_history:
+                        own_map.nodes[p] = AI.map.nodes[p]
                     if self.game.ant.currentResource.type == ResourceType.BREAD:
+                        if self.game.ant.currentResource.value == WORKER_MAX_CARRYING_RESOURCE_AMOUNT:
+                            path = AI.map.get_path(self.pos, AI.map.base_pos)
+                            self.direction = AI.map.step(self.pos, path[0].pos)
                         if self.has_resource_in_own_map(ResourceType.BREAD.value,
                                                         GENERATE_KARGAR - self.game.ant.currentResource.value) \
                                 == ResourceType.BREAD.value:
@@ -305,7 +311,7 @@ class AI:
                                 src_pos=self.pos,
                                 dest_pos=AI.map.base_pos,
                                 name_of_object='bread',
-                                graph=AI.map,
+                                graph=own_map,
                                 limit=get_limit(
                                     bread_min=GENERATE_KARGAR,
                                     grass_min=math.inf
@@ -316,6 +322,9 @@ class AI:
                             print("state has not other res")
                             self.direction = self.get_init_ant_final_move()
                     elif self.game.ant.currentResource.type == ResourceType.GRASS:
+                        if self.game.ant.currentResource.value == WORKER_MAX_CARRYING_RESOURCE_AMOUNT:
+                            path = AI.map.get_path(self.pos, AI.map.base_pos)
+                            self.direction = AI.map.step(self.pos, path[0].pos)
                         if self.has_resource_in_own_map(ResourceType.GRASS.value,
                                                         GENERATE_SARBAAZ - self.game.ant.currentResource.value) \
                                 == ResourceType.GRASS.value:
@@ -324,7 +333,7 @@ class AI:
                                 src_pos=self.pos,
                                 dest_pos=AI.map.base_pos,
                                 name_of_object='grass',
-                                graph=AI.map,
+                                graph=own_map,
                                 limit=get_limit(
                                     bread_min=math.inf,
                                     grass_min=GENERATE_SARBAAZ
@@ -343,7 +352,7 @@ class AI:
                             src_pos=self.pos,
                             dest_pos=AI.map.base_pos,
                             name_of_object='bread',
-                            graph=AI.map,
+                            graph=own_map,
                             limit=get_limit(
                                 bread_min=GENERATE_KARGAR,
                                 grass_min=math.inf
@@ -359,7 +368,7 @@ class AI:
                             src_pos=self.pos,
                             dest_pos=AI.map.base_pos,
                             name_of_object='grass',
-                            graph=AI.map,
+                            graph=own_map,
                             limit=get_limit(
                                 bread_min=math.inf,
                                 grass_min=GENERATE_SARBAAZ

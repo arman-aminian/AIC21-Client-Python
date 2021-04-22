@@ -172,17 +172,18 @@ class Graph:
 
     def guess_node(self, node):
         # todo: make guessing better
-        opposite_node_pos = (self.dim[0] - 1 - node.pos[0], self.dim[1] - 1 - node.pos[1])
-        opposite_node = self.nodes[opposite_node_pos]
-        if not opposite_node.discovered or random.randint(1, 5) != 1:
-            return Node(pos=node.pos, discovered=False, wall=random.choice([True, False, False, False]))
-        return Node(
-            pos=node.pos,
-            discovered=False,
-            wall=opposite_node.wall,
-            bread=opposite_node.bread,
-            grass=opposite_node.grass
-        )
+        return Node(pos=node.pos, discovered=False, wall=True)
+        # opposite_node_pos = (self.dim[0] - 1 - node.pos[0], self.dim[1] - 1 - node.pos[1])
+        # opposite_node = self.nodes[opposite_node_pos]
+        # if not opposite_node.discovered or random.randint(1, 5) != 1:
+        #     return Node(pos=node.pos, discovered=False, wall=random.choice([True, False, False, False]))
+        # return Node(
+        #     pos=node.pos,
+        #     discovered=False,
+        #     wall=opposite_node.wall,
+        #     bread=opposite_node.bread,
+        #     grass=opposite_node.grass
+        # )
 
     def get_node(self, pos):
         return self.nodes[pos] if self.nodes[pos].discovered else self.guess_node(self.nodes[pos])
