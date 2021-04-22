@@ -2,6 +2,7 @@ import math
 from itertools import chain, groupby
 
 from Model import Direction, ResourceType
+from Utils import time_measure
 
 
 def get_tsp(src_pos, dest_pos, graph, number_of_object):
@@ -147,12 +148,17 @@ def get_path_from_tsp_info(tsp_info, name_of_node_object, graph, limit, number_o
     path = list(reversed(path))
     actual_path = []
 
-    for i in range(1, len(path)):
-        actual_path.extend(
-            graph.get_shortest_path_from_shortest_path_info(
-                dist_nodes[path[i - 1]], dist_nodes[path[i]], name_of_node_object
-            )
+    # for i in range(1, len(path)):
+    #     actual_path.extend(
+    #         graph.get_shortest_path_from_shortest_path_info(
+    #             dist_nodes[path[i - 1]], dist_nodes[path[i]], name_of_node_object
+    #         )
+    #     )
+    actual_path.extend(
+        graph.get_shortest_path_from_shortest_path_info(
+            dist_nodes[path[0]], dist_nodes[path[1]], name_of_node_object
         )
+    )
 
     return {
         'path': [el[0] for el in groupby(actual_path)],
@@ -160,6 +166,7 @@ def get_path_from_tsp_info(tsp_info, name_of_node_object, graph, limit, number_o
     }
 
 
+@time_measure
 def get_tsp_first_move(src_pos, dest_pos, graph, name_of_object, limit=None, number_of_object=None):
     number_of_object = number_of_object or {}
     if not limit:

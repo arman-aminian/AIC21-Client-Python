@@ -139,7 +139,7 @@ class AI:
     def get_init_ants_next_move(self, preferred_moves) -> int:
         for m in preferred_moves:
             next_node = AI.map.nodes[self.get_next_pos(self.pos, m)]
-            if (not next_node.wall) and (self.get_next_pos(self.pos, m) != AI.latest_pos[AI.id]):
+            if (not next_node.wall) and (self.get_next_pos(self.pos, m) != AI.latest_pos[AI.id][0]):
                 return m
         print("error on get_init_ants_next_move")
         return Direction.get_random_direction()
@@ -225,6 +225,7 @@ class AI:
             print("something went wrong, init ants move :", m, "from id:", AI.id)
             return Direction.get_random_direction()
 
+    @time_measure
     def get_init_ant_collect_move(self):
         own_map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
         for p in self.found_history:
@@ -243,7 +244,7 @@ class AI:
                     name_of_object='bread',
                     graph=own_map,
                     limit=get_limit(
-                        bread_min=GENERATE_KARGAR,
+                        bread_min=WORKER_MAX_CARRYING_RESOURCE_AMOUNT,
                         grass_min=math.inf
                     ),
                     number_of_object=get_number_of_object(self.game.ant.currentResource),
@@ -266,7 +267,7 @@ class AI:
                     graph=own_map,
                     limit=get_limit(
                         bread_min=math.inf,
-                        grass_min=GENERATE_SARBAAZ
+                        grass_min=WORKER_MAX_CARRYING_RESOURCE_AMOUNT
                     ),
                     number_of_object=get_number_of_object(self.game.ant.currentResource),
                 )
@@ -284,12 +285,13 @@ class AI:
                 name_of_object='bread',
                 graph=own_map,
                 limit=get_limit(
-                    bread_min=GENERATE_KARGAR,
+                    bread_min=WORKER_MAX_CARRYING_RESOURCE_AMOUNT,
                     grass_min=math.inf
                 ),
                 number_of_object=get_number_of_object(self.game.ant.currentResource),
             )
             if m is None:
+                print("tsp returns None")
                 m = self.get_init_ant_explore_move()
         elif self.has_resource_in_own_map(
                 2,
@@ -303,11 +305,12 @@ class AI:
                 graph=own_map,
                 limit=get_limit(
                     bread_min=math.inf,
-                    grass_min=GENERATE_SARBAAZ
+                    grass_min=WORKER_MAX_CARRYING_RESOURCE_AMOUNT
                 ),
                 number_of_object=get_number_of_object(self.game.ant.currentResource),
             )
             if m is None:
+                print("tsp returns None")
                 m = self.get_init_ant_explore_move()
         else:
             print("state has not res and no path")
@@ -318,7 +321,6 @@ class AI:
         own_map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
         for p in self.found_history:
             own_map.nodes[p] = AI.map.nodes[p]
-        print("has_resource")
         print("total bread num:", own_map.total_bread_number())
         print("total grass num:", own_map.total_grass_number())
         if res_type == ResourceType.BREAD.value:
@@ -334,6 +336,7 @@ class AI:
         else:
             return None
 
+    @time_measure
     def turn(self) -> (str, int, int):
         print("ROUND START!", AI.worker_state)
         self.update_ids_from_chat_box()
@@ -449,7 +452,7 @@ class AI:
                 self.direction = AI.soldier_init_random_dir
 
         print("turn", AI.game_round, "id", AI.id, "pos", self.pos,
-              "state", AI.worker_state, "dir", Direction.get_string(self.direction))
+              "state", AI.worker_state, "dir", self.direction)
         
         AI.latest_pos[AI.id] = (self.pos, AI.game_round)
         AI.game_round += 1
