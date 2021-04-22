@@ -449,11 +449,12 @@ class AI:
             #     )
             #     self.direction = x
         elif self.game.ant.antType == AntType.SARBAAZ.value:
-            if AI.soldier_state == SoldierState.Null:
-                self.determine_soldier_state()
-                
-            if AI.soldier_state == SoldierState.FirstFewRounds:
-                self.direction = AI.soldier_init_random_dir
+            self.direction = Direction.get_random_direction()
+            # if AI.soldier_state == SoldierState.Null:
+            #     self.determine_soldier_state()
+            #
+            # if AI.soldier_state == SoldierState.FirstFewRounds:
+            #     self.direction = AI.soldier_init_random_dir
 
         print("turn", AI.game_round, "id", AI.id, "pos", self.pos,
               "state", AI.worker_state, "dir", self.direction)
