@@ -298,7 +298,7 @@ class AI:
                 elif AI.state == WorkerState.Null or AI.state == WorkerState.InitCollecting:
                     if self.game.ant.currentResource.type == ResourceType.BREAD:
                         if self.has_resource_in_own_map(ResourceType.BREAD.value,
-                                                        GameConfig.generate_kargar - self.game.ant.currentResource.value) \
+                                                        GENERATE_KARGAR - self.game.ant.currentResource.value) \
                                 == ResourceType.BREAD.value:
                             print("state has res to find")
                             self.direction, AI.last_name_of_object = get_tsp_first_move(
@@ -307,7 +307,7 @@ class AI:
                                 name_of_object='bread',
                                 graph=AI.map,
                                 limit=get_limit(
-                                    bread_min=GameConfig.generate_kargar,
+                                    bread_min=GENERATE_KARGAR,
                                     grass_min=math.inf
                                 ),
                                 number_of_object=get_number_of_object(self.game.ant.currentResource),
@@ -317,7 +317,7 @@ class AI:
                             self.direction = self.get_init_ant_final_move()
                     elif self.game.ant.currentResource.type == ResourceType.GRASS:
                         if self.has_resource_in_own_map(ResourceType.GRASS.value,
-                                                        GameConfig.generate_sarbaaz - self.game.ant.currentResource.value) \
+                                                        GENERATE_SARBAAZ - self.game.ant.currentResource.value) \
                                 == ResourceType.GRASS.value:
                             print("state has res to find")
                             self.direction, AI.last_name_of_object = get_tsp_first_move(
@@ -327,7 +327,7 @@ class AI:
                                 graph=AI.map,
                                 limit=get_limit(
                                     bread_min=math.inf,
-                                    grass_min=GameConfig.generate_sarbaaz
+                                    grass_min=GENERATE_SARBAAZ
                                 ),
                                 number_of_object=get_number_of_object(self.game.ant.currentResource),
                             )
@@ -336,7 +336,7 @@ class AI:
                             self.direction = self.get_init_ant_final_move()
                     elif self.has_resource_in_own_map(
                             2,
-                            GameConfig.generate_kargar - self.game.ant.currentResource.value) \
+                            GENERATE_KARGAR - self.game.ant.currentResource.value) \
                             == ResourceType.BREAD.value:
                         print("state has not res but has path")
                         self.direction, AI.last_name_of_object = get_tsp_first_move(
@@ -345,14 +345,14 @@ class AI:
                             name_of_object='bread',
                             graph=AI.map,
                             limit=get_limit(
-                                bread_min=GameConfig.generate_kargar,
+                                bread_min=GENERATE_KARGAR,
                                 grass_min=math.inf
                             ),
                             number_of_object=get_number_of_object(self.game.ant.currentResource),
                         )
                     elif self.has_resource_in_own_map(
                             2,
-                            GameConfig.generate_sarbaaz - self.game.ant.currentResource.value) \
+                            GENERATE_SARBAAZ - self.game.ant.currentResource.value) \
                             == ResourceType.GRASS.value:
                         print("state has not res but has path")
                         self.direction, AI.last_name_of_object = get_tsp_first_move(
@@ -362,7 +362,7 @@ class AI:
                             graph=AI.map,
                             limit=get_limit(
                                 bread_min=math.inf,
-                                grass_min=GameConfig.generate_sarbaaz
+                                grass_min=GENERATE_SARBAAZ
                             ),
                             number_of_object=get_number_of_object(self.game.ant.currentResource),
                         )
