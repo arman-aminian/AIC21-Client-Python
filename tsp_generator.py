@@ -185,7 +185,7 @@ def get_tsp_first_move(src_pos, dest_pos, graph, name_of_object, limit=None, num
 
     if not tsp_path or not tsp_path.get('path'):
         return Direction.get_value('None'), None
-    p = []
+
     return Direction.get_value(graph.step(src_pos, tsp_path.get('path')[0].pos)), last_name_of_object
 
 

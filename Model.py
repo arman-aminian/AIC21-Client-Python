@@ -359,6 +359,8 @@ class Direction(Enum):
 
     @staticmethod
     def get_string(dir_val: int):
+        if dir_val is None:
+            return "NONE"
         return Direction(dir_val).name
 
 

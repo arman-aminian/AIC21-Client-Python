@@ -232,7 +232,7 @@ class AI:
         print("has_resource")
         print("total bread num:", own_map.total_bread_number())
         print("total grass num:", own_map.total_grass_number())
-        if res_type == ResourceType.BREAD:
+        if res_type == ResourceType.BREAD.value:
             if own_map.total_bread_number() >= res_num:
                 return res_type
         elif res_type == ResourceType.GRASS.value:
@@ -246,7 +246,7 @@ class AI:
             return None
 
     def turn(self) -> (str, int, int):
-        print("ROUND START!")
+        print("ROUND START!", AI.worker_state)
         self.update_ids_from_chat_box()
 
         if AI.game_round == 2:
@@ -365,6 +365,8 @@ class AI:
                             ),
                             number_of_object=get_number_of_object(self.game.ant.currentResource),
                         )
+                        if self.direction is None:
+                            self.direction = self.get_init_ant_final_move()
                     elif self.has_resource_in_own_map(
                             2,
                             GENERATE_SARBAAZ - self.game.ant.currentResource.value) \
@@ -381,6 +383,8 @@ class AI:
                             ),
                             number_of_object=get_number_of_object(self.game.ant.currentResource),
                         )
+                        if self.direction is None:
+                            self.direction = self.get_init_ant_final_move()
                     else:
                         print("state has not res and no path")
                         self.direction = self.get_init_ant_final_move()
@@ -392,11 +396,31 @@ class AI:
                 if AI.worker_state == WorkerState.Exploring:
                     self.direction = self.worker_explore()
                 elif AI.worker_state == WorkerState.BreadOnly:
-                    # TODO based on tsp
-                    pass
+                    self.direction, AI.last_name_of_object = get_tsp_first_move(
+                        src_pos=self.pos,
+                        dest_pos=AI.map.base_pos,
+                        name_of_object='bread',
+                        graph=AI.map,
+                        limit=get_limit(
+                            bread_min=GENERATE_KARGAR,
+                            grass_min=math.inf
+                        ),
+                        number_of_object=get_number_of_object(
+                            self.game.ant.currentResource),
+                    )
                 elif AI.worker_state == WorkerState.GrassOnly:
-                    # TODO based on tsp
-                    pass
+                    self.direction, AI.last_name_of_object = get_tsp_first_move(
+                        src_pos=self.pos,
+                        dest_pos=AI.map.base_pos,
+                        name_of_object='grass',
+                        graph=AI.map,
+                        limit=get_limit(
+                            bread_min=math.inf,
+                            grass_min=GENERATE_SARBAAZ
+                        ),
+                        number_of_object=get_number_of_object(
+                            self.game.ant.currentResource),
+                    )
                 else:
                     # first move
                     self.direction = Direction.get_random_direction()
@@ -431,16 +455,16 @@ class AI:
 
     def determine_worker_state(self):
         # TODO discuss the logic and improve
-        AI.worker_state = WorkerState.Exploring
-        # total_grass = sum([v.grass for k, v in AI.map.items()])
-        # total_bread = sum([v.bread for k, v in AI.map.items()])
-        # diff = total_grass - total_bread
-        # if -20 <= diff <= 20 or diff >= 30:
-        #     AI.state = WorkerState.GrassOnly
-        # elif diff <= -30:
-        #     AI.state = WorkerState.BreadOnly
-        # else:
-        #     AI.state = WorkerState.Exploring
+        # AI.worker_state = WorkerState.Exploring
+        total_grass = sum([v.grass for k, v in AI.map.nodes.items()])
+        total_bread = sum([v.bread for k, v in AI.map.nodes.items()])
+        diff = total_grass - total_bread
+        if -20 <= diff <= 20 or diff > 20 or total_bread == 0:
+            AI.worker_state = WorkerState.GrassOnly
+        elif diff < -20 or total_grass == 0:
+            AI.worker_state = WorkerState.BreadOnly
+        else:
+            AI.worker_state = WorkerState.Exploring
 
     def worker_explore(self):
         # third version (BT)

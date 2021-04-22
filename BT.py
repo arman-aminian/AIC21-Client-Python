@@ -22,9 +22,9 @@ class BT:
                 self.visited.add(pos)
 
     def bt(self, cur, dist):
-        delay = time.time() - self.start
-        if delay > 0.08:
-            return
+        # delay = time.time() - self.start
+        # if delay > 0.08:
+        #     return
         now = len(self.visited)
         # print(cur, dist, now)
         if not self.best or now > self.best:
@@ -52,6 +52,7 @@ class BT:
 def solve_bt(graph, pos):
     self = BT(graph, pos)
     self.bt(pos, 0)
+    print("best", self.best_path)
     self.best_path = [p for p in self.best_path if p != -1]
     if not self.best_path:
         print("FUCKED UP")
