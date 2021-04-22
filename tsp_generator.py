@@ -44,6 +44,9 @@ def make_tsp(src, dest, name_of_node_object, graph, number_of_object):
 
     number_of_dist_vertex = len(dist_nodes) + 2
 
+    if number_of_dist_vertex == 2:
+        return None
+
     dp = [number_of_dist_vertex * [-math.inf] for _ in range(1 << number_of_dist_vertex)]
     dp_path = [number_of_dist_vertex * [-1] for _ in range(1 << number_of_dist_vertex)]
 
@@ -102,6 +105,8 @@ def get_path_from_tsp_info(tsp_info, name_of_node_object, graph, limit, number_o
     dp_path = tsp_info.get(f'tsp_{name_of_node_object}').get('dp_path')
     dist_nodes = tsp_info.get(f'tsp_{name_of_node_object}').get('dist_nodes')
     number_of_dist_vertex = len(dist_nodes)
+    if number_of_dist_vertex == 2:
+        return None
     best_mask = None
     best_value = 0
     for i in range(1 << (number_of_dist_vertex - 2)):
