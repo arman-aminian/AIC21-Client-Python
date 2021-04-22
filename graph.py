@@ -1,5 +1,7 @@
 import math
 import random
+from itertools import chain
+
 import Utils
 
 
@@ -259,35 +261,58 @@ class Graph:
         for node in nodes:
             pos = node.pos
             self.shortest_path_info['bread'][pos] = self.get_shortest_path(
-                self.nodes[pos], 'bread' if name_of_object == 'grass' else 'grass', number_of_object.get(name_of_object, 0)
+                self.nodes[pos], 'bread' if name_of_object == 'grass' else 'grass',
+                number_of_object.get(name_of_object, 0)
             )
 
-    def get_nearest_grass_nodes(self, src, dest, number):
-        grass_nodes = []
+    def get_nearest_grass_nodes(self, src, dest, number_of_object):
+        number = number_of_object.get('grass', 0)
+        grass_nodes_temp = []
         for node in self.nodes.values():
-            if node.grass > 0 and node.pos != src.pos and node.pos != dest.pos and self.get_shortest_distance(
+            if node.grass > 0 and node.pos != src.pos and node.pos != dest.pos:
+                grass_nodes_temp.append(node)
+
+        self.find_all_shortest_path(
+            number_of_object, 'grass', list(chain([src], grass_nodes_temp, [dest]))
+        )
+
+        grass_nodes = []
+        for node in grass_nodes_temp:
+            if self.get_shortest_distance(
                     node, dest, 'grass'
             ) is not None and self.get_shortest_distance(
-                    src, node, 'grass'
+                src, node, 'grass'
             ) is not None:
                 grass_nodes.append(node)
+
         return sorted(grass_nodes, key=lambda n: n.grass_value(src, dest, self, number), reverse=True)[
                :self.TSP_NODE_LIMIT]
 
-    def get_nearest_bread_nodes(self, src, dest, number):
-        bread_nodes = []
+    def get_nearest_bread_nodes(self, src, dest, number_of_object):
+        number = number_of_object.get('bread', 0)
+        bread_nodes_temp = []
         for node in self.nodes.values():
-            if node.bread > 0 and node.pos != src.pos and node.pos != dest.pos and self.get_shortest_distance(
+            if node.bread > 0 and node.pos != src.pos and node.pos != dest.pos:
+                bread_nodes_temp.append(node)
+
+        self.find_all_shortest_path(
+            number_of_object, 'bread', list(chain([src], bread_nodes_temp, [dest]))
+        )
+
+        bread_nodes = []
+        for node in bread_nodes_temp:
+            if self.get_shortest_distance(
                     node, dest, 'bread'
             ) is not None and self.get_shortest_distance(
-                    src, node, 'bread'
+                src, node, 'bread'
             ) is not None:
                 bread_nodes.append(node)
+
         return sorted(bread_nodes, key=lambda n: n.bread_value(src, dest, self, number), reverse=True)[
                :self.TSP_NODE_LIMIT]
 
     def get_shortest_distance(self, src, dest, name_of_object, default=None):
-        return self.shortest_path_info[name_of_object][src.pos]['dist'].get(dest.pos, default)
+        return self.shortest_path_info[name_of_object].get(src.pos, {}).get('dist', {}).get(dest.pos, default)
 
     def get_shortest_path_from_shortest_path_info(self, src, dest, name_of_object):
         parent = self.shortest_path_info[name_of_object][src.pos].get('parent', [])

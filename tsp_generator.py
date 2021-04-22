@@ -6,11 +6,10 @@ from Utils import time_measure
 
 
 def get_tsp(src_pos, dest_pos, graph, number_of_object, name_of_object):
-
     tsp = make_tsp(
-        graph.nodes[src_pos], graph.nodes[dest_pos], name_of_object, graph, number_of_object.get(name_of_object, 0)
+        graph.nodes[src_pos], graph.nodes[dest_pos], name_of_object, graph, number_of_object
     )
-
+    print(tsp)
     return {
         f'tsp_{name_of_object}': tsp
     }
@@ -38,12 +37,11 @@ def make_dist_graph(src, dest, name_of_node_object, graph, dist_nodes, number_of
 
 def make_tsp(src, dest, name_of_node_object, graph, number_of_object):
     dist_nodes = getattr(graph, f'get_nearest_{name_of_node_object}_nodes')(src, dest, number_of_object)
-    graph.find_all_shortest_path(number_of_object, name_of_node_object, list(chain([src], dist_nodes, [dest])))
-
+    number_of_object = number_of_object.get(name_of_node_object, 0)
     dist = make_dist_graph(src, dest, name_of_node_object, graph, dist_nodes, number_of_object)
 
     number_of_dist_vertex = len(dist_nodes) + 2
-
+    print(number_of_dist_vertex)
     if number_of_dist_vertex == 2:
         return None
 
@@ -93,7 +91,7 @@ def get_tsp_path(src_pos, dest_pos, graph, limit, number_of_object, name_of_obje
         }
 
     tsp_info = get_tsp(src_pos, dest_pos, graph, number_of_object, name_of_object)
-    path_from_tsp_info = get_path_from_tsp_info(tsp_info, 'bread', graph, limit, number_of_objs)
+    path_from_tsp_info = get_path_from_tsp_info(tsp_info, name_of_object, graph, limit, number_of_objs)
 
     return {
         f'{name_of_object}_path_from_tsp_info': path_from_tsp_info,
