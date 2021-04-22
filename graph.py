@@ -255,19 +255,20 @@ class Graph:
     def get_random_nodes(self):
         return {pos: self.get_node(pos) for pos in self.nodes.keys()}
 
-    def find_all_shortest_path(self, number_of_object):
+    def find_all_shortest_path(self, number_of_object, name_of_object):
         for pos in self.nodes.keys():
             self.shortest_path_info['bread'][pos] = self.get_shortest_path(
-                self.nodes[pos], 'grass', number_of_object.get('bread', 0)
-            )
-            self.shortest_path_info['grass'][pos] = self.get_shortest_path(
-                self.nodes[pos], 'bread', number_of_object.get('bread', 0)
+                self.nodes[pos], 'bread' if name_of_object == 'grass' else 'grass', number_of_object.get(name_of_object, 0)
             )
 
     def get_nearest_grass_nodes(self, src, dest, number):
         grass_nodes = []
         for node in self.nodes.values():
-            if node.grass > 0 and node.pos != src.pos and node.pos != dest.pos:
+            if node.grass > 0 and node.pos != src.pos and node.pos != dest.pos and self.get_shortest_path(
+                    node.pos, dest, 'grass'
+            ) is not None and self.get_shortest_path(
+                    src, node.pos, 'grass'
+            ) is not None:
                 grass_nodes.append(node)
         return sorted(grass_nodes, key=lambda n: n.grass_value(src, dest, self, number), reverse=True)[
                :self.TSP_NODE_LIMIT]
@@ -275,7 +276,11 @@ class Graph:
     def get_nearest_bread_nodes(self, src, dest, number):
         bread_nodes = []
         for node in self.nodes.values():
-            if node.bread > 0 and node.pos != src.pos and node.pos != dest.pos:
+            if node.bread > 0 and node.pos != src.pos and node.pos != dest.pos and self.get_shortest_path(
+                    node.pos, dest, 'bread'
+            ) is not None and self.get_shortest_path(
+                    src, node.pos, 'bread'
+            ) is not None:
                 bread_nodes.append(node)
         return sorted(bread_nodes, key=lambda n: n.bread_value(src, dest, self, number), reverse=True)[
                :self.TSP_NODE_LIMIT]

@@ -5,15 +5,15 @@ from Model import Direction, ResourceType
 from Utils import time_measure
 
 
-def get_tsp(src_pos, dest_pos, graph, number_of_object):
-    graph.find_all_shortest_path(number_of_object)
+def get_tsp(src_pos, dest_pos, graph, number_of_object, name_of_object):
+    graph.find_all_shortest_path(number_of_object, name_of_object)
 
-    bread_tsp = make_tsp(graph.nodes[src_pos], graph.nodes[dest_pos], 'bread', graph, number_of_object.get('bread', 0))
-    grass_tsp = make_tsp(graph.nodes[src_pos], graph.nodes[dest_pos], 'grass', graph, number_of_object.get('grass', 0))
+    tsp = make_tsp(
+        graph.nodes[src_pos], graph.nodes[dest_pos], name_of_object, graph, number_of_object.get(name_of_object, 0)
+    )
 
     return {
-        'tsp_bread': bread_tsp,
-        'tsp_grass': grass_tsp,
+        f'tsp_{name_of_object}': tsp
     }
 
 
@@ -75,11 +75,10 @@ def make_tsp(src, dest, name_of_node_object, graph, number_of_object):
     }
 
 
-def get_tsp_path(src_pos, dest_pos, graph, limit, number_of_object):
-    number_of_bread = number_of_object.get('bread', 0)
-    number_of_grass = number_of_object.get('grass', 0)
+def get_tsp_path(src_pos, dest_pos, graph, limit, number_of_object, name_of_object):
+    number_of_objs = number_of_object.get(name_of_object, 0)
 
-    if number_of_grass >= limit.get('grass').get('min'):
+    if number_of_objs >= limit.get(name_of_object).get('min'):
         res = {
             'path': graph.get_path(
                 graph.nodes[src_pos], graph.nodes[dest_pos]
@@ -87,29 +86,14 @@ def get_tsp_path(src_pos, dest_pos, graph, limit, number_of_object):
             'value': math.inf
         }
         return {
-            'bread_path_from_tsp_info': res,
-            'grass_path_from_tsp_info': res
+            f'{name_of_object}_path_from_tsp_info': res
         }
 
-    if number_of_bread >= limit.get('bread').get('min'):
-        res = {
-            'path': graph.get_path(
-                graph.nodes[src_pos], graph.nodes[dest_pos]
-            ),
-            'value': math.inf
-        }
-        return {
-            'bread_path_from_tsp_info': res,
-            'grass_path_from_tsp_info': res
-        }
-
-    tsp_info = get_tsp(src_pos, dest_pos, graph, number_of_object)
-    bread_path_from_tsp_info = get_path_from_tsp_info(tsp_info, 'bread', graph, limit, number_of_bread)
-    grass_path_from_tsp_info = get_path_from_tsp_info(tsp_info, 'grass', graph, limit, number_of_grass)
+    tsp_info = get_tsp(src_pos, dest_pos, graph, number_of_object, name_of_object)
+    path_from_tsp_info = get_path_from_tsp_info(tsp_info, 'bread', graph, limit, number_of_objs)
 
     return {
-        'bread_path_from_tsp_info': bread_path_from_tsp_info,
-        'grass_path_from_tsp_info': grass_path_from_tsp_info,
+        f'{name_of_object}_path_from_tsp_info': path_from_tsp_info,
     }
 
 
@@ -183,12 +167,9 @@ def get_tsp_first_move(src_pos, dest_pos, graph, name_of_object, limit=None, num
     if not limit.get('grass'):
         limit['grass'] = {'min': 1}
 
-    all_tsp = get_tsp_path(src_pos, dest_pos, graph, limit, number_of_object)
-    tsp_path = all_tsp.get(f'{name_of_object}_path_from_tsp_info') or all_tsp.get(
-        f'{"bread" if name_of_object == "grass" else "grass"}_path_from_tsp_info'
-    )
-    last_name_of_object = name_of_object if all_tsp.get(f'{name_of_object}_path_from_tsp_info') \
-        else "bread" if name_of_object == "grass" else "grass"
+    all_tsp = get_tsp_path(src_pos, dest_pos, graph, limit, number_of_object, name_of_object)
+    tsp_path = all_tsp.get(f'{name_of_object}_path_from_tsp_info')
+    last_name_of_object = name_of_object
 
     if not tsp_path or not tsp_path.get('path'):
         return Direction.get_value('None'), None
