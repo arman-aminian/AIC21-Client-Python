@@ -10,6 +10,8 @@ def get_tsp(src_pos, dest_pos, graph, number_of_object, name_of_object):
         graph.nodes[src_pos], graph.nodes[dest_pos], name_of_object, graph, number_of_object
     )
     print(tsp)
+    if not tsp:
+        return None
     return {
         f'tsp_{name_of_object}': tsp
     }
