@@ -309,13 +309,14 @@ class Graph:
                 grass_nodes_temp.append(node)
 
         self.find_all_shortest_path(
-            number_of_object, 'grass', list(chain([src], grass_nodes_temp, [dest]))
+            number_of_object, 'grass', [src, dest]
         )
+
         print(grass_nodes_temp)
         grass_nodes = []
         for node in grass_nodes_temp:
             if self.get_shortest_distance(
-                    node, dest, 'grass'
+                    dest, node, 'grass'
             ) is not None and self.get_shortest_distance(
                 src, node, 'grass'
             ) is not None:
@@ -332,13 +333,13 @@ class Graph:
                 bread_nodes_temp.append(node)
 
         self.find_all_shortest_path(
-            number_of_object, 'bread', list(chain([src], bread_nodes_temp, [dest]))
+            number_of_object, 'bread', [src, dest]
         )
         print(bread_nodes_temp)
         bread_nodes = []
         for node in bread_nodes_temp:
             if self.get_shortest_distance(
-                    node, dest, 'bread'
+                    dest, node, 'bread'
             ) is not None and self.get_shortest_distance(
                 src, node, 'bread'
             ) is not None:
