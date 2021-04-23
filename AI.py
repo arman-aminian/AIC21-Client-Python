@@ -557,7 +557,8 @@ class AI:
                         self.direction = Direction.CENTER.value
 
                 if AI.soldier_state == SoldierState.PreparingForAttack:
-                    ally_s = len([a for a in self.game.ant.getMapRelativeCell(0, 0).ants if a.antType == AntType.SARBAAZ.value])
+                    ally_s = len(
+                        [a for a in self.game.ant.getMapRelativeCell(0, 0).ants if a.antType == AntType.SARBAAZ.value])
                     if self.pos == AI.cell_target and (ally_s > 2 or abs(MAX_TURN_COUNT - AI.game_round) <= 10):
                         AI.soldier_state = SoldierState.Attacking
                     elif AI.cell_target is not None and self.pos != AI.cell_target:
@@ -836,7 +837,9 @@ class AI:
             AI.cell_target = targets[distances.index(min(distances))] if AI.cell_target is None else AI.cell_target
 
     def get_soldier_first_move_to_discover(self):
-        move, AI.cell_target = AI.latest_map.get_first_move_to_discover(AI.map.nodes[self.pos], self.pos, len(AI.ids[self.game.ant.antType]), AI.id, AI.ids[self.game.ant.antType])
+        move, AI.cell_target = AI.latest_map.get_first_move_to_discover(AI.map.nodes[self.pos], self.pos,
+                                                                        len(AI.ids[self.game.ant.antType]), AI.id,
+                                                                        AI.ids[self.game.ant.antType])
         return Direction.get_value(move)
 
     def get_soldier_first_node_to_support(self):
@@ -917,4 +920,5 @@ class AI:
     def get_first_move_to_target(self, src, dest):
         print_with_debug(src, dest)
         print_with_debug(AI.map.get_path(AI.map.nodes[src], AI.map.nodes[dest]))
-        return Direction.get_value(AI.map.step(src, AI.map.get_path_with_non_discovered(AI.map.nodes[src], AI.map.nodes[dest])[0].pos))
+        return Direction.get_value(
+            AI.map.step(src, AI.map.get_path_with_non_discovered(AI.map.nodes[src], AI.map.nodes[dest])[0].pos))
