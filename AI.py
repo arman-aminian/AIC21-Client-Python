@@ -410,9 +410,53 @@ class AI:
             else:
                 if AI.worker_state == WorkerState.Null:
                     self.determine_worker_state()
-    
+
                 if AI.worker_state == WorkerState.Exploring:
                     self.direction = self.worker_explore()
+                elif self.game.ant.currentResource.type == ResourceType.BREAD:
+                    if self.game.ant.currentResource.value == WORKER_MAX_CARRYING_RESOURCE_AMOUNT:
+                        path = AI.map.get_path(self.pos, AI.map.base_pos)
+                        return Direction.get_value(AI.map.step(self.pos, path[0].pos))
+                    if self.has_resource_in_own_map(ResourceType.BREAD.value,
+                                                    GENERATE_KARGAR - self.game.ant.currentResource.value) \
+                            == ResourceType.BREAD.value:
+                        print("state has res to find")
+                        m, AI.last_name_of_object = get_tsp_first_move(
+                            src_pos=self.pos,
+                            dest_pos=AI.map.base_pos,
+                            name_of_object='bread',
+                            graph=AI.map,
+                            limit=get_limit(
+                                bread_min=WORKER_MAX_CARRYING_RESOURCE_AMOUNT,
+                                grass_min=math.inf
+                            ),
+                            number_of_object=get_number_of_object(self.game.ant.currentResource),
+                        )
+                    else:
+                        print("state has not other res")
+                        m = self.get_init_ant_explore_move()
+                elif self.game.ant.currentResource.type == ResourceType.GRASS:
+                    if self.game.ant.currentResource.value == WORKER_MAX_CARRYING_RESOURCE_AMOUNT:
+                        path = AI.map.get_path(self.pos, AI.map.base_pos)
+                        return Direction.get_value(AI.map.step(self.pos, path[0].pos))
+                    if self.has_resource_in_own_map(ResourceType.GRASS.value,
+                                                    GENERATE_SARBAAZ - self.game.ant.currentResource.value) \
+                            == ResourceType.GRASS.value:
+                        print("state has res to find")
+                        m, AI.last_name_of_object = get_tsp_first_move(
+                            src_pos=self.pos,
+                            dest_pos=AI.map.base_pos,
+                            name_of_object='grass',
+                            graph=AI.map,
+                            limit=get_limit(
+                                bread_min=math.inf,
+                                grass_min=WORKER_MAX_CARRYING_RESOURCE_AMOUNT
+                            ),
+                            number_of_object=get_number_of_object(self.game.ant.currentResource),
+                        )
+                    else:
+                        print("state has not to find")
+                        m = self.get_init_ant_explore_move()
                 elif AI.worker_state == WorkerState.BreadOnly:
                     self.direction, AI.last_name_of_object = get_tsp_first_move(
                         src_pos=self.pos,
