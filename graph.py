@@ -350,12 +350,12 @@ class Graph:
     def get_shortest_distance(self, src, dest, name_of_object, default=None):
         return self.shortest_path_info[name_of_object].get(src.pos, {}).get('dist', {}).get(dest.pos, default)
 
-    def get_shortest_path_from_shortest_path_info(self, src, dest, name_of_object):
-        parent = self.shortest_path_info[name_of_object][src.pos].get('parent', [])
+    def get_shortest_path_from_shortest_path_info(self, src_pos, dest_pos, name_of_object):
+        parent = self.shortest_path_info[name_of_object][src_pos].get('parent', [])
+        pos = dest_pos
         path = []
-        pos = dest.pos
         while parent[pos] != pos:
-            path.append(self.nodes[pos])
+            path.append(pos)
             pos = parent[pos]
         return list(reversed(path))
 
@@ -510,10 +510,14 @@ class Graph:
         best_nodes = getattr(
             self, f'get_nearest_{name_of_object}_nodes'
         )(self.nodes[src_pos], self.nodes[dest_pos], number_of_object)
-        if not best_nodes:
-            return None, None
         number_of_bread_need = max(0, limit[name_of_object]['min'] - number_of_object.get(name_of_object, 0))
         if number_of_bread_need == 0:
-            return Direction.get_value(self.step(src_pos, dest_pos)), name_of_object
+            return Direction.get_value(self.step(
+                src_pos, self.get_shortest_path_from_shortest_path_info(src_pos, dest_pos, name_of_object)[0])
+            ), name_of_object
+        if not best_nodes:
+            return None, None
         print('best_node', best_nodes[0].pos)
-        return Direction.get_value(self.step(src_pos, best_nodes[0].pos)), name_of_object
+        return Direction.get_value(self.step(
+            src_pos, self.get_shortest_path_from_shortest_path_info(src_pos, best_nodes[0].pos, name_of_object)[0])
+        ), name_of_object
