@@ -369,8 +369,7 @@ class AI:
 
     # @time_measure
     def turn(self) -> (str, int, int):
-        print("*************************************************")
-        print("ROUND START!")
+        print_with_debug("*************************************************")
         print_with_debug("ROUND START!")
         if AI.life_cycle > 1 and AI.map.enemy_base_pos is not None and self.game.ant.antType == AntType.SARBAAZ.value:
             AI.soldier_state = SoldierState.WaitingForComrades
@@ -414,6 +413,8 @@ class AI:
             AI.latest_map.nodes[k].discovered = v.discovered
 
         self.pos = (self.game.ant.currentX, self.game.ant.currentY)
+        print_with_debug("ROUND:", self.game_round)
+        print_with_debug("POS:", self.pos)
         AI.own_cells_history.append(self.pos)
         self.search_neighbors()
         self.update_map_from_neighbors()
@@ -431,7 +432,7 @@ class AI:
 
         elif self.game.ant.antType == AntType.KARGAR.value:
             if self.game.ant.currentResource.value is not None and self.game.ant.currentResource.value > 5:
-                print("worker has max carrying resources amount => back to base with bfs")
+                print_with_debug("worker has max carrying resources amount => back to base with bfs")
                 path = AI.map.get_path(AI.map.nodes[self.pos], AI.map.nodes[AI.map.base_pos])
                 self.direction = Direction.get_value(AI.map.step(self.pos, path[0].pos))
             else:
@@ -453,7 +454,7 @@ class AI:
                     if self.has_resource_in_map(2, 1) is None:
                         self.direction = self.get_init_ant_explore_move()
                     elif self.game.ant.currentResource.type == ResourceType.BREAD.value:
-                        print("ANT is holding bread")
+                        print_with_debug("ANT is holding bread")
                         if self.has_resource_in_map(ResourceType.BREAD.value,
                                                     WORKER_MAX_CARRYING_RESOURCE_AMOUNT - self.game.ant.currentResource.value) \
                                 == ResourceType.BREAD.value:
