@@ -461,7 +461,7 @@ class Graph:
             last = parent[last]
         return last
 
-    @Utils.time_measure
+
     def bfs(self, src):
         q = [src]
         parent = {src.pos: src.pos}
@@ -513,6 +513,7 @@ class Graph:
 
         return self.get_first_move_from_parent(parent, src.pos, best_pos)
 
+    @Utils.time_measure
     def get_resource_best_move(self, src_pos, dest_pos, name_of_object, limit, number_of_object):
         best_nodes = getattr(
             self, f'get_nearest_{name_of_object}_nodes'
