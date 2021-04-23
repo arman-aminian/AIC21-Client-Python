@@ -195,7 +195,7 @@ class AI:
                 (pos[1] + self.game.mapHeight) % self.game.mapHeight)
 
     def is_road_to_wall(self, move: int):
-        for i in [1, 2, 3]:
+        for i in [1, 2]:
             tf = True
             for j in [-1, 0, 1]:
                 if move == 1:
@@ -218,17 +218,17 @@ class AI:
             if (not self.is_road_to_wall(m)) and (self.get_next_pos(self.pos, m) != AI.latest_pos[AI.id][0]):
                 for j in [0, 1, -1]:
                     if m == 1:
-                        p = (self.pos[0] + 3, self.pos[1] + j)
+                        p = (self.pos[0] + 2, self.pos[1] + j)
                     elif m == 2:
-                        p = (self.pos[0] + j, self.pos[1] - 3)
+                        p = (self.pos[0] + j, self.pos[1] - 2)
                     elif m == 3:
-                        p = (self.pos[0] - 3, self.pos[1] + j)
+                        p = (self.pos[0] - 2, self.pos[1] + j)
                     else:
-                        p = (self.pos[0] + j, self.pos[1] + 3)
+                        p = (self.pos[0] + j, self.pos[1] + 2)
                     # own_map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
                     # for p in self.found_history:
                     #     own_map.nodes[p] = AI.map.nodes[p]
-                    path = AI.map.get_path_with_max_length(AI.map.nodes[self.pos], AI.map.nodes[self.fix_pos(p)], 3)
+                    path = AI.map.get_path_with_max_length(AI.map.nodes[self.pos], AI.map.nodes[self.fix_pos(p)], 2)
                     if path is not None:
                         return Direction.get_value(AI.map.step(self.pos, path[0].pos))
 
@@ -236,7 +236,7 @@ class AI:
         return Direction.get_random_direction()
 
     def get_init_ant_explore_move(self):
-        AI.worker_state = WorkerState.InitExploring
+        AI.worker_state = WorkerState.InitCollecting
         m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
         if m < 5:
             return m
@@ -400,7 +400,7 @@ class AI:
 
         if AI.game_round == 1:
             AI.worker_state = WorkerState.InitExploring
-            self.direction = Direction.LEFT.value
+            self.direction = Direction.get_random_direction()
 
         elif self.game.ant.antType == AntType.KARGAR.value:
             if AI.id <= Utils.INIT_ANTS_NUM:
