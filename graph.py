@@ -41,11 +41,11 @@ class Node:
     # todo: make get value better(use dest)
     # todo: make default dist better
     def grass_value(self, src, dest, graph, number=0):
-        distance = graph.get_shortest_distance(self, src, 'grass', default=math.inf)
-        return -distance * self.DISTANCE_WEIGH + min(self.GRASS_LIMIT, self.grass + src.grass) * self.GRASS_WEIGHT
+        distance = graph.get_shortest_distance(src, self, 'grass', default=math.inf)
+        return -distance * self.DISTANCE_WEIGH + min(self.GRASS_LIMIT, self.grass + src.grass + number) * self.GRASS_WEIGHT
 
     def bread_value(self, src, dest, graph, number=0):
-        distance = graph.get_shortest_distance(self, src, 'bread', default=math.inf)
+        distance = graph.get_shortest_distance(src, self, 'bread', default=math.inf)
         return -distance * self.DISTANCE_WEIGH + min(self.BREAD_LIMIT,
                                                      src.bread + self.bread + number) * self.BREAD_WEIGHT
 
