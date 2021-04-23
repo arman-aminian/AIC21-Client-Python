@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import *
-from random import randint
+import random
+from datetime import datetime
 
 
 class Ant:
@@ -355,7 +356,8 @@ class Direction(Enum):
 
     @staticmethod
     def get_random_direction():
-        return randint(1, 4)
+        random.seed(datetime.now())
+        return random.randint(1, 4)
 
     @staticmethod
     def get_string(dir_val: int):
