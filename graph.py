@@ -3,6 +3,7 @@ import random
 from itertools import chain
 
 import Utils
+from Model import Direction
 
 
 class Node:
@@ -504,3 +505,15 @@ class Graph:
                 best_pos = node.pos
 
         return self.get_first_move_from_parent(parent, src.pos, best_pos)
+
+    def get_resource_best_move(self, src_pos, dest_pos, name_of_object, limit, number_of_object):
+        best_nodes = getattr(
+            self, f'get_nearest_{name_of_object}_nodes'
+        )(self.nodes[src_pos], self.nodes[dest_pos], number_of_object)
+        if not best_nodes:
+            return None, None
+        number_of_bread_need = max(0, limit[name_of_object]['min'] - number_of_object.get(name_of_object, 0))
+        if number_of_bread_need == 0:
+            return Direction.get_value(self.step(src_pos, dest_pos)), name_of_object
+        print('best_node', best_nodes[0].pos)
+        return Direction.get_value(self.step(src_pos, best_nodes[0].pos)), name_of_object
