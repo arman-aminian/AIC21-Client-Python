@@ -438,8 +438,60 @@ class Graph:
             if ids[-i] == my_id:
                 idx = i
                 break
-        last = best_list[idx % len(best_list)]
-        while parent[last] != src.pos:
-            last = parent[last]
 
-        return self.step(src.pos, last)
+        return self.step(src.pos, self.get_first_move_from_parent(parent, src.pos, best_list[idx]))
+
+    @staticmethod
+    def get_first_move_from_parent(parent, src, dest):
+        last = dest
+        while parent[last] != src:
+            last = parent[last]
+        return last
+
+    def bfs(self, src):
+        q = [src]
+        parent = {src.pos: src.pos}
+        dist = {src.pos: 0}
+
+        if src.wall:
+            return None
+
+        while q:
+            current_node = q.pop(0)
+            neighbors = self.get_neighbors_with_not_discovered_nodes(current_node.pos)
+
+            for neighbor in neighbors:
+                next_node = self.nodes[neighbor]
+                if parent.get(next_node.pos) is None:
+                    parent[next_node.pos] = current_node.pos
+                    dist[next_node.pos] = dist[current_node.pos] + 1
+                    q.append(next_node)
+
+        return {
+            'distance': dist,
+            'parent': parent,
+        }
+
+    def get_best_node_to_defence(self, src, grass_wight, bread_weight, distance_weight):
+        best_value = -math.inf
+        best_pos = None
+
+        bfs_info = self.bfs(src)
+        dist = bfs_info.get('distance')
+        parent = bfs_info.get('parent')
+
+        for node in self.nodes.values():
+            poses = Utils.get_view_distance_neighbors(node.pos, self.dim[0], self.dim[1], 4)
+            bread_number = 0
+            grass_number = 0
+            distance = dist.get(node.pos)
+            for pos in poses:
+                bread_number += self.nodes[pos].bread
+                grass_number += self.nodes[pos].grass
+
+            value = grass_number * grass_wight + bread_number * bread_weight + -distance * distance_weight
+            if value > best_value:
+                best_value = value
+                best_pos = node.pos
+
+        return self.get_first_move_from_parent(parent, src, best_pos)
