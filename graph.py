@@ -516,8 +516,10 @@ class Graph:
                 src_pos, self.get_shortest_path_from_shortest_path_info(src_pos, dest_pos, name_of_object)[0])
             ), name_of_object
         if not best_nodes:
-            return None, None
+            return None, None, math.inf
         print('best_node', best_nodes[0].pos)
         return Direction.get_value(self.step(
             src_pos, self.get_shortest_path_from_shortest_path_info(src_pos, best_nodes[0].pos, name_of_object)[0])
-        ), name_of_object
+        ), name_of_object, self.get_shortest_distance(
+            self.nodes[src_pos], self.nodes[best_nodes[0].pos], name_of_object, default=math.inf
+        )
