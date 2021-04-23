@@ -149,7 +149,7 @@ class Graph:
         if self.nodes[pos].wall:
             return []
         neighbors = [self.up(pos), self.right(pos), self.down(pos), self.left(pos)]
-        neighbors = [n for n in neighbors if not self.nodes[n].wall]
+        neighbors = [n for n in neighbors if not self.nodes[n].wall or not self.nodes[n].discovered]
         return neighbors
 
     def right(self, pos):
@@ -201,7 +201,7 @@ class Graph:
         dist = {src.pos: 0}
         parent = {src.pos: src.pos}
 
-        if src.wall or (getattr(src, name_of_other_object) > 0 and number_of_object == 0):
+        if (src.discovered and src.wall) or (getattr(src, name_of_other_object) > 0 and number_of_object == 0):
             return {
                 'dist': dist,
                 'parent': parent,
@@ -209,7 +209,7 @@ class Graph:
 
         while q:
             current_node = q.pop(0)
-            neighbors = self.get_neighbors(current_node.pos)
+            neighbors = self.get_neighbors_with_not_discovered_nodes(current_node.pos)
             in_queue[current_node.pos] = False
 
             for neighbor in neighbors:
@@ -275,7 +275,7 @@ class Graph:
         self.find_all_shortest_path(
             number_of_object, 'grass', list(chain([src], grass_nodes_temp, [dest]))
         )
-
+        print(grass_nodes_temp)
         grass_nodes = []
         for node in grass_nodes_temp:
             if self.get_shortest_distance(
@@ -298,7 +298,7 @@ class Graph:
         self.find_all_shortest_path(
             number_of_object, 'bread', list(chain([src], bread_nodes_temp, [dest]))
         )
-
+        print(bread_nodes_temp)
         bread_nodes = []
         for node in bread_nodes_temp:
             if self.get_shortest_distance(
