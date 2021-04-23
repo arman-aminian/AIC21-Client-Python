@@ -26,6 +26,8 @@ def encode_possible_cells(ant_id, pos, prev_pos, w, h, possible_cells):
 def decode_possible_cells(s, w, h):
     ant_id = ord(s[1]) - CONSTANT
     temp = ''.join([f"{ord(c) - CONSTANT:08b}" for c in s[2:]])
+    print("decode possible msg error:", temp[:12])
+    print(temp)
     pos = sp(temp[:12], w, h)
     prev_pos = sp(temp[12:24], w, h)
     possible_cells = []
