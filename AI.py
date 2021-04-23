@@ -405,6 +405,7 @@ class AI:
     def turn(self) -> (str, int, int):
         print("ROUND START!")
         self.update_ids_from_chat_box()
+        self.check_for_possible_base_cells()
         
         if AI.game_round > 5:
             self.check_for_base()
@@ -519,6 +520,8 @@ class AI:
                                                                AI.h, 6, True)
             possible_cells = [p for p in possible_cells if
                               p not in AI.path_history]
+            AI.possible_base_cells = list(set(AI.possible_base_cells).
+                                          intersection(possible_cells))
             self.message = encode_possible_cells(AI.id, self.pos,
                                                  AI.latest_pos[AI.id][0],
                                                  AI.w, AI.h, possible_cells)
@@ -696,3 +699,18 @@ class AI:
                                                 5 if self.shot else 6)
         new_neighbors = [p for p in neighbors if p not in AI.path_history]
         AI.path_history += new_neighbors
+
+    def check_for_possible_base_cells(self):
+        possible_msgs = [msg.text for msg in
+                         self.game.chatBox.allChats[-MAX_MESSAGES_PER_TURN:] if
+                         msg.text.startswith("s") and
+                         msg.turn == AI.game_round - 1]
+        if AI.life_cycle == 1:
+            possible_msgs = [msg.text for msg in self.game.chatBox.allChats if
+                             msg.text.startswith("s")]
+    
+        for m in possible_msgs:
+            # TODO use this info
+            ant_id, pos, prev_pos, possible_cells = decode_possible_cells(m, AI.w, AI.h)
+            AI.possible_base_cells = list(set(AI.possible_base_cells).
+                                          intersection(possible_cells))
