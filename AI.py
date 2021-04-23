@@ -536,7 +536,7 @@ class AI:
             #     self.direction = AI.soldier_init_random_dir
             
             if AI.life_cycle == 1:
-                self.direction = Direction.CENTER.value
+                self.direction = Direction.get_random_direction()
             else:
                 if AI.soldier_state == SoldierState.CellTargetFound:
                     if self.pos == AI.cell_target:
@@ -551,9 +551,9 @@ class AI:
                     AI.soldier_state = SoldierState.CellTargetFound
                     print(f'in soldier discover: pos = {self.pos}, direction = {self.direction}')
                     
-            # elif AI.game_round < 50:
-            #     self.direction = self.get_soldier_first_node_to_support()
-            #     print(f'in soldier support: pos = {self.pos}, direction = {self.direction}')
+                elif AI.game_round > 50:
+                    self.direction = self.get_soldier_first_node_to_support()
+                    print(f'in soldier support: pos = {self.pos}, direction = {self.direction}')
 
         if AI.life_cycle > 1 and (not self.shot or self.value == 10):
             self.encoded_neighbors = encode_graph_nodes(self.pos,
@@ -563,7 +563,6 @@ class AI:
                                                         AI.id, self.direction,
                                                         self.shot,
                                                         AI.map.enemy_base_pos)
-            # TODO not discovered = guess node
             self.message = self.encoded_neighbors
         elif AI.life_cycle > 1 and self.shot:
             possible_cells = Utils.get_view_distance_neighbors(self.pos, AI.w,
