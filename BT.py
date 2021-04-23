@@ -20,9 +20,9 @@ class BT:
                 self.visited.add(pos)
 
     def bt(self, cur, dist):
-        # delay = time.time() - self.start
-        # if delay > 0.08:
-        #     return
+        delay = time.time() - self.start
+        if delay > 0.08:
+            return
         now = len(self.visited)
         # print(cur, dist, now)
         if not self.best or now > self.best:
