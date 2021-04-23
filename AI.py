@@ -272,7 +272,7 @@ class AI:
                                             WORKER_MAX_CARRYING_RESOURCE_AMOUNT - self.game.ant.currentResource.value) \
                     == ResourceType.BREAD.value:
                 print("state has res to find")
-                m, AI.last_name_of_object = own_map.get_resource_best_move(
+                m, AI.last_name_of_object, d = own_map.get_resource_best_move(
                     src_pos=self.pos,
                     dest_pos=AI.map.base_pos,
                     name_of_object='bread',
@@ -293,7 +293,7 @@ class AI:
                                             WORKER_MAX_CARRYING_RESOURCE_AMOUNT - self.game.ant.currentResource.value) \
                     == ResourceType.GRASS.value:
                 print("state has res to find")
-                m, AI.last_name_of_object = own_map.get_resource_best_move(
+                m, AI.last_name_of_object, d = own_map.get_resource_best_move(
                     src_pos=self.pos,
                     dest_pos=AI.map.base_pos,
                     name_of_object='grass',
@@ -311,7 +311,7 @@ class AI:
                 WORKER_MAX_CARRYING_RESOURCE_AMOUNT - self.game.ant.currentResource.value) \
                 == ResourceType.BREAD.value:
             print("state has not res but has path")
-            m, AI.last_name_of_object = own_map.get_resource_best_move(
+            m, AI.last_name_of_object, d = own_map.get_resource_best_move(
                 src_pos=self.pos,
                 dest_pos=AI.map.base_pos,
                 name_of_object='bread',
@@ -329,7 +329,7 @@ class AI:
                 WORKER_MAX_CARRYING_RESOURCE_AMOUNT - self.game.ant.currentResource.value) \
                 == ResourceType.GRASS.value:
             print("state has not res but has path")
-            m, AI.last_name_of_object = own_map.get_resource_best_move(
+            m, AI.last_name_of_object, d = own_map.get_resource_best_move(
                 src_pos=self.pos,
                 dest_pos=AI.map.base_pos,
                 name_of_object='grass',
@@ -450,7 +450,7 @@ class AI:
                                                         WORKER_MAX_CARRYING_RESOURCE_AMOUNT - self.game.ant.currentResource.value) \
                                 == ResourceType.BREAD.value:
                             print("state has bread res to find")
-                            self.direction, AI.last_name_of_object = AI.map.get_resource_best_move(
+                            self.direction, AI.last_name_of_object, d = AI.map.get_resource_best_move(
                                 src_pos=self.pos,
                                 dest_pos=AI.map.base_pos,
                                 name_of_object='bread',
@@ -470,7 +470,7 @@ class AI:
                                                         WORKER_MAX_CARRYING_RESOURCE_AMOUNT - self.game.ant.currentResource.value) \
                                 == ResourceType.GRASS.value:
                             print("state has grass res to find")
-                            self.direction, AI.last_name_of_object = AI.map.get_resource_best_move(
+                            self.direction, AI.last_name_of_object, d = AI.map.get_resource_best_move(
                                 src_pos=self.pos,
                                 dest_pos=AI.map.base_pos,
                                 name_of_object='grass',
@@ -487,7 +487,7 @@ class AI:
                     elif AI.worker_state == WorkerState.BreadOnly:
                         print("ANT hasn't hold anything")
                         print("BreadOnly Ant")
-                        self.direction, AI.last_name_of_object = AI.map.get_resource_best_move(
+                        self.direction, AI.last_name_of_object, d = AI.map.get_resource_best_move(
                             src_pos=self.pos,
                             dest_pos=AI.map.base_pos,
                             name_of_object='bread',
@@ -501,7 +501,7 @@ class AI:
                     elif AI.worker_state == WorkerState.GrassOnly:
                         print("ANT hasn't hold anything")
                         print("BreadOnly Ant")
-                        self.direction, AI.last_name_of_object = AI.map.get_resource_best_move(
+                        self.direction, AI.last_name_of_object, d = AI.map.get_resource_best_move(
                             src_pos=self.pos,
                             dest_pos=AI.map.base_pos,
                             name_of_object='grass',
