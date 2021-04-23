@@ -55,7 +55,7 @@ def encode_node(n):
 
 
 def encode_graph_nodes(pos, nodes: dict, w, h, view, ant_id, direction,
-                       shot: bool):
+                       shot: bool, enemy_base_pos=None):
     # CURRENT SCHEME:
     # id 1c, pos 2c (14b), walls w*1c, empties e*1c,
     # breads b*2c, grasses g*2c, ally workers aw*1c, ally soldiers as*1c,
@@ -88,7 +88,9 @@ def encode_graph_nodes(pos, nodes: dict, w, h, view, ant_id, direction,
     
     for a in arr:
         s = s + ''.join(a) + DELIM
-    s += chr(int(status, 2) + CONSTANT)
+    s += chr(int(status, 2) + CONSTANT) + DELIM
+    if enemy_base_pos is not None:
+        s += pos_str(enemy_base_pos, w, h)
     
     return s
 
@@ -101,6 +103,7 @@ def decode_nodes(nodes_str: str, w, h, view):
     neighbors = get_view_distance_neighbors(pos, w, h, view)
     direction = direction_dec('000')
     shot = bool(int('0'))
+    enemy_base_pos = None
     
     part = nodes_str.split(DELIM)[0]  # wall
     for c in part:
@@ -165,10 +168,13 @@ def decode_nodes(nodes_str: str, w, h, view):
                 else:
                     ret[neighbors[idx]] = Node(neighbors[idx], True, False,
                                                enemy_soldiers=v)
-                
+    
         if i == 8:  # status
             status = f'{ord(part[0]) - CONSTANT:08b}'
             direction = direction_dec(status[:3])
             shot = bool(int(status[3]))
+            
+        if i == 9 and len(part) > 0:  # enemy base pos
+            enemy_base_pos = str_pos(part, w, h)
     
-    return ant_id, pos, direction, shot, ret
+    return ant_id, pos, direction, shot, ret, enemy_base_pos
