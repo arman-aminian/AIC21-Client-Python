@@ -175,12 +175,11 @@ def get_tsp_first_move(src_pos, dest_pos, graph, name_of_object, limit=None, num
 
     all_tsp = get_tsp_path(src_pos, dest_pos, graph, limit, number_of_object, name_of_object)
     tsp_path = all_tsp.get(f'{name_of_object}_path_from_tsp_info')
-    last_name_of_object = name_of_object
 
     if not tsp_path or not tsp_path.get('path'):
         return Direction.get_value('None'), None
 
-    return Direction.get_value(graph.step(src_pos, tsp_path.get('path')[0].pos)), last_name_of_object
+    return Direction.get_value(graph.step(src_pos, tsp_path.get('path')[0].pos)), name_of_object
 
 
 def get_limit(**kwargs):

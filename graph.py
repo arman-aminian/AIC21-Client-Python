@@ -237,7 +237,7 @@ class Graph:
 
         while q:
             current_node = q.pop(0)
-            neighbors = self.get_neighbors_with_not_discovered_nodes(current_node.pos)
+            neighbors = self.get_neighbors(current_node.pos)
 
             for neighbor in neighbors:
                 next_node = self.nodes[neighbor]
@@ -260,7 +260,7 @@ class Graph:
     def find_all_shortest_path(self, number_of_object, name_of_object, nodes):
         for node in nodes:
             pos = node.pos
-            self.shortest_path_info['bread'][pos] = self.get_shortest_path(
+            self.shortest_path_info[name_of_object][pos] = self.get_shortest_path(
                 self.nodes[pos], 'bread' if name_of_object == 'grass' else 'grass',
                 number_of_object.get(name_of_object, 0)
             )
