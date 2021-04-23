@@ -38,8 +38,6 @@ class BT:
             vis = set(get_view_distance_neighbors(next_node, self.graph.dim[0],
                                                   self.graph.dim[1], 4))
             not_changed = self.visited.copy()
-            if len(vis & not_changed) == len(vis):
-                continue
             self.visited |= vis
             self.path[dist] = next_node
             self.bt(next_node, dist + 1)

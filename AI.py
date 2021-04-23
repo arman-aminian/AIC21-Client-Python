@@ -581,6 +581,7 @@ class AI:
                     else:
                         self.direction = solve_bt(AI.map, self.pos, max_distance=7)
                         if self.direction == Direction.CENTER.value:
+                            print("CENTER VALUE FROM BT")
                             self.direction = AI.attack_dir
 
                 if AI.soldier_state == SoldierState.CellTargetFound:
@@ -593,7 +594,8 @@ class AI:
 
                 if AI.game_round < 175 and AI.soldier_state == SoldierState.Null:
                     self.direction = self.get_soldier_first_move_to_discover()
-                    AI.soldier_state = SoldierState.CellTargetFound
+                    if AI.cell_target is not None:
+                        AI.soldier_state = SoldierState.CellTargetFound
                     print_with_debug(f'in soldier discover: pos = {self.pos}, direction = {self.direction}')
 
                 elif AI.game_round >= 175 and AI.soldier_state == SoldierState.Null:
@@ -616,7 +618,7 @@ class AI:
                                                         self.shot,
                                                         AI.map.enemy_base_pos)
             self.message = self.encoded_neighbors
-        elif AI.life_cycle > 1 and self.shot and AI.soldier_state == SoldierState.Null and AI.worker_state == WorkerState.Null:
+        elif AI.life_cycle > 1 and self.shot and ((AI.soldier_state == SoldierState.Null and AI.worker_state == WorkerState.Null) or (AI.soldier_state == SoldierState.CellTargetFound)):
             possible_cells = Utils.get_view_distance_neighbors(self.pos, AI.w,
                                                                AI.h, 6, True)
             possible_cells = [p for p in possible_cells if
@@ -626,11 +628,10 @@ class AI:
             self.message = encode_possible_cells(AI.id, self.pos,
                                                  AI.own_cells_history[-3],
                                                  AI.w, AI.h, possible_cells)
-            AI.attack_dir = Direction.get_value(AI.map.step(AI.own_cells_history[-2], self.pos))
             print_with_debug("tell them", AI.latest_pos[AI.id][0], possible_cells)
             self.direction = solve_bt(AI.map, self.pos, max_distance=5)
             AI.soldier_state = SoldierState.HasBeenShot
-            self.value = 9
+            self.value = 15
 
         print_with_debug("turn", AI.game_round, "id", AI.id, "pos", self.pos,
                          "worker state", AI.worker_state,
@@ -769,8 +770,16 @@ class AI:
         base_hp = HP[self.game.ant.antType]
         neighbors = get_view_distance_neighbors(self.pos, AI.w, AI.h,
                                                 self.game.ant.viewDistance)
-        es = sum([AI.map.nodes[v].enemy_soldiers for v in neighbors if
-                  AI.map.nodes[v].enemy_soldiers > 0])
+        es = 0
+        cells = self.game.ant.visibleMap.cells
+        neighbor_cells = [j for sub in cells for j in sub if j is not None]
+        for c in neighbor_cells:
+            for a in c.ants:
+                if a.antType == AntType.SARBAAZ.value and a.antTeam == AntTeam.ENEMY.value:
+                    es += 1
+        # es = len([a for a in self.game.ant.getMapRelativeCell(0, 0).ants if a.antType == AntType.SARBAAZ.value])
+        # es = sum([AI.map.nodes[v].enemy_soldiers for v in neighbors if
+        #           AI.map.nodes[v].enemy_soldiers > 0])
         cond = (hp == base_hp - BASE_DMG and es == 0) or \
                (hp == base_hp - BASE_DMG - SOLDIER_DMG and es == 1) or \
                (hp == base_hp - BASE_DMG - 2 * SOLDIER_DMG and es == 2)
@@ -816,6 +825,7 @@ class AI:
                              msg.text.startswith("s")]
 
         if possible_msgs:
+            print_with_debug("I HAVE S MESSAGE HAHAHAHHAA")
             if AI.life_cycle > 1:
                 AI.soldier_state = SoldierState.PreparingForAttack
             elif AI.life_cycle == 1:
@@ -828,18 +838,21 @@ class AI:
             ant_id, pos, prev_pos, possible_cells = decode_possible_cells(m, AI.w, AI.h)
             AI.possible_base_cells = list(set(AI.possible_base_cells).
                                           intersection(possible_cells))
-            targets.append(prev_pos)
+            targets.append((prev_pos, pos))
 
         if targets:
             targets.sort()
-            distances = [Utils.manhattan_dist(AI.map.base_pos, t, AI.w, AI.h) for t in targets]
+            distances = [Utils.manhattan_dist(AI.map.base_pos, t[0], AI.w, AI.h) for t in targets]
+            min_i = distances.index(min(distances))
             print_with_debug("HAHAHAHA i had shot msgs", targets, distances)
-            AI.cell_target = targets[distances.index(min(distances))] if AI.cell_target is None else AI.cell_target
+            AI.cell_target = targets[min_i][0] if AI.cell_target is None else AI.cell_target
+            if targets[min_i][0] != targets[min_i][1]:
+                AI.attack_dir = self.get_first_move_to_target(targets[min_i][0], targets[min_i][1])
+            else:
+                AI.attack_dir = Direction.get_random_direction()
 
     def get_soldier_first_move_to_discover(self):
-        move, AI.cell_target = AI.latest_map.get_first_move_to_discover(AI.map.nodes[self.pos], self.pos,
-                                                                        len(AI.ids[self.game.ant.antType]), AI.id,
-                                                                        AI.ids[self.game.ant.antType])
+        move, _ = AI.latest_map.get_first_move_to_discover(AI.map.nodes[self.pos], self.pos, len(AI.ids[self.game.ant.antType]), AI.id, AI.ids[self.game.ant.antType])
         return Direction.get_value(move)
 
     def get_soldier_first_node_to_support(self):
