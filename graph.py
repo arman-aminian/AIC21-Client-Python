@@ -432,8 +432,8 @@ class Graph:
             value += dist.get(pos)
         return value / len(list_of_candidate)
 
-    def get_first_move_to_discover(self, src, each_list_max_size, my_id, all_ids):
-
+    def get_first_move_to_discover(self, src_pos, each_list_max_size, my_id, all_ids):
+        src = self.nodes[src_pos]
         best_list, parent = self.get_best_list(src, each_list_max_size)
         print(best_list)
         idx = random.randint(0, len(best_list) - 1)
@@ -479,7 +479,8 @@ class Graph:
         }
 
     @Utils.time_measure
-    def get_best_node_to_defence(self, src, grass_wight, bread_weight, distance_weight):
+    def get_best_node_to_support(self, src_pos, grass_wight=1, bread_weight=1, distance_weight=1):
+        src = self.nodes[src_pos]
         best_value = -math.inf
         best_pos = None
 

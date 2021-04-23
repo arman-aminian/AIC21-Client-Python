@@ -113,7 +113,6 @@ class AI:
         if 0 < total_disc < 5:
             return 4
 
-
         if self.pos in self.new_neighbors.keys():
             if self.new_neighbors[self.pos].bread > AI.map.nodes[self.pos].bread \
                     or self.new_neighbors[self.pos].grass > AI.map.nodes[self.pos].grass:
@@ -144,9 +143,9 @@ class AI:
 
         for m in maps:
             ant_id, ant_pos, ant_dir, \
-                ant_shot, nodes, enemy_base_pos = decode_nodes(m.text,
-                                                               AI.w, AI.h,
-                                                               self.game.ant.viewDistance)
+            ant_shot, nodes, enemy_base_pos = decode_nodes(m.text,
+                                                           AI.w, AI.h,
+                                                           self.game.ant.viewDistance)
             AI.latest_pos[ant_id] = (ant_pos, m.turn)
             for pos, n in nodes.items():
                 if n != AI.map.nodes[pos]:
@@ -525,6 +524,13 @@ class AI:
             if AI.soldier_state == SoldierState.FirstFewRounds:
                 self.direction = AI.soldier_init_random_dir
 
+            if AI.game_round < 25:
+                self.direction = self.get_soldier_first_move_to_discover()
+                print(f'in soldier discover: pos = {self.pos}, direction = {self.direction}')
+            elif AI.game_round < 50:
+                self.direction = self.get_soldier_first_node_to_support()
+                print(f'in soldier support: pos = {self.pos}, direction = {self.direction}')
+
         if AI.life_cycle > 1 and (not self.shot or self.value == 10):
             self.encoded_neighbors = encode_graph_nodes(self.pos,
                                                         self.new_neighbors,
@@ -735,6 +741,15 @@ class AI:
             AI.possible_base_cells = list(set(AI.possible_base_cells).
                                           intersection(possible_cells))
 
+    def get_soldier_first_move_to_discover(self):
+        return Direction.get_value(
+            AI.map.get_first_move_to_discover(self.pos, 5, AI.id, AI.ids[self.game.ant.antType])
+        )
+
+    def get_soldier_first_node_to_support(self):
+        return Direction.get_value(
+            AI.map.step(self.pos, AI.map.get_best_node_to_support(self.pos))
+        )
     # def get_init_ant_explore_move(self):
     #     AI.worker_state = WorkerState.InitCollecting
     #     if self.game.baseX < (self.game.mapWidth / 2):

@@ -230,7 +230,7 @@ class Attack:
         self.__dict__ = message
 
 
-class Game:
+class  Game:
     ant: "Ant"
     chatBox: "ChatBox"
     antType: int
