@@ -9,7 +9,7 @@ from state import *
 from BT import *
 
 
-def print_with_debug(*args, debug=False):
+def print_with_debug(*args, debug=True):
     if debug:
         print(*args)
 
@@ -341,7 +341,7 @@ class AI:
             print_with_debug("grass_dis:", grass_dis)
             print_with_debug("bread_dir:", bread_dir)
             print_with_debug("bread_dis:", bread_dis)
-            if (grass_dis <= bread_dis and grass_dis != math.inf):
+            if grass_dis <= bread_dis and grass_dis != math.inf:
                 m = grass_dir
             elif bread_dir is not None:
                 m = bread_dir

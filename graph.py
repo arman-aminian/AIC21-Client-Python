@@ -42,7 +42,7 @@ class Node:
     # todo: make default dist better
     def grass_value(self, src, dest, graph, number=0):
         distance = graph.get_shortest_distance(self, src, 'grass', default=math.inf)
-        return -distance * self.DISTANCE_WEIGH + min(self.GRASS_LIMIT, self.grass + src.grass) * self.GRASS_WEIGHT
+        return -distance * self.DISTANCE_WEIGH + min(self.GRASS_LIMIT, self.grass + src.grass + number) * self.GRASS_WEIGHT
 
     def bread_value(self, src, dest, graph, number=0):
         distance = graph.get_shortest_distance(self, src, 'bread', default=math.inf)
