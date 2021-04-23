@@ -27,6 +27,7 @@ WORKER_MAX_CARRYING_RESOURCE_AMOUNT = 10
 BASE_DMG = 3
 SOLDIER_DMG = 2
 HP = [8, 6]  # soldier, worker
+MAX_TURN_COUNT = 50
 
 
 def reverse_list(lst):

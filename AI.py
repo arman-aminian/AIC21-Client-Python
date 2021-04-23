@@ -34,6 +34,7 @@ class AI:
     own_cells_history = []
     latest_map = None
     cell_target = None
+    attack_dir = None
 
     def __init__(self):
         # Current Game State
@@ -340,7 +341,7 @@ class AI:
             print_with_debug("grass_dis:", grass_dis)
             print_with_debug("bread_dir:", bread_dir)
             print_with_debug("bread_dis:", bread_dis)
-            if (grass_dir is not None and bread_dir is None) or grass_dis <= bread_dis:
+            if (grass_dis <= bread_dis and grass_dis != math.inf):
                 m = grass_dir
             elif bread_dir is not None:
                 m = bread_dir
@@ -369,11 +370,12 @@ class AI:
 
     # @time_measure
     def turn(self) -> (str, int, int):
-        print("*************************************************")
-        print("ROUND START!")
+        print_with_debug("*************************************************")
+        print_with_debug("ROUND START!")
         print_with_debug("ROUND START!")
         if AI.life_cycle > 1 and AI.map.enemy_base_pos is not None and self.game.ant.antType == AntType.SARBAAZ.value:
             AI.soldier_state = SoldierState.WaitingForComrades
+            AI.cell_target = AI.map.enemy_base_pos
         self.update_ids_from_chat_box()
         self.check_for_possible_base_cells()
 
@@ -543,12 +545,17 @@ class AI:
                 self.direction = Direction.get_random_direction()
             else:
                 if AI.soldier_state == SoldierState.WaitingForComrades:
-                    if AI.map.nodes[self.pos].ally_soldiers > 2:
+                    ally_s = len(
+                        [a for a in self.game.ant.getMapRelativeCell(0, 0).ants
+                         if a.antType == AntType.SARBAAZ.value])
+                    if ally_s > 2 or abs(MAX_TURN_COUNT - AI.game_round) <= 30:
                         AI.soldier_state = SoldierState.PreparingForAttack
+                    else:
+                        self.direction = Direction.CENTER.value
 
                 if AI.soldier_state == SoldierState.PreparingForAttack:
                     ally_s = len([a for a in self.game.ant.getMapRelativeCell(0, 0).ants if a.antType == AntType.SARBAAZ.value])
-                    if self.pos == AI.cell_target and ally_s > 2:
+                    if self.pos == AI.cell_target and (ally_s > 2 or abs(MAX_TURN_COUNT - AI.game_round) <= 10):
                         AI.soldier_state = SoldierState.Attacking
                     elif AI.cell_target is not None and self.pos != AI.cell_target:
                         self.direction = self.get_first_move_to_target(self.pos, AI.cell_target)
@@ -557,12 +564,20 @@ class AI:
 
                 if AI.soldier_state == SoldierState.HasBeenShot:
                     self.direction = Direction.CENTER.value
-                    if AI.map.nodes[self.pos].ally_soldiers > 2:
+                    ally_s = len(
+                        [a for a in self.game.ant.getMapRelativeCell(0, 0).ants
+                         if a.antType == AntType.SARBAAZ.value])
+                    if ally_s > 2:
                         self.soldier_state = SoldierState.Attacking
 
                 if AI.soldier_state == SoldierState.Attacking:
                     # TODO COMPLETE THIS
-                    self.direction = Direction.RIGHT.value
+                    if AI.map.enemy_base_pos is not None:
+                        self.direction = self.get_first_move_to_target(self.pos, AI.map.enemy_base_pos)
+                    else:
+                        self.direction = solve_bt(AI.map, self.pos, max_distance=7)
+                        if self.direction == Direction.CENTER.value:
+                            self.direction = AI.attack_dir
 
                 if AI.soldier_state == SoldierState.CellTargetFound:
                     if self.pos == AI.cell_target:
@@ -582,6 +597,13 @@ class AI:
                     print_with_debug(f'in soldier support: pos = {self.pos}, direction = {self.direction}')
 
         if AI.life_cycle > 1 and (not self.shot or self.value == 10):
+            if self.direction is None:
+                print_with_debug("turn", AI.game_round, "id", AI.id, "pos", self.pos,
+              "worker state", AI.worker_state,
+              "soldier state", AI.soldier_state,
+              "map value", self.value,
+              "enemy base pos", AI.map.enemy_base_pos,
+              "soldier target cell", AI.cell_target, debug=True)
             self.encoded_neighbors = encode_graph_nodes(self.pos,
                                                         self.new_neighbors,
                                                         AI.w, AI.h,
@@ -590,7 +612,7 @@ class AI:
                                                         self.shot,
                                                         AI.map.enemy_base_pos)
             self.message = self.encoded_neighbors
-        elif AI.life_cycle > 1 and self.shot:
+        elif AI.life_cycle > 1 and self.shot and AI.soldier_state == SoldierState.Null and AI.worker_state == WorkerState.Null:
             possible_cells = Utils.get_view_distance_neighbors(self.pos, AI.w,
                                                                AI.h, 6, True)
             possible_cells = [p for p in possible_cells if
@@ -600,8 +622,9 @@ class AI:
             self.message = encode_possible_cells(AI.id, self.pos,
                                                  AI.own_cells_history[-3],
                                                  AI.w, AI.h, possible_cells)
+            AI.attack_dir = Direction.get_value(AI.map.step(AI.own_cells_history[-2], self.pos))
             print_with_debug("tell them", AI.latest_pos[AI.id][0], possible_cells)
-            self.direction = Direction.get_value(AI.map.step(self.pos, AI.latest_pos[AI.id][0]))
+            self.direction = solve_bt(AI.map, self.pos, max_distance=5)
             AI.soldier_state = SoldierState.HasBeenShot
             self.value = 9
 
