@@ -225,10 +225,10 @@ class AI:
                         p = (self.pos[0] - 3, self.pos[1] + j)
                     else:
                         p = (self.pos[0] + j, self.pos[1] + 3)
-                    own_map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
-                    for p in self.found_history:
-                        own_map.nodes[p] = AI.map.nodes[p]
-                    path = own_map.get_path(AI.map.nodes[self.pos], AI.map.nodes[self.fix_pos(p)])
+                    # own_map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
+                    # for p in self.found_history:
+                    #     own_map.nodes[p] = AI.map.nodes[p]
+                    path = AI.map.get_path_with_max_length(AI.map.nodes[self.pos], AI.map.nodes[self.fix_pos(p)], 3)
                     if path is not None:
                         return Direction.get_value(AI.map.step(self.pos, path[0].pos))
 
