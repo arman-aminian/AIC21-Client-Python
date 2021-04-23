@@ -70,7 +70,7 @@ class Controller:
         diff = time.time() * 1000 - start
         if diff > 2000:
             pass
-        elif diff > 500:
+        elif diff > 1000:
             self.send_direction_message(Direction.CENTER.value)
         else:
             if direction is not None:
