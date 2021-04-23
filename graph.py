@@ -150,7 +150,7 @@ class Graph:
         if self.nodes[pos].wall:
             return []
         neighbors = [self.up(pos), self.right(pos), self.down(pos), self.left(pos)]
-        neighbors = [n for n in neighbors if not self.nodes[n].wall or not self.nodes[n].discovered]
+        neighbors = [n for n in neighbors if not self.nodes[n].wall]
         return neighbors
 
     def right(self, pos):
@@ -394,7 +394,7 @@ class Graph:
                     q.append(next_node)
 
         return {
-            'edge_nodes': list(edge_nodes),
+            'edge_nodes': sorted(list(edge_nodes)),
             'distance': dist,
             'parent': parent,
         }
@@ -406,6 +406,10 @@ class Graph:
         distance = edge_nodes_info.get('distance')
         parent = edge_nodes_info.get('parent')
         print(edge_nodes)
+
+        while len(edge_nodes) > each_list_max_size and len(
+                edge_nodes) % each_list_max_size != 0:
+            edge_nodes.pop(0)
 
         all_list = []
         for i in range(len(edge_nodes)):
@@ -433,7 +437,7 @@ class Graph:
             value += dist.get(pos)
         return value / len(list_of_candidate)
 
-    def get_first_move_to_discover(self, src_pos, each_list_max_size, my_id, all_ids):
+    def get_first_move_to_discover(self, curr_pos, src_pos, each_list_max_size, my_id, all_ids):
         src = self.nodes[src_pos]
         best_list, parent = self.get_best_list(src, each_list_max_size)
         print(best_list)
@@ -445,7 +449,10 @@ class Graph:
                 idx = i
                 break
 
-        return self.step(src.pos, self.get_first_move_from_parent(parent, src.pos, best_list[idx % len(best_list)]))
+        print("MY GOAL IS TO REACH", best_list[idx % len(best_list)])
+
+        return self.step(curr_pos.pos, self.get_path(curr_pos, self.nodes[best_list[idx % len(best_list)]])[0].pos), \
+               best_list[idx % len(best_list)]
 
     @staticmethod
     def get_first_move_from_parent(parent, src, dest):

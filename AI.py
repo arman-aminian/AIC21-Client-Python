@@ -26,6 +26,8 @@ class AI:
     soldier_targets = []
     prev_round_resource = 0
     path_history = []
+    latest_map = None
+    cell_target = None
 
     def __init__(self):
         # Current Game State
@@ -176,7 +178,7 @@ class AI:
 
     def send_id(self):
         self.message = "id" + str(self.game.ant.antType) + str(AI.id)
-        self.value = 0
+        self.value = 200
 
     def make_id(self, min_id=1, max_id=220):
         all_ids = AI.ids[0] + AI.ids[1] if AI.ids else []
@@ -309,24 +311,6 @@ class AI:
         elif self.has_resource_in_own_map(
                 2,
                 WORKER_MAX_CARRYING_RESOURCE_AMOUNT - self.game.ant.currentResource.value) \
-                == ResourceType.BREAD.value:
-            print("state has not res but has path")
-            m, AI.last_name_of_object, d = own_map.get_resource_best_move(
-                src_pos=self.pos,
-                dest_pos=AI.map.base_pos,
-                name_of_object='bread',
-                limit=get_limit(
-                    bread_min=WORKER_MAX_CARRYING_RESOURCE_AMOUNT,
-                    grass_min=math.inf
-                ),
-                number_of_object=get_number_of_object(self.game.ant.currentResource),
-            )
-            if m is None:
-                print("tsp returns None")
-                m = self.get_init_ant_explore_move()
-        elif self.has_resource_in_own_map(
-                2,
-                WORKER_MAX_CARRYING_RESOURCE_AMOUNT - self.game.ant.currentResource.value) \
                 == ResourceType.GRASS.value:
             print("state has not res but has path")
             m, AI.last_name_of_object, d = own_map.get_resource_best_move(
@@ -336,6 +320,24 @@ class AI:
                 limit=get_limit(
                     bread_min=math.inf,
                     grass_min=WORKER_MAX_CARRYING_RESOURCE_AMOUNT
+                ),
+                number_of_object=get_number_of_object(self.game.ant.currentResource),
+            )
+            if m is None:
+                print("tsp returns None")
+                m = self.get_init_ant_explore_move()
+        elif self.has_resource_in_own_map(
+                2,
+                WORKER_MAX_CARRYING_RESOURCE_AMOUNT - self.game.ant.currentResource.value) \
+                == ResourceType.BREAD.value:
+            print("state has not res but has path")
+            m, AI.last_name_of_object, d = own_map.get_resource_best_move(
+                src_pos=self.pos,
+                dest_pos=AI.map.base_pos,
+                name_of_object='bread',
+                limit=get_limit(
+                    bread_min=WORKER_MAX_CARRYING_RESOURCE_AMOUNT,
+                    grass_min=math.inf
                 ),
                 number_of_object=get_number_of_object(self.game.ant.currentResource),
             )
@@ -368,12 +370,10 @@ class AI:
 
     @time_measure
     def turn(self) -> (str, int, int):
-        print()
-        print("***************************************************")
         print("ROUND START!")
-        print("ROUND:", self.game_round)
         self.update_ids_from_chat_box()
         self.check_for_possible_base_cells()
+        AI.latest_map = deepcopy(AI.map)
 
         if AI.game_round > 5:
             self.check_for_base()
@@ -406,7 +406,6 @@ class AI:
             AI.latest_pos[AI.id] = ((-1, -1), -1)
 
         self.pos = (self.game.ant.currentX, self.game.ant.currentY)
-        print("POS:", self.pos)
         self.search_neighbors()
         self.update_map_from_neighbors()
         self.update_map_from_chat_box()
@@ -525,18 +524,31 @@ class AI:
 
         elif self.game.ant.antType == AntType.SARBAAZ.value:
             # self.direction = Direction.get_random_direction()
-            if AI.soldier_state == SoldierState.Null:
-                self.determine_soldier_state()
+            # if AI.soldier_state == SoldierState.Null:
+            #     self.determine_soldier_state()
 
-            if AI.soldier_state == SoldierState.FirstFewRounds:
-                self.direction = AI.soldier_init_random_dir
-
-            if AI.game_round < 25:
-                self.direction = self.get_soldier_first_move_to_discover()
-                print(f'in soldier discover: pos = {self.pos}, direction = {self.direction}')
-            elif AI.game_round < 50:
-                self.direction = self.get_soldier_first_node_to_support()
-                print(f'in soldier support: pos = {self.pos}, direction = {self.direction}')
+            # if AI.soldier_state == SoldierState.FirstFewRounds:
+            #     self.direction = AI.soldier_init_random_dir
+            
+            if AI.life_cycle == 1:
+                self.direction = Direction.CENTER.value
+            else:
+                if AI.soldier_state == SoldierState.CellTargetFound:
+                    if self.pos == AI.cell_target:
+                        AI.soldier_state = SoldierState.Null
+                    elif AI.cell_target is not None:
+                        self.direction = self.get_first_move_to_target(self.pos, AI.cell_target)
+                    else:
+                        AI.soldier_state = SoldierState.Null
+    
+                if AI.game_round < 50 and AI.soldier_state == SoldierState.Null:
+                    self.direction = self.get_soldier_first_move_to_discover()
+                    AI.soldier_state = SoldierState.CellTargetFound
+                    print(f'in soldier discover: pos = {self.pos}, direction = {self.direction}')
+                    
+            # elif AI.game_round < 50:
+            #     self.direction = self.get_soldier_first_node_to_support()
+            #     print(f'in soldier support: pos = {self.pos}, direction = {self.direction}')
 
         if AI.life_cycle > 1 and (not self.shot or self.value == 10):
             self.encoded_neighbors = encode_graph_nodes(self.pos,
@@ -562,10 +574,12 @@ class AI:
             self.value = 9
 
         print("turn", AI.game_round, "id", AI.id, "pos", self.pos,
-              "state", AI.worker_state,
+              "worker state", AI.worker_state,
+              "soldier state", AI.soldier_state,
               "dir", Direction.get_string(self.direction),
               "map value", self.value,
-              "enemy base pos", AI.map.enemy_base_pos)
+              "enemy base pos", AI.map.enemy_base_pos,
+              "soldier target cell", AI.cell_target)
 
         AI.latest_pos[AI.id] = (self.pos, AI.game_round)
         AI.game_round += 1
@@ -749,14 +763,14 @@ class AI:
                                           intersection(possible_cells))
 
     def get_soldier_first_move_to_discover(self):
-        return Direction.get_value(
-            AI.map.get_first_move_to_discover(self.pos, 5, AI.id, AI.ids[self.game.ant.antType])
-        )
+        move, AI.cell_target = AI.latest_map.get_first_move_to_discover(AI.map.nodes[self.pos], self.pos, len(AI.ids[self.game.ant.antType]), AI.id, AI.ids[self.game.ant.antType])
+        return Direction.get_value(move)
 
     def get_soldier_first_node_to_support(self):
         return Direction.get_value(
             AI.map.step(self.pos, AI.map.get_best_node_to_support(self.pos))
         )
+    
     # def get_init_ant_explore_move(self):
     #     AI.worker_state = WorkerState.InitCollecting
     #     if self.game.baseX < (self.game.mapWidth / 2):
@@ -826,3 +840,8 @@ class AI:
     #     else:
     #         print("something went wrong, init ants move :", m, "from id:", AI.id)
     #         return Direction.get_random_direction()
+    
+    def get_first_move_to_target(self, src, dest):
+        # print(src, dest)
+        # print(AI.map.get_path(AI.map.nodes[src], AI.map.nodes[dest]))
+        return Direction.get_value(AI.map.step(src, AI.map.get_path(AI.map.nodes[src], AI.map.nodes[dest])[0].pos))

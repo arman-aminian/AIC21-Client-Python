@@ -19,3 +19,4 @@ class SoldierState(Enum):
     PreparingForAttack = 2
     Defending = 3
     FirstFewRounds = 4
+    CellTargetFound = 5
