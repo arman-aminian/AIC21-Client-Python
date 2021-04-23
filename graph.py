@@ -368,3 +368,139 @@ class Graph:
         opposite_node_pos = (self.dim[0] - 1 - src_pos[0], self.dim[1] - 1 - src_pos[1])
         path = self.get_path(self.nodes[src_pos], self.nodes[opposite_node_pos])
         return self.step(src_pos, path[0].pos) if path else "None"
+
+    def get_edge_nodes(self, src):
+        q = [src]
+        parent = {src.pos: src.pos}
+        dist = {src.pos: 0}
+        edge_nodes = set()
+
+        if src.wall:
+            return None
+
+        while q:
+            current_node = q.pop(0)
+            neighbors = self.get_neighbors_with_not_discovered_nodes(current_node.pos)
+
+            for neighbor in neighbors:
+                next_node = self.nodes[neighbor]
+                if not next_node.discovered:
+                    edge_nodes.add(current_node.pos)
+                    continue
+                if parent.get(next_node.pos) is None:
+                    parent[next_node.pos] = current_node.pos
+                    dist[next_node.pos] = dist[current_node.pos] + 1
+                    q.append(next_node)
+
+        return {
+            'edge_nodes': list(edge_nodes),
+            'distance': dist,
+            'parent': parent,
+        }
+
+    @Utils.time_measure
+    def get_best_list(self, src, each_list_max_size):
+        edge_nodes_info = self.get_edge_nodes(src)
+        edge_nodes = edge_nodes_info.get('edge_nodes')
+        distance = edge_nodes_info.get('distance')
+        parent = edge_nodes_info.get('parent')
+        print(edge_nodes)
+
+        all_list = []
+        for i in range(len(edge_nodes)):
+            if all_list and edge_nodes[i] in all_list[0]:
+                break
+            all_list.append([])
+            for j in range(i, len(edge_nodes), math.ceil(len(edge_nodes) / each_list_max_size)):
+                all_list[-1].append(edge_nodes[j])
+
+        print(all_list)
+        mn_value = math.inf
+        mn_idx = 0
+        for i in range(len(all_list)):
+            value = self.get_value_of_list(all_list[i], distance)
+            if value < mn_value:
+                mn_idx = i
+                mn_value = value
+
+        return all_list[mn_idx], parent
+
+    @staticmethod
+    def get_value_of_list(list_of_candidate, dist):
+        value = 0
+        for pos in list_of_candidate:
+            value += dist.get(pos)
+        return value / len(list_of_candidate)
+
+    def get_first_move_to_discover(self, src_pos, each_list_max_size, my_id, all_ids):
+        src = self.nodes[src_pos]
+        best_list, parent = self.get_best_list(src, each_list_max_size)
+        print(best_list)
+        idx = random.randint(0, len(best_list) - 1)
+        ids = all_ids[-each_list_max_size:]
+
+        for i in range(len(ids)):
+            if ids[-i] == my_id:
+                idx = i
+                break
+
+        return self.step(src.pos, self.get_first_move_from_parent(parent, src.pos, best_list[idx % len(best_list)]))
+
+    @staticmethod
+    def get_first_move_from_parent(parent, src, dest):
+        last = dest
+        while parent[last] != src:
+            last = parent[last]
+        return last
+
+    @Utils.time_measure
+    def bfs(self, src):
+        q = [src]
+        parent = {src.pos: src.pos}
+        dist = {src.pos: 0}
+
+        if src.wall:
+            return None
+
+        while q:
+            current_node = q.pop(0)
+            neighbors = self.get_neighbors_with_not_discovered_nodes(current_node.pos)
+
+            for neighbor in neighbors:
+                next_node = self.nodes[neighbor]
+                if parent.get(next_node.pos) is None:
+                    parent[next_node.pos] = current_node.pos
+                    dist[next_node.pos] = dist[current_node.pos] + 1
+                    q.append(next_node)
+
+        return {
+            'distance': dist,
+            'parent': parent,
+        }
+
+    @Utils.time_measure
+    def get_best_node_to_support(self, src_pos, grass_wight=1, bread_weight=1, distance_weight=1):
+        src = self.nodes[src_pos]
+        best_value = -math.inf
+        best_pos = None
+
+        bfs_info = self.bfs(src)
+        dist = bfs_info.get('distance')
+        parent = bfs_info.get('parent')
+
+        for node in self.nodes.values():
+            poses = Utils.get_view_distance_neighbors(node.pos, self.dim[0], self.dim[1], 4, sort=False)
+            bread_number = 0
+            grass_number = 0
+            distance = dist.get(node.pos, None)
+            for pos in poses:
+                bread_number += self.nodes[pos].bread
+                grass_number += self.nodes[pos].grass
+
+            value = grass_number * grass_wight + bread_number * bread_weight
+            print(value, node.pos)
+            if distance and value > best_value:
+                best_value = value
+                best_pos = node.pos
+
+        return self.get_first_move_from_parent(parent, src.pos, best_pos)

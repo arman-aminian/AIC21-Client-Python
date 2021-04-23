@@ -59,7 +59,7 @@ def manhattan_dist(p, q, w, h) -> int:
     return x_diff + y_diff
 
 
-def get_view_distance_neighbors(pos, w, h, view: int, exact: bool = False):
+def get_view_distance_neighbors(pos, w, h, view: int, exact: bool = False, sort=True):
     ret = []
     for i in range(-view, view + 1):
         for j in range(-view, view + 1):
@@ -68,7 +68,7 @@ def get_view_distance_neighbors(pos, w, h, view: int, exact: bool = False):
                 ret.append(p)
             elif not exact and manhattan_dist(pos, p, w, h) <= view:
                 ret.append(p)
-    return sorted(ret)
+    return sorted(ret) if sort else ret
 
 
 def shortest_path(src, dest, w, h):
