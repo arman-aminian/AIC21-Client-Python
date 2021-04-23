@@ -368,3 +368,62 @@ class Graph:
         opposite_node_pos = (self.dim[0] - 1 - src_pos[0], self.dim[1] - 1 - src_pos[1])
         path = self.get_path(self.nodes[src_pos], self.nodes[opposite_node_pos])
         return self.step(src_pos, path[0].pos) if path else "None"
+
+    def get_edge_nodes(self, src):
+        q = [src]
+        parent = {src.pos: src.pos}
+        dist = {src.pos: 0}
+        edge_nodes = set()
+
+        if src.wall:
+            return None
+
+        while q:
+            current_node = q.pop(0)
+            neighbors = self.get_neighbors_with_not_discovered_nodes(current_node.pos)
+
+            for neighbor in neighbors:
+                next_node = self.nodes[neighbor]
+                if not next_node.discovered:
+                    edge_nodes.add(current_node)
+                    continue
+                if parent.get(next_node.pos) is None:
+                    parent[next_node.pos] = current_node.pos
+                    dist[next_node.pos] = dist[current_node.pos] + 1
+                    q.append(next_node)
+
+        return {
+            'edge_nodes': list(edge_nodes),
+            'distance': dist,
+            'parent': parent,
+        }
+
+    def get_best_list(self, src, each_list_max_size):
+        edge_nodes_info = self.get_edge_nodes(src)
+        edge_nodes = edge_nodes_info.get('edge_nodes')
+        distance = edge_nodes_info.get('distance')
+        parent = edge_nodes_info.get('parent')
+
+        all_list = []
+        for i in range(len(edge_nodes)):
+            if all_list and edge_nodes[i].pos in all_list[0]:
+                break
+            for j in range(i, len(edge_nodes), len(edge_nodes) // each_list_max_size):
+                all_list[-1].append(edge_nodes[j].pos)
+
+        mn_value = math.inf
+        mn_idx = 0
+        for i in range(len(all_list)):
+            value = self.get_value_of_list(all_list[i], distance)
+            if value < mn_value:
+                mn_idx = i
+                mn_value = value
+
+        return all_list[mn_idx], parent
+
+    @staticmethod
+    def get_value_of_list(list_of_candidate, dist):
+        value = 0
+        for pos in list_of_candidate:
+            value += dist.get(pos)
+        return value / len(list_of_candidate)
