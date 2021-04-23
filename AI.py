@@ -144,10 +144,9 @@ class AI:
                     msg.text]
 
         for m in maps:
-            ant_id, ant_pos, ant_dir, \
-            ant_shot, nodes, enemy_base_pos = decode_nodes(m.text,
-                                                           AI.w, AI.h,
-                                                           self.game.ant.viewDistance)
+            ant_id, ant_pos, ant_dir, ant_shot, nodes, enemy_base_pos = decode_nodes(m.text,
+                                                                                     AI.w, AI.h,
+                                                                                     self.game.ant.viewDistance)
             AI.latest_pos[ant_id] = (ant_pos, m.turn)
             for pos, n in nodes.items():
                 if n != AI.map.nodes[pos]:
@@ -261,17 +260,17 @@ class AI:
             print("something went wrong, init ants move :", m, "from id:", AI.id)
             return Direction.get_random_direction()
 
-    @time_measure
+    # @time_measure
     def get_init_ant_collect_move(self):
-        own_map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
-        for p in self.found_history:
-            own_map.nodes[p] = AI.map.nodes[p]
-        if self.game.ant.currentResource.type == ResourceType.BREAD:
-            if self.has_resource_in_own_map(ResourceType.BREAD.value,
-                                            WORKER_MAX_CARRYING_RESOURCE_AMOUNT - self.game.ant.currentResource.value) \
+        # own_map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
+        # for p in self.found_history:
+        #     own_map.nodes[p] = AI.map.nodes[p]
+        if self.game.ant.currentResource.type == ResourceType.BREAD.value:
+            if self.has_resource_in_map(ResourceType.BREAD.value,
+                                        WORKER_MAX_CARRYING_RESOURCE_AMOUNT - self.game.ant.currentResource.value) \
                     == ResourceType.BREAD.value:
                 print("state has res to find")
-                m, AI.last_name_of_object, d = own_map.get_resource_best_move(
+                m, AI.last_name_of_object, d = AI.map.get_resource_best_move(
                     src_pos=self.pos,
                     dest_pos=AI.map.base_pos,
                     name_of_object='bread',
@@ -285,15 +284,15 @@ class AI:
                 print("state has not other res")
                 path = AI.map.get_path(AI.map.nodes[self.pos], AI.map.nodes[AI.map.base_pos])
                 return Direction.get_value(AI.map.step(self.pos, path[0].pos))
-        elif self.game.ant.currentResource.type == ResourceType.GRASS:
+        elif self.game.ant.currentResource.type == ResourceType.GRASS.value:
             if self.game.ant.currentResource.value == WORKER_MAX_CARRYING_RESOURCE_AMOUNT:
                 path = AI.map.get_path(AI.map.nodes[self.pos], AI.map.nodes[AI.map.base_pos])
                 return Direction.get_value(AI.map.step(self.pos, path[0].pos))
-            if self.has_resource_in_own_map(ResourceType.GRASS.value,
-                                            WORKER_MAX_CARRYING_RESOURCE_AMOUNT - self.game.ant.currentResource.value) \
+            if self.has_resource_in_map(ResourceType.GRASS.value,
+                                        WORKER_MAX_CARRYING_RESOURCE_AMOUNT - self.game.ant.currentResource.value) \
                     == ResourceType.GRASS.value:
                 print("state has res to find")
-                m, AI.last_name_of_object, d = own_map.get_resource_best_move(
+                m, AI.last_name_of_object, d = AI.map.get_resource_best_move(
                     src_pos=self.pos,
                     dest_pos=AI.map.base_pos,
                     name_of_object='grass',
@@ -309,7 +308,7 @@ class AI:
                 return Direction.get_value(AI.map.step(self.pos, path[0].pos))
         else:
             print("ANT isn't hold anything")
-            grass_dir, AI.last_name_of_object, grass_dis = own_map.get_resource_best_move(
+            grass_dir, AI.last_name_of_object, grass_dis = AI.map.get_resource_best_move(
                 src_pos=self.pos,
                 dest_pos=AI.map.base_pos,
                 name_of_object='grass',
@@ -319,12 +318,12 @@ class AI:
                 ),
                 number_of_object=get_number_of_object(self.game.ant.currentResource),
             )
-            bread_dir, AI.last_name_of_object, bread_dis = own_map.get_resource_best_move(
+            bread_dir, AI.last_name_of_object, bread_dis = AI.map.get_resource_best_move(
                 src_pos=self.pos,
                 dest_pos=AI.map.base_pos,
                 name_of_object='bread',
                 limit=get_limit(
-                    bread_min=GENERATE_KARGAR,
+                    bread_min=WORKER_MAX_CARRYING_RESOURCE_AMOUNT,
                     grass_min=math.inf
                 ),
                 number_of_object=get_number_of_object(
@@ -336,33 +335,34 @@ class AI:
             print("bread_dis:", bread_dis)
             if (grass_dir is not None and bread_dir is None) or grass_dis <= bread_dis:
                 m = grass_dir
-            elif grass_dir is None and bread_dir is not None:
+            elif bread_dir is not None:
                 m = bread_dir
             else:
                 m = self.get_init_ant_explore_move()
         return m
 
-    def has_resource_in_own_map(self, res_type: int, res_num=10):
+    def has_resource_in_map(self, res_type: int, res_num=10):
         own_map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
         for p in self.found_history:
             own_map.nodes[p] = AI.map.nodes[p]
         print("total bread num:", own_map.total_bread_number())
         print("total grass num:", own_map.total_grass_number())
         if res_type == ResourceType.BREAD.value:
-            if own_map.total_bread_number() >= res_num:
+            if AI.map.total_bread_number() >= res_num:
                 return res_type
         elif res_type == ResourceType.GRASS.value:
-            if own_map.total_grass_number() >= res_num:
+            if AI.map.total_grass_number() >= res_num:
                 return res_type
-        elif own_map.total_bread_number() >= res_num:
+        elif AI.map.total_bread_number() >= res_num:
             return ResourceType.BREAD.value
-        elif own_map.total_grass_number() >= res_num:
+        elif AI.map.total_grass_number() >= res_num:
             return ResourceType.GRASS.value
         else:
             return None
 
-    @time_measure
+    # @time_measure
     def turn(self) -> (str, int, int):
+        print("*************************************************")
         print("ROUND START!")
         self.update_ids_from_chat_box()
         self.check_for_possible_base_cells()
@@ -404,6 +404,8 @@ class AI:
             AI.latest_map.nodes[k].discovered = v.discovered
 
         self.pos = (self.game.ant.currentX, self.game.ant.currentY)
+        print("POS:", self.pos)
+        print("ROUND:", self.game_round)
         self.search_neighbors()
         self.update_map_from_neighbors()
         self.update_map_from_chat_box()
@@ -419,7 +421,7 @@ class AI:
             self.direction = Direction.get_random_direction()
 
         elif self.game.ant.antType == AntType.KARGAR.value:
-            if self.game.ant.currentResource.value == WORKER_MAX_CARRYING_RESOURCE_AMOUNT:
+            if self.game.ant.currentResource.value is not None and self.game.ant.currentResource.value > 5:
                 print("worker has max carrying resources amount => back to base with bfs")
                 path = AI.map.get_path(AI.map.nodes[self.pos], AI.map.nodes[AI.map.base_pos])
                 self.direction = Direction.get_value(AI.map.step(self.pos, path[0].pos))
@@ -439,12 +441,12 @@ class AI:
                     # if AI.worker_state == WorkerState.Exploring:
                     #     self.direction = self.worker_explore()
                     # else:
-                    if self.has_resource_in_own_map(2, 10) is None:
+                    if self.has_resource_in_map(2, 1) is None:
                         self.direction = self.get_init_ant_explore_move()
-                    elif self.game.ant.currentResource.type == ResourceType.BREAD:
+                    elif self.game.ant.currentResource.type == ResourceType.BREAD.value:
                         print("ANT is holding bread")
-                        if self.has_resource_in_own_map(ResourceType.BREAD.value,
-                                                        WORKER_MAX_CARRYING_RESOURCE_AMOUNT - self.game.ant.currentResource.value) \
+                        if self.has_resource_in_map(ResourceType.BREAD.value,
+                                                    WORKER_MAX_CARRYING_RESOURCE_AMOUNT - self.game.ant.currentResource.value) \
                                 == ResourceType.BREAD.value:
                             print("state has bread res to find")
                             self.direction, AI.last_name_of_object, d = AI.map.get_resource_best_move(
@@ -461,10 +463,10 @@ class AI:
                             print("state has not other res")
                             path = AI.map.get_path(AI.map.nodes[self.pos], AI.map.nodes[AI.map.base_pos])
                             self.direction = Direction.get_value(AI.map.step(self.pos, path[0].pos))
-                    elif self.game.ant.currentResource.type == ResourceType.GRASS:
+                    elif self.game.ant.currentResource.type == ResourceType.GRASS.value:
                         print("ANT is holding grass")
-                        if self.has_resource_in_own_map(ResourceType.GRASS.value,
-                                                        WORKER_MAX_CARRYING_RESOURCE_AMOUNT - self.game.ant.currentResource.value) \
+                        if self.has_resource_in_map(ResourceType.GRASS.value,
+                                                    WORKER_MAX_CARRYING_RESOURCE_AMOUNT - self.game.ant.currentResource.value) \
                                 == ResourceType.GRASS.value:
                             print("state has grass res to find")
                             self.direction, AI.last_name_of_object, d = AI.map.get_resource_best_move(
@@ -498,7 +500,7 @@ class AI:
                             dest_pos=AI.map.base_pos,
                             name_of_object='bread',
                             limit=get_limit(
-                                bread_min=GENERATE_KARGAR,
+                                bread_min=WORKER_MAX_CARRYING_RESOURCE_AMOUNT,
                                 grass_min=math.inf
                             ),
                             number_of_object=get_number_of_object(
@@ -527,7 +529,7 @@ class AI:
 
             # if AI.soldier_state == SoldierState.FirstFewRounds:
             #     self.direction = AI.soldier_init_random_dir
-            
+
             if AI.life_cycle == 1:
                 self.direction = Direction.CENTER.value
             else:
@@ -538,12 +540,12 @@ class AI:
                         self.direction = self.get_first_move_to_target(self.pos, AI.cell_target)
                     else:
                         AI.soldier_state = SoldierState.Null
-    
+
                 if AI.game_round < 50 and AI.soldier_state == SoldierState.Null:
                     self.direction = self.get_soldier_first_move_to_discover()
                     AI.soldier_state = SoldierState.CellTargetFound
                     print(f'in soldier discover: pos = {self.pos}, direction = {self.direction}')
-                    
+
             # elif AI.game_round < 50:
             #     self.direction = self.get_soldier_first_node_to_support()
             #     print(f'in soldier support: pos = {self.pos}, direction = {self.direction}')
@@ -761,14 +763,16 @@ class AI:
                                           intersection(possible_cells))
 
     def get_soldier_first_move_to_discover(self):
-        move, AI.cell_target = AI.latest_map.get_first_move_to_discover(AI.map.nodes[self.pos], self.pos, len(AI.ids[self.game.ant.antType]), AI.id, AI.ids[self.game.ant.antType])
+        move, AI.cell_target = AI.latest_map.get_first_move_to_discover(AI.map.nodes[self.pos], self.pos,
+                                                                        len(AI.ids[self.game.ant.antType]), AI.id,
+                                                                        AI.ids[self.game.ant.antType])
         return Direction.get_value(move)
 
     def get_soldier_first_node_to_support(self):
         return Direction.get_value(
             AI.map.step(self.pos, AI.map.get_best_node_to_support(self.pos))
         )
-    
+
     # def get_init_ant_explore_move(self):
     #     AI.worker_state = WorkerState.InitCollecting
     #     if self.game.baseX < (self.game.mapWidth / 2):
@@ -838,7 +842,7 @@ class AI:
     #     else:
     #         print("something went wrong, init ants move :", m, "from id:", AI.id)
     #         return Direction.get_random_direction()
-    
+
     def get_first_move_to_target(self, src, dest):
         # print(src, dest)
         # print(AI.map.get_path(AI.map.nodes[src], AI.map.nodes[dest]))

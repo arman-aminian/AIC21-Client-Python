@@ -9,7 +9,7 @@ def get_tsp(src_pos, dest_pos, graph, number_of_object, name_of_object):
     tsp = make_tsp(
         graph.nodes[src_pos], graph.nodes[dest_pos], name_of_object, graph, number_of_object
     )
-    print(tsp)
+    # print(tsp)
     if not tsp:
         return None
     return {
@@ -43,7 +43,7 @@ def make_tsp(src, dest, name_of_node_object, graph, number_of_object):
     dist = make_dist_graph(src, dest, name_of_node_object, graph, dist_nodes, number_of_object)
 
     number_of_dist_vertex = len(dist_nodes) + 2
-    print(number_of_dist_vertex)
+    # print(number_of_dist_vertex)
     if number_of_dist_vertex == 2:
         return None
 
@@ -158,7 +158,7 @@ def get_path_from_tsp_info(tsp_info, name_of_node_object, graph, limit, number_o
     }
 
 
-@time_measure
+# @time_measure
 def get_tsp_first_move(src_pos, dest_pos, graph, name_of_object, limit=None, number_of_object=None):
     number_of_object = number_of_object or {}
     if not limit:
@@ -180,7 +180,7 @@ def get_tsp_first_move(src_pos, dest_pos, graph, name_of_object, limit=None, num
 
     if not tsp_path or not tsp_path.get('path'):
         return Direction.get_value('None'), None
-    print([p.pos for p in tsp_path.get('path')])
+    # print([p.pos for p in tsp_path.get('path')])
     return Direction.get_value(graph.step(src_pos, tsp_path.get('path')[0].pos)), name_of_object
 
 

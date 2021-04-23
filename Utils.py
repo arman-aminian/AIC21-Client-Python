@@ -114,7 +114,7 @@ def time_measure(fn):
         res = fn(*args, **kwargs)
         delay = time.time() - now
         
-        print(f'{fn.__name__} took {delay} seconds!')
+        # print(f'{fn.__name__} took {delay} seconds!')
         
         return res
     

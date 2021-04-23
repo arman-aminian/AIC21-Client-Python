@@ -400,7 +400,7 @@ class Graph:
             'parent': parent,
         }
 
-    @Utils.time_measure
+    # @Utils.time_measure
     def get_best_list(self, src, each_list_max_size):
         edge_nodes_info = self.get_edge_nodes(src)
         edge_nodes = edge_nodes_info.get('edge_nodes')
@@ -487,7 +487,7 @@ class Graph:
             'parent': parent,
         }
 
-    @Utils.time_measure
+    # @Utils.time_measure
     def get_best_node_to_support(self, src_pos, grass_wight=1, bread_weight=1, distance_weight=1):
         src = self.nodes[src_pos]
         best_value = -math.inf
@@ -507,14 +507,14 @@ class Graph:
                 grass_number += self.nodes[pos].grass
 
             value = grass_number * grass_wight + bread_number * bread_weight
-            print(value, node.pos)
+            # print(value, node.pos)
             if distance and value > best_value:
                 best_value = value
                 best_pos = node.pos
 
         return self.get_first_move_from_parent(parent, src.pos, best_pos)
 
-    @Utils.time_measure
+    # @Utils.time_measure
     def get_resource_best_move(self, src_pos, dest_pos, name_of_object, limit, number_of_object):
         best_nodes = getattr(
             self, f'get_nearest_{name_of_object}_nodes'
@@ -526,7 +526,7 @@ class Graph:
             ), name_of_object
         if not best_nodes:
             return None, None, math.inf
-        print('best_node', best_nodes[0].pos)
+        # print('best_node', best_nodes[0].pos)
         return Direction.get_value(self.step(
             src_pos, self.get_shortest_path_from_shortest_path_info(src_pos, best_nodes[0].pos, name_of_object)[0])
         ), name_of_object, self.get_shortest_distance(
