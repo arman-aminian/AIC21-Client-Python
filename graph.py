@@ -312,7 +312,7 @@ class Graph:
             number_of_object, 'grass', [src, dest]
         )
 
-        print(grass_nodes_temp)
+        # print(grass_nodes_temp)
         grass_nodes = []
         for node in grass_nodes_temp:
             if self.get_shortest_distance(
@@ -335,7 +335,7 @@ class Graph:
         self.find_all_shortest_path(
             number_of_object, 'bread', [src, dest]
         )
-        print(bread_nodes_temp)
+        # print(bread_nodes_temp)
         bread_nodes = []
         for node in bread_nodes_temp:
             if self.get_shortest_distance(
@@ -406,7 +406,7 @@ class Graph:
         edge_nodes = edge_nodes_info.get('edge_nodes')
         distance = edge_nodes_info.get('distance')
         parent = edge_nodes_info.get('parent')
-        print(edge_nodes)
+        # print(edge_nodes)
 
         while len(edge_nodes) > each_list_max_size and len(
                 edge_nodes) % each_list_max_size != 0:
@@ -420,7 +420,7 @@ class Graph:
             for j in range(i, len(edge_nodes), math.ceil(len(edge_nodes) / each_list_max_size)):
                 all_list[-1].append(edge_nodes[j])
 
-        print(all_list)
+        # print(all_list)
         mn_value = math.inf
         mn_idx = 0
         for i in range(len(all_list)):
@@ -441,7 +441,7 @@ class Graph:
     def get_first_move_to_discover(self, curr_pos, src_pos, each_list_max_size, my_id, all_ids):
         src = self.nodes[src_pos]
         best_list, parent = self.get_best_list(src, each_list_max_size)
-        print(best_list)
+        # print(best_list)
         idx = random.randint(0, len(best_list) - 1)
         ids = all_ids[-each_list_max_size:]
 
@@ -450,7 +450,7 @@ class Graph:
                 idx = i
                 break
 
-        print("MY GOAL IS TO REACH", best_list[idx % len(best_list)])
+        # print("MY GOAL IS TO REACH", best_list[idx % len(best_list)])
 
         return self.step(curr_pos.pos, self.get_path(curr_pos, self.nodes[best_list[idx % len(best_list)]])[0].pos), \
                best_list[idx % len(best_list)]
@@ -488,7 +488,7 @@ class Graph:
         }
 
     @Utils.time_measure
-    def get_best_node_to_support(self, src_pos, grass_wight=1, bread_weight=1, distance_weight=1):
+    def get_best_node_to_support(self, src_pos, grass_weight=1, bread_weight=1, distance_weight=1):
         src = self.nodes[src_pos]
         best_value = -math.inf
         best_pos = None
@@ -498,16 +498,16 @@ class Graph:
         parent = bfs_info.get('parent')
 
         for node in self.nodes.values():
-            poses = Utils.get_view_distance_neighbors(node.pos, self.dim[0], self.dim[1], 4, sort=False)
+            poses = Utils.get_view_distance_neighbors(node.pos, self.dim[0], self.dim[1], 3, sort=False)
             bread_number = 0
             grass_number = 0
-            distance = dist.get(node.pos, None)
+            distance = dist.get(node.pos, 0)
             for pos in poses:
                 bread_number += self.nodes[pos].bread
                 grass_number += self.nodes[pos].grass
 
-            value = grass_number * grass_wight + bread_number * bread_weight
-            print(value, node.pos)
+            value = grass_number * grass_weight + bread_number * bread_weight - distance * distance_weight
+            # print(value, node.pos)
             if distance and value > best_value:
                 best_value = value
                 best_pos = node.pos
@@ -526,7 +526,7 @@ class Graph:
             ), name_of_object
         if not best_nodes:
             return None, None, math.inf
-        print('best_node', best_nodes[0].pos)
+        # print('best_node', best_nodes[0].pos)
         return Direction.get_value(self.step(
             src_pos, self.get_shortest_path_from_shortest_path_info(src_pos, best_nodes[0].pos, name_of_object)[0])
         ), name_of_object, self.get_shortest_distance(

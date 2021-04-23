@@ -50,10 +50,10 @@ class BT:
 def solve_bt(graph, pos, max_distance=10, start=None):
     self = BT(graph, pos, max_distance, start)
     self.bt(pos, 0)
-    print("best", self.best_path)
+    # print("best", self.best_path)
     self.best_path = [p for p in self.best_path if p != -1]
     if not self.best_path:
-        print("FUCKED UP")
+        # print("FUCKED UP")
         return 0
-    print(self.best_path)
+    # print(self.best_path)
     return Direction.get_value(self.graph.step(pos, self.best_path[0]))
