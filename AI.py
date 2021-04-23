@@ -373,7 +373,10 @@ class AI:
         print("ROUND START!")
         self.update_ids_from_chat_box()
         self.check_for_possible_base_cells()
-        AI.latest_map = deepcopy(AI.map)
+        for k, v in AI.map.items():
+            AI.latest_map.nodes[k].wall = v['wall']
+            AI.latest_map.nodes[k].bread = v['bread']
+            AI.latest_map.nodes[k].discovered = v['discovered']
 
         if AI.game_round > 5:
             self.check_for_base()

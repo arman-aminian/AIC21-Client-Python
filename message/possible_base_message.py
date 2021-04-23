@@ -31,7 +31,7 @@ def decode_possible_cells(s, w, h):
     pos = sp(temp[:12], w, h)
     prev_pos = sp(temp[12:24], w, h)
     possible_cells = []
-    for i in range(24, len(temp), 12):
+    for i in range(24, len(temp) - 12, 12):
         p = temp[i: i + 12]
         possible_cells.append(sp(p, w, h))
     
