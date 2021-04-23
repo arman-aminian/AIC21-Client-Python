@@ -450,7 +450,7 @@ class Graph:
                 idx = i
                 break
 
-        # print("MY GOAL IS TO REACH", best_list[idx % len(best_list)])
+        print("MY GOAL IS TO REACH", best_list[idx % len(best_list)])
 
         return self.step(curr_pos.pos, self.get_path(curr_pos, self.nodes[best_list[idx % len(best_list)]])[0].pos), \
                best_list[idx % len(best_list)]

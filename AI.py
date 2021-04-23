@@ -589,23 +589,23 @@ class AI:
                     else:
                         AI.soldier_state = SoldierState.Null
 
-                if AI.game_round < 50 and AI.soldier_state == SoldierState.Null:
+                if AI.game_round < 175 and AI.soldier_state == SoldierState.Null:
                     self.direction = self.get_soldier_first_move_to_discover()
                     AI.soldier_state = SoldierState.CellTargetFound
                     print_with_debug(f'in soldier discover: pos = {self.pos}, direction = {self.direction}')
 
-                elif AI.game_round >= 50 and AI.soldier_state == SoldierState.Null:
+                elif AI.game_round >= 175 and AI.soldier_state == SoldierState.Null:
                     self.direction = self.get_soldier_first_node_to_support()
                     print_with_debug(f'in soldier support: pos = {self.pos}, direction = {self.direction}')
 
         if AI.life_cycle > 1 and (not self.shot or self.value == 10):
             if self.direction is None:
                 print_with_debug("turn", AI.game_round, "id", AI.id, "pos", self.pos,
-              "worker state", AI.worker_state,
-              "soldier state", AI.soldier_state,
-              "map value", self.value,
-              "enemy base pos", AI.map.enemy_base_pos,
-              "soldier target cell", AI.cell_target, debug=True)
+                                 "worker state", AI.worker_state,
+                                 "soldier state", AI.soldier_state,
+                                 "map value", self.value,
+                                 "enemy base pos", AI.map.enemy_base_pos,
+                                 "soldier target cell", AI.cell_target, debug=True)
             self.encoded_neighbors = encode_graph_nodes(self.pos,
                                                         self.new_neighbors,
                                                         AI.w, AI.h,
@@ -631,12 +631,12 @@ class AI:
             self.value = 9
 
         print_with_debug("turn", AI.game_round, "id", AI.id, "pos", self.pos,
-              "worker state", AI.worker_state,
-              "soldier state", AI.soldier_state,
-              "dir", Direction.get_string(self.direction),
-              "map value", self.value,
-              "enemy base pos", AI.map.enemy_base_pos,
-              "soldier target cell", AI.cell_target)
+                         "worker state", AI.worker_state,
+                         "soldier state", AI.soldier_state,
+                         "dir", Direction.get_string(self.direction),
+                         "map value", self.value,
+                         "enemy base pos", AI.map.enemy_base_pos,
+                         "soldier target cell", AI.cell_target)
 
         AI.latest_pos[AI.id] = (self.pos, AI.game_round)
         AI.game_round += 1
