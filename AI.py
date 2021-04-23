@@ -366,7 +366,6 @@ class AI:
         print("ROUND START!")
         self.update_ids_from_chat_box()
         self.check_for_possible_base_cells()
-        AI.latest_map = deepcopy(AI.map)
 
         if AI.game_round > 5:
             self.check_for_base()
@@ -391,12 +390,18 @@ class AI:
         if AI.life_cycle == 1:
             AI.w, AI.h = self.game.mapWidth, self.game.mapHeight
             AI.map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
+            AI.latest_map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
             if AI.game_round > 2:
                 self.make_id(min_id=INIT_ANTS_NUM + 1)
             elif AI.game_round == 1:
                 self.make_id()
             self.send_id()
             AI.latest_pos[AI.id] = ((-1, -1), -1)
+
+        for k, v in AI.map.nodes.items():
+            AI.latest_map.nodes[k].wall = v.wall
+            AI.latest_map.nodes[k].bread = v.bread
+            AI.latest_map.nodes[k].discovered = v.discovered
 
         self.pos = (self.game.ant.currentX, self.game.ant.currentY)
         self.search_neighbors()
