@@ -10,6 +10,8 @@ def get_tsp(src_pos, dest_pos, graph, number_of_object, name_of_object):
         graph.nodes[src_pos], graph.nodes[dest_pos], name_of_object, graph, number_of_object
     )
     print(tsp)
+    if not tsp:
+        return None
     return {
         f'tsp_{name_of_object}': tsp
     }
@@ -138,17 +140,17 @@ def get_path_from_tsp_info(tsp_info, name_of_node_object, graph, limit, number_o
     path = list(reversed(path))
     actual_path = []
 
-    # for i in range(1, len(path)):
-    #     actual_path.extend(
-    #         graph.get_shortest_path_from_shortest_path_info(
-    #             dist_nodes[path[i - 1]], dist_nodes[path[i]], name_of_node_object
-    #         )
-    #     )
-    actual_path.extend(
-        graph.get_shortest_path_from_shortest_path_info(
-            dist_nodes[path[0]], dist_nodes[path[1]], name_of_node_object
+    for i in range(1, len(path)):
+        actual_path.extend(
+            graph.get_shortest_path_from_shortest_path_info(
+                dist_nodes[path[i - 1]], dist_nodes[path[i]], name_of_node_object
+            )
         )
-    )
+    # actual_path.extend(
+    #     graph.get_shortest_path_from_shortest_path_info(
+    #         dist_nodes[path[0]], dist_nodes[path[1]], name_of_node_object
+    #     )
+    # )
 
     return {
         'path': [el[0] for el in groupby(actual_path)],
@@ -175,12 +177,11 @@ def get_tsp_first_move(src_pos, dest_pos, graph, name_of_object, limit=None, num
 
     all_tsp = get_tsp_path(src_pos, dest_pos, graph, limit, number_of_object, name_of_object)
     tsp_path = all_tsp.get(f'{name_of_object}_path_from_tsp_info')
-    last_name_of_object = name_of_object
 
     if not tsp_path or not tsp_path.get('path'):
         return Direction.get_value('None'), None
-
-    return Direction.get_value(graph.step(src_pos, tsp_path.get('path')[0].pos)), last_name_of_object
+    print([p.pos for p in tsp_path.get('path')])
+    return Direction.get_value(graph.step(src_pos, tsp_path.get('path')[0].pos)), name_of_object
 
 
 def get_limit(**kwargs):

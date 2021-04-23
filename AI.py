@@ -3,6 +3,7 @@ from Model import *
 from Utils import *
 from graph import *
 from message.map_message import *
+from message.possible_base_message import *
 from tsp_generator import get_tsp_first_move, get_limit, get_number_of_object
 from state import *
 from BT import *
@@ -22,8 +23,9 @@ class AI:
     soldier_init_random_dir = None
     last_name_of_object = None
     possible_base_cells = []
-    soldier_gathering_targets = set()
+    soldier_targets = []
     prev_round_resource = 0
+    path_history = []
 
     def __init__(self):
         # Current Game State
@@ -78,7 +80,7 @@ class AI:
 
     def determine_value(self, neighbor_cells, neighbor_nodes):
         for n in neighbor_cells:
-            if n.type == CellType.BASE and (n.x, n.y) != AI.map.base_pos and \
+            if n.type == CellType.BASE.value and (n.x, n.y) != AI.map.base_pos and \
                     AI.map.enemy_base_pos is None:
                 AI.map.enemy_base_pos = (n.x, n.y)
                 return 10
@@ -111,13 +113,19 @@ class AI:
         if 0 < total_disc < 5:
             return 4
 
+
+        if self.pos in self.new_neighbors.keys():
+            if self.new_neighbors[self.pos].bread > AI.map.nodes[self.pos].bread \
+                    or self.new_neighbors[self.pos].grass > AI.map.nodes[self.pos].grass:
+                return 3
+
         if self.game.ant.antType == AntType.KARGAR.value and self.pos in self.new_neighbors.keys():
             if self.new_neighbors[self.pos].bread < AI.map.nodes[self.pos].bread \
                     or self.new_neighbors[self.pos].grass < AI.map.nodes[self.pos].grass:
                 if self.game.ant.currentResource.value > AI.prev_round_resource:
-                    return 3
+                    return 2
 
-        return 2
+        return 1
 
     def update_map_from_neighbors(self):
         if not self.new_neighbors:
@@ -136,16 +144,20 @@ class AI:
 
         for m in maps:
             ant_id, ant_pos, ant_dir, \
-            ant_shot, nodes = decode_nodes(m.text, AI.w, AI.h,
-                                           self.game.ant.viewDistance)
+                ant_shot, nodes, enemy_base_pos = decode_nodes(m.text,
+                                                               AI.w, AI.h,
+                                                               self.game.ant.viewDistance)
             AI.latest_pos[ant_id] = (ant_pos, m.turn)
             for pos, n in nodes.items():
                 if n != AI.map.nodes[pos]:
                     AI.map.nodes[pos] = copy.deepcopy(n)
 
+            if enemy_base_pos is not None:
+                AI.map.enemy_base_pos = enemy_base_pos
+
             if ant_shot:
                 target = add_pos_dir(ant_pos, ant_dir, AI.w, AI.h)
-                AI.soldier_gathering_targets.add(target)
+                AI.soldier_targets.append(target)
 
     def update_ids_from_chat_box(self):
         id_msgs = [msg.text for msg in
@@ -165,7 +177,7 @@ class AI:
 
     def send_id(self):
         self.message = "id" + str(self.game.ant.antType) + str(AI.id)
-        self.value = MESSAGE_VALUE["id"]
+        self.value = 0
 
     def make_id(self, min_id=1, max_id=220):
         all_ids = AI.ids[0] + AI.ids[1] if AI.ids else []
@@ -357,8 +369,9 @@ class AI:
 
     @time_measure
     def turn(self) -> (str, int, int):
-        print("ROUND START!", AI.worker_state)
+        print("ROUND START!")
         self.update_ids_from_chat_box()
+        self.check_for_possible_base_cells()
 
         if AI.game_round > 5:
             self.check_for_base()
@@ -394,9 +407,12 @@ class AI:
         self.search_neighbors()
         self.update_map_from_neighbors()
         self.update_map_from_chat_box()
+        if self.game.ant.antType == AntType.SARBAAZ.value:
+            self.soldier_update_history()
+            print("soldier history", AI.path_history)
 
         print("known cells", [k for k, v in AI.map.nodes.items() if v.discovered])
-        print("history", AI.found_history)
+        print("found history", AI.found_history)
 
         if AI.game_round == 1:
             AI.worker_state = WorkerState.InitExploring
@@ -491,44 +507,45 @@ class AI:
                 if self.direction == 0 or self.direction is None:
                     print("random ant move")
                     self.direction = Direction.get_random_direction()
-            #
-            # # todo: Delete this, this is test
-            # AI.last_name_of_object = AI.last_name_of_object or random.choice(['bread', 'grass'])
-            #
-            # if self.game_round > 5:
-            #     x, AI.last_name_of_object = get_tsp_first_move(
-            #         src_pos=self.pos,
-            #         dest_pos=AI.map.base_pos,
-            #         name_of_object=AI.last_name_of_object,
-            #         graph=AI.map,
-            #         limit=get_limit(bread_min=2, grass_min=2),
-            #         number_of_object=get_number_of_object(self.game.ant.currentResource),
-            #     )
-            #     self.direction = x
+
         elif self.game.ant.antType == AntType.SARBAAZ.value:
-            self.direction = Direction.get_random_direction()
-            # if AI.soldier_state == SoldierState.Null:
-            #     self.determine_soldier_state()
-            #
-            # if AI.soldier_state == SoldierState.FirstFewRounds:
-            #     self.direction = AI.soldier_init_random_dir
+            # self.direction = Direction.get_random_direction()
+            if AI.soldier_state == SoldierState.Null:
+                self.determine_soldier_state()
 
-        print("turn", AI.game_round, "id", AI.id, "pos", self.pos,
-              "state", AI.worker_state,
-              "dir", Direction.get_string(self.direction),
-              "map value", self.value)
+            if AI.soldier_state == SoldierState.FirstFewRounds:
+                self.direction = AI.soldier_init_random_dir
 
-        AI.latest_pos[AI.id] = (self.pos, AI.game_round)
-        if AI.life_cycle > 1:
+        if AI.life_cycle > 1 and (not self.shot or self.value == 10):
             self.encoded_neighbors = encode_graph_nodes(self.pos,
                                                         self.new_neighbors,
                                                         AI.w, AI.h,
                                                         self.game.viewDistance,
                                                         AI.id, self.direction,
-                                                        self.shot)
+                                                        self.shot,
+                                                        AI.map.enemy_base_pos)
             # TODO not discovered = guess node
             self.message = self.encoded_neighbors
+        elif AI.life_cycle > 1 and self.shot:
+            possible_cells = Utils.get_view_distance_neighbors(self.pos, AI.w,
+                                                               AI.h, 6, True)
+            possible_cells = [p for p in possible_cells if
+                              p not in AI.path_history]
+            AI.possible_base_cells = list(set(AI.possible_base_cells).
+                                          intersection(possible_cells))
+            self.message = encode_possible_cells(AI.id, self.pos,
+                                                 AI.latest_pos[AI.id][0],
+                                                 AI.w, AI.h, possible_cells)
+            print("tell them", AI.latest_pos[AI.id][0], possible_cells)
+            self.value = 9
 
+        print("turn", AI.game_round, "id", AI.id, "pos", self.pos,
+              "state", AI.worker_state,
+              "dir", Direction.get_string(self.direction),
+              "map value", self.value,
+              "enemy base pos", AI.map.enemy_base_pos)
+
+        AI.latest_pos[AI.id] = (self.pos, AI.game_round)
         AI.game_round += 1
         AI.life_cycle += 1
         AI.prev_round_resource = self.game.ant.currentResource.value
@@ -660,13 +677,13 @@ class AI:
         es = sum([AI.map.nodes[v].enemy_soldiers for v in neighbors if
                   AI.map.nodes[v].enemy_soldiers > 0])
         cond = (hp == base_hp - BASE_DMG and es == 0) or \
-               (hp == base_hp - BASE_DMG - SOLDIER_DMG and es == 1)
+               (hp == base_hp - BASE_DMG - SOLDIER_DMG and es == 1) or \
+               (hp == base_hp - BASE_DMG - 2 * SOLDIER_DMG and es == 2)
         if cond:
             self.shot = True
-            self.value = 9
 
     def find_possible_base_cells(self):
-        for target in AI.soldier_gathering_targets:
+        for target in AI.soldier_targets:
             possible_cells = Utils.get_view_distance_neighbors(target, AI.w,
                                                                AI.h, 6, True)
             possible_cells = [p for p in possible_cells if
@@ -678,12 +695,36 @@ class AI:
                 print("HUGE MOTHERFUCKING ERROR!")
 
     def chosse_best_target(self):
-        if len(AI.soldier_gathering_targets) == 1:
-            return next(iter(AI.soldier_gathering_targets))
-        elif len(AI.soldier_gathering_targets) > 1:
+        if len(AI.soldier_targets) == 1:
+            return AI.soldier_targets[0]
+
+        if AI.soldier_targets:
             costs = []
-            # for target in AI.soldier_gathering_targets:
-            #     costs.append(AI.map.)
+            for target in AI.soldier_targets:
+                costs.append(len(AI.map.get_path(AI.map.base_pos, target)))
+            min_i = AI.soldier_targets.index(min(costs))
+            return AI.soldier_targets[min_i]
+
+    def soldier_update_history(self):
+        neighbors = get_view_distance_neighbors(self.pos, AI.w, AI.h,
+                                                5 if self.shot else 6)
+        new_neighbors = [p for p in neighbors if p not in AI.path_history]
+        AI.path_history += new_neighbors
+
+    def check_for_possible_base_cells(self):
+        possible_msgs = [msg.text for msg in
+                         self.game.chatBox.allChats[-MAX_MESSAGES_PER_TURN:] if
+                         msg.text.startswith("s") and
+                         msg.turn == AI.game_round - 1]
+        if AI.life_cycle == 1:
+            possible_msgs = [msg.text for msg in self.game.chatBox.allChats if
+                             msg.text.startswith("s")]
+
+        for m in possible_msgs:
+            # TODO use this info
+            ant_id, pos, prev_pos, possible_cells = decode_possible_cells(m, AI.w, AI.h)
+            AI.possible_base_cells = list(set(AI.possible_base_cells).
+                                          intersection(possible_cells))
 
     # def get_init_ant_explore_move(self):
     #     AI.worker_state = WorkerState.InitCollecting
