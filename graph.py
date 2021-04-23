@@ -254,6 +254,41 @@ class Graph:
                         return list(reversed(path))
         return None
 
+    def get_path_with_max_length(self, src, dest, max_len):
+        q = [src]
+        parent = {src.pos: src.pos}
+
+        if src.wall:
+            return None
+
+        while q:
+            current_node = q.pop(0)
+            neighbors = self.get_neighbors_with_not_discovered_nodes(current_node.pos)
+
+            for neighbor in neighbors:
+                next_node = self.nodes[neighbor]
+                if parent.get(next_node.pos) is None:
+                    parent[next_node.pos] = current_node.pos
+
+                    path = []
+                    last_node_pos = next_node.pos
+                    while last_node_pos != src.pos:
+                        path.append(self.nodes[last_node_pos])
+                        last_node_pos = parent[last_node_pos]
+                    if len(path) > max_len:
+                        return None
+
+                    q.append(next_node)
+                    if next_node.pos == dest.pos:
+                        path = []
+                        last_node_pos = next_node.pos
+
+                        while last_node_pos != src.pos:
+                            path.append(self.nodes[last_node_pos])
+                            last_node_pos = parent[last_node_pos]
+                        return list(reversed(path))
+        return None
+
     def get_random_nodes(self):
         return {pos: self.get_node(pos) for pos in self.nodes.keys()}
 
