@@ -369,6 +369,7 @@ class AI:
             return None
 
     # @time_measure
+    @handle_exception
     def turn(self) -> (str, int, int):
         print_with_debug("*************************************************")
         print_with_debug("ROUND START!")

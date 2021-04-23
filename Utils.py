@@ -80,14 +80,14 @@ def shortest_path(src, dest, w, h):
         while i != dest[1]:
             up.append(fix((src[0], i + 1), w, h))
             i = up[-1][1]
-        
+
         i = src[1]
         while i != dest[1]:
             down.append(fix((src[0], i - 1), w, h))
             i = down[-1][1]
-        
+
         return up if len(up) <= len(down) else down
-    
+
     if src[1] == dest[1]:  # left and right
         left = []
         right = []
@@ -95,14 +95,14 @@ def shortest_path(src, dest, w, h):
         while i != dest[0]:
             right.append(fix((i + 1, src[1]), w, h))
             i = right[-1][0]
-        
+
         i = src[0]
         while i != dest[0]:
             left.append(fix((i - 1, src[1]), w, h))
             i = left[-1][0]
-        
+
         return right if len(right) <= len(left) else left
-    
+
     path1 = shortest_path(src, (dest[0], src[1]), w, h) + shortest_path(
         (dest[0], src[1]), dest, w, h)
     path2 = shortest_path(src, (src[0], dest[1]), w, h) + shortest_path(
@@ -114,11 +114,11 @@ def time_measure(fn):
         now = time.time()
         res = fn(*args, **kwargs)
         delay = time.time() - now
-        
+
         # print(f'{fn.__name__} took {delay} seconds!')
-        
+
         return res
-    
+
     return wrapper
 
 
@@ -127,3 +127,19 @@ def add_pos_dir(pos, direction, w, h):
     new_pos = tuple(map(sum, zip(pos, temp[direction])))
     new_pos = fix(new_pos, w, h)
     return new_pos
+
+
+def handle_exception(fn):
+    def wrapper(*args, **kwargs):
+        try:
+            res = fn(*args, **kwargs)
+        except Exception as e:
+            print('ERROR ERROR ERROR')
+            print(e)
+            res = '', -50000, Model.Direction.get_random_direction()
+            #todo: Raise Error
+            raise
+
+        return res
+
+    return wrapper
