@@ -147,10 +147,10 @@ class Graph:
         return neighbors
 
     def get_neighbors_with_not_discovered_nodes(self, pos):
-        if self.nodes[pos].wall:
+        if self.nodes[pos].wall and self.nodes[pos].discovered:
             return []
         neighbors = [self.up(pos), self.right(pos), self.down(pos), self.left(pos)]
-        neighbors = [n for n in neighbors if not self.nodes[n].wall]
+        neighbors = [n for n in neighbors if not self.nodes[n].wall or not self.nodes[n].discovered]
         return neighbors
 
     def right(self, pos):
@@ -248,7 +248,31 @@ class Graph:
                     if next_node.pos == dest.pos:
                         path = []
                         last_node_pos = next_node.pos
+                        while last_node_pos != src.pos:
+                            path.append(self.nodes[last_node_pos])
+                            last_node_pos = parent[last_node_pos]
+                        return list(reversed(path))
+        return None
+    
+    def get_path_with_non_discovered(self, src, dest):
+        q = [src]
+        parent = {src.pos: src.pos}
 
+        if src.wall:
+            return None
+
+        while q:
+            current_node = q.pop(0)
+            neighbors = self.get_neighbors_with_not_discovered_nodes(current_node.pos)
+
+            for neighbor in neighbors:
+                next_node = self.nodes[neighbor]
+                if parent.get(next_node.pos) is None:
+                    parent[next_node.pos] = current_node.pos
+                    q.append(next_node)
+                    if next_node.pos == dest.pos:
+                        path = []
+                        last_node_pos = next_node.pos
                         while last_node_pos != src.pos:
                             path.append(self.nodes[last_node_pos])
                             last_node_pos = parent[last_node_pos]
@@ -507,7 +531,6 @@ class Graph:
                 grass_number += self.nodes[pos].grass
 
             value = grass_number * grass_weight + bread_number * bread_weight - distance * distance_weight
-            # print(value, node.pos)
             if distance and value > best_value:
                 best_value = value
                 best_pos = node.pos

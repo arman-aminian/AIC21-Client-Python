@@ -373,11 +373,7 @@ class AI:
         print_with_debug("*************************************************")
         print_with_debug("ROUND START!")
         print_with_debug("ROUND START!")
-        if AI.life_cycle > 1 and AI.map.enemy_base_pos is not None and self.game.ant.antType == AntType.SARBAAZ.value:
-            AI.soldier_state = SoldierState.WaitingForComrades
-            AI.cell_target = AI.map.enemy_base_pos
         self.update_ids_from_chat_box()
-        self.check_for_possible_base_cells()
 
         if AI.game_round > 5:
             self.check_for_base()
@@ -425,6 +421,10 @@ class AI:
         if self.game.ant.antType == AntType.SARBAAZ.value:
             self.soldier_update_history()
             print_with_debug("soldier history", AI.path_neighbors_history)
+
+        if AI.life_cycle > 1 and AI.map.enemy_base_pos is not None and self.game.ant.antType == AntType.SARBAAZ.value:
+            AI.soldier_state = SoldierState.PreparingForAttack
+        self.check_for_possible_base_cells()
 
         print_with_debug("known cells", [k for k, v in AI.map.nodes.items() if v.discovered])
         print_with_debug("found history", AI.found_history)
@@ -831,6 +831,7 @@ class AI:
         if targets:
             targets.sort()
             distances = [Utils.manhattan_dist(AI.map.base_pos, t, AI.w, AI.h) for t in targets]
+            print_with_debug("HAHAHAHA i had shot msgs", targets, distances)
             AI.cell_target = targets[distances.index(min(distances))] if AI.cell_target is None else AI.cell_target
 
     def get_soldier_first_move_to_discover(self):
@@ -915,4 +916,4 @@ class AI:
     def get_first_move_to_target(self, src, dest):
         print_with_debug(src, dest)
         print_with_debug(AI.map.get_path(AI.map.nodes[src], AI.map.nodes[dest]))
-        return Direction.get_value(AI.map.step(src, AI.map.get_path(AI.map.nodes[src], AI.map.nodes[dest])[0].pos))
+        return Direction.get_value(AI.map.step(src, AI.map.get_path_with_non_discovered(AI.map.nodes[src], AI.map.nodes[dest])[0].pos))
