@@ -138,7 +138,7 @@ def handle_exception(fn):
             print(e)
             res = '', -50000, Model.Direction.get_random_direction()
             #todo: Raise Error
-            raise
+            # raise
 
         return res
 

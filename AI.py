@@ -9,7 +9,7 @@ from state import *
 from BT import *
 
 
-def print_with_debug(*args, debug=True):
+def print_with_debug(*args, debug=False):
     if debug:
         print(*args)
 
@@ -435,7 +435,7 @@ class AI:
             self.direction = Direction.get_random_direction()
 
         elif self.game.ant.antType == AntType.KARGAR.value:
-            if self.game.ant.currentResource.value is not None and self.game.ant.currentResource.value > 5:
+            if self.game.ant.currentResource.value is not None and self.game.ant.currentResource.value >= (WORKER_MAX_CARRYING_RESOURCE_AMOUNT / 2):
                 print_with_debug("worker has max carrying resources amount => back to base with bfs")
                 path = AI.map.get_path(AI.map.nodes[self.pos], AI.map.nodes[AI.map.base_pos])
                 self.direction = Direction.get_value(AI.map.step(self.pos, path[0].pos))
