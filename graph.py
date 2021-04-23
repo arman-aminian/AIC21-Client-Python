@@ -427,3 +427,19 @@ class Graph:
         for pos in list_of_candidate:
             value += dist.get(pos)
         return value / len(list_of_candidate)
+
+    def get_first_move_to_discover(self, src, each_list_max_size, my_id, all_ids):
+        best_list, parent = self.get_best_list(src, each_list_max_size)
+
+        idx = random.randint(1, len(best_list) - 1)
+        ids = all_ids[-each_list_max_size:]
+
+        for i in range(len(ids)):
+            if ids[-i] == my_id:
+                idx = i
+                break
+        last = best_list[idx % len(best_list)]
+        while parent[last] != src.pos:
+            last = parent[last]
+
+        return self.step(src.pos, last)
