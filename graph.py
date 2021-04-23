@@ -385,7 +385,7 @@ class Graph:
             for neighbor in neighbors:
                 next_node = self.nodes[neighbor]
                 if not next_node.discovered:
-                    edge_nodes.add(current_node)
+                    edge_nodes.add(current_node.pos)
                     continue
                 if parent.get(next_node.pos) is None:
                     parent[next_node.pos] = current_node.pos
@@ -398,19 +398,23 @@ class Graph:
             'parent': parent,
         }
 
+    @Utils.time_measure
     def get_best_list(self, src, each_list_max_size):
         edge_nodes_info = self.get_edge_nodes(src)
         edge_nodes = edge_nodes_info.get('edge_nodes')
         distance = edge_nodes_info.get('distance')
         parent = edge_nodes_info.get('parent')
+        print(edge_nodes)
 
         all_list = []
         for i in range(len(edge_nodes)):
-            if all_list and edge_nodes[i].pos in all_list[0]:
+            if all_list and edge_nodes[i] in all_list[0]:
                 break
-            for j in range(i, len(edge_nodes), len(edge_nodes) // each_list_max_size):
-                all_list[-1].append(edge_nodes[j].pos)
+            all_list.append([])
+            for j in range(i, len(edge_nodes), math.ceil(len(edge_nodes) / each_list_max_size)):
+                all_list[-1].append(edge_nodes[j])
 
+        print(all_list)
         mn_value = math.inf
         mn_idx = 0
         for i in range(len(all_list)):
@@ -429,9 +433,10 @@ class Graph:
         return value / len(list_of_candidate)
 
     def get_first_move_to_discover(self, src, each_list_max_size, my_id, all_ids):
-        best_list, parent = self.get_best_list(src, each_list_max_size)
 
-        idx = random.randint(1, len(best_list) - 1)
+        best_list, parent = self.get_best_list(src, each_list_max_size)
+        print(best_list)
+        idx = random.randint(0, len(best_list) - 1)
         ids = all_ids[-each_list_max_size:]
 
         for i in range(len(ids)):
@@ -439,7 +444,7 @@ class Graph:
                 idx = i
                 break
 
-        return self.step(src.pos, self.get_first_move_from_parent(parent, src.pos, best_list[idx]))
+        return self.step(src.pos, self.get_first_move_from_parent(parent, src.pos, best_list[idx % len(best_list)]))
 
     @staticmethod
     def get_first_move_from_parent(parent, src, dest):
@@ -448,6 +453,7 @@ class Graph:
             last = parent[last]
         return last
 
+    @Utils.time_measure
     def bfs(self, src):
         q = [src]
         parent = {src.pos: src.pos}
@@ -472,6 +478,7 @@ class Graph:
             'parent': parent,
         }
 
+    @Utils.time_measure
     def get_best_node_to_defence(self, src, grass_wight, bread_weight, distance_weight):
         best_value = -math.inf
         best_pos = None
@@ -481,17 +488,18 @@ class Graph:
         parent = bfs_info.get('parent')
 
         for node in self.nodes.values():
-            poses = Utils.get_view_distance_neighbors(node.pos, self.dim[0], self.dim[1], 4)
+            poses = Utils.get_view_distance_neighbors(node.pos, self.dim[0], self.dim[1], 4, sort=False)
             bread_number = 0
             grass_number = 0
-            distance = dist.get(node.pos)
+            distance = dist.get(node.pos, None)
             for pos in poses:
                 bread_number += self.nodes[pos].bread
                 grass_number += self.nodes[pos].grass
 
-            value = grass_number * grass_wight + bread_number * bread_weight + -distance * distance_weight
-            if value > best_value:
+            value = grass_number * grass_wight + bread_number * bread_weight
+            print(value, node.pos)
+            if distance and value > best_value:
                 best_value = value
                 best_pos = node.pos
 
-        return self.get_first_move_from_parent(parent, src, best_pos)
+        return self.get_first_move_from_parent(parent, src.pos, best_pos)
