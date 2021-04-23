@@ -642,11 +642,6 @@ class AI:
         AI.game_round += 1
         AI.life_cycle += 1
         AI.prev_round_resource = self.game.ant.currentResource.value
-
-        # TESTING
-        if AI.map.base_pos == (3, 14):
-            self.direction = Direction.UP.value
-
         return self.message, self.value, self.direction
 
     def determine_worker_state(self):
