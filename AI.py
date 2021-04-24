@@ -92,7 +92,7 @@ class AI:
             if n.type == CellType.BASE.value and (n.x, n.y) != AI.map.base_pos and \
                     AI.map.enemy_base_pos is None:
                 AI.map.enemy_base_pos = (n.x, n.y)
-                return 10
+                return 20
 
         sum_bg = 0
         for n in neighbor_nodes:
@@ -425,13 +425,15 @@ class AI:
 
         if AI.life_cycle > 1 and AI.map.enemy_base_pos is not None and self.game.ant.antType == AntType.SARBAAZ.value:
             AI.soldier_state = SoldierState.PreparingForAttack
+            if AI.cell_target is None:
+                AI.cell_target = AI.map.enemy_base_pos
         self.check_for_possible_base_cells()
 
         print_with_debug("known cells", [k for k, v in AI.map.nodes.items() if v.discovered])
         print_with_debug("found history", AI.found_history)
 
         if AI.game_round == 1:
-            AI.worker_state = WorkerState.InitExploring
+            AI.worker_state = WorkerState.InitExploring if self.game.ant.antType == AntType.KARGAR.value else WorkerState.Null
             self.direction = Direction.get_random_direction()
 
         elif self.game.ant.antType == AntType.KARGAR.value:
@@ -565,6 +567,8 @@ class AI:
                         self.direction = self.get_first_move_to_target(self.pos, AI.cell_target)
                     elif self.pos == AI.cell_target and ally_s <= 2:
                         self.direction = Direction.CENTER.value
+                    elif AI.cell_target is None and AI.map.enemy_base_pos is not None:
+                        self.direction = Direction.get_random_direction()
 
                 if AI.soldier_state == SoldierState.HasBeenShot:
                     self.direction = Direction.CENTER.value
@@ -609,7 +613,7 @@ class AI:
                                  "soldier state", AI.soldier_state,
                                  "map value", self.value,
                                  "enemy base pos", AI.map.enemy_base_pos,
-                                 "soldier target cell", AI.cell_target, debug=True)
+                                 "soldier target cell", AI.cell_target, debug=False)
             self.encoded_neighbors = encode_graph_nodes(self.pos,
                                                         self.new_neighbors,
                                                         AI.w, AI.h,
@@ -618,17 +622,17 @@ class AI:
                                                         self.shot,
                                                         AI.map.enemy_base_pos)
             self.message = self.encoded_neighbors
-        elif AI.life_cycle > 1 and self.shot and ((AI.soldier_state == SoldierState.Null and AI.worker_state == WorkerState.Null) or (AI.soldier_state == SoldierState.CellTargetFound)):
+        elif AI.life_cycle > 1 and self.shot and (AI.worker_state == WorkerState.Null or AI.soldier_state == SoldierState.CellTargetFound):
             possible_cells = Utils.get_view_distance_neighbors(self.pos, AI.w,
                                                                AI.h, 6, True)
             possible_cells = [p for p in possible_cells if
                               p not in AI.path_neighbors_history]
             AI.possible_base_cells = list(set(AI.possible_base_cells).
                                           intersection(possible_cells))
+            print_with_debug("tell them", AI.latest_pos[AI.id][0], possible_cells)
             self.message = encode_possible_cells(AI.id, self.pos,
                                                  AI.own_cells_history[-3],
                                                  AI.w, AI.h, possible_cells)
-            print_with_debug("tell them", AI.latest_pos[AI.id][0], possible_cells)
             self.direction = solve_bt(AI.map, self.pos, max_distance=5)
             AI.soldier_state = SoldierState.HasBeenShot
             self.value = 15
@@ -775,7 +779,7 @@ class AI:
         neighbor_cells = [j for sub in cells for j in sub if j is not None]
         for c in neighbor_cells:
             for a in c.ants:
-                if a.antType == AntType.SARBAAZ.value and a.antTeam == AntTeam.ENEMY.value:
+                if a.antType == AntType.SARBAAZ.value and a.antTeam != self.game.ant.antTeam:
                     es += 1
         # es = len([a for a in self.game.ant.getMapRelativeCell(0, 0).ants if a.antType == AntType.SARBAAZ.value])
         # es = sum([AI.map.nodes[v].enemy_soldiers for v in neighbors if
@@ -784,6 +788,7 @@ class AI:
                (hp == base_hp - BASE_DMG - SOLDIER_DMG and es == 1) or \
                (hp == base_hp - BASE_DMG - 2 * SOLDIER_DMG and es == 2)
         if cond:
+            print_with_debug("YESSSSS I GOT SHOTTTTTTTTTT")
             self.shot = True
 
     def find_possible_base_cells(self):
