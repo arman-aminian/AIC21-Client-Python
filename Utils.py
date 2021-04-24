@@ -27,7 +27,7 @@ WORKER_MAX_CARRYING_RESOURCE_AMOUNT = 10
 BASE_DMG = 3
 SOLDIER_DMG = 2
 HP = [8, 6]  # soldier, worker
-MAX_TURN_COUNT = 100
+MAX_TURN_COUNT = 200
 
 
 def reverse_list(lst):
@@ -134,8 +134,8 @@ def handle_exception(fn):
         try:
             res = fn(*args, **kwargs)
         except Exception as e:
-            print('ERROR ERROR ERROR')
-            print(e)
+            # print('ERROR ERROR ERROR')
+            # print(e)
             res = '', -50000, Model.Direction.get_random_direction()
             #todo: Raise Error
             # raise

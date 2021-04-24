@@ -552,7 +552,7 @@ class AI:
                 if AI.soldier_state == SoldierState.WaitingForComrades:
                     ally_s = len(
                         [a for a in self.game.ant.getMapRelativeCell(0, 0).ants
-                         if a.antType == AntType.SARBAAZ.value])
+                         if a.antType == AntType.SARBAAZ.value and a.antTeam == self.game.ant.antTeam])
                     if ally_s > 2 or abs(MAX_TURN_COUNT - AI.game_round) <= 30:
                         AI.soldier_state = SoldierState.PreparingForAttack
                     else:
@@ -560,7 +560,7 @@ class AI:
 
                 if AI.soldier_state == SoldierState.PreparingForAttack:
                     ally_s = len(
-                        [a for a in self.game.ant.getMapRelativeCell(0, 0).ants if a.antType == AntType.SARBAAZ.value])
+                        [a for a in self.game.ant.getMapRelativeCell(0, 0).ants if a.antType == AntType.SARBAAZ.value and a.antTeam == self.game.ant.antTeam])
                     if self.pos == AI.cell_target and (ally_s > 2 or abs(MAX_TURN_COUNT - AI.game_round) <= 10):
                         AI.soldier_state = SoldierState.Attacking
                     elif AI.cell_target is not None and self.pos != AI.cell_target:
@@ -574,7 +574,7 @@ class AI:
                     self.direction = Direction.CENTER.value
                     ally_s = len(
                         [a for a in self.game.ant.getMapRelativeCell(0, 0).ants
-                         if a.antType == AntType.SARBAAZ.value])
+                         if a.antType == AntType.SARBAAZ.value and a.antTeam == self.game.ant.antTeam])
                     if ally_s > 2:
                         self.soldier_state = SoldierState.Attacking
 
@@ -585,7 +585,7 @@ class AI:
                     else:
                         self.direction = solve_bt(AI.map, self.pos, max_distance=7)
                         if self.direction == Direction.CENTER.value:
-                            print("CENTER VALUE FROM BT")
+                            print_with_debug("CENTER VALUE FROM BT")
                             self.direction = AI.attack_dir
 
                 if AI.soldier_state == SoldierState.CellTargetFound:
@@ -606,7 +606,7 @@ class AI:
                     self.direction = self.get_soldier_first_node_to_support()
                     print_with_debug(f'in soldier support: pos = {self.pos}, direction = {self.direction}')
 
-        if AI.life_cycle > 1 and (not self.shot or self.value == 10):
+        if AI.life_cycle > 1 and (not self.shot or self.value == 20):
             if self.direction is None:
                 print_with_debug("turn", AI.game_round, "id", AI.id, "pos", self.pos,
                                  "worker state", AI.worker_state,
