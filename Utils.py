@@ -28,6 +28,7 @@ BASE_DMG = 3
 SOLDIER_DMG = 2
 HP = [8, 6]  # soldier, worker
 MAX_TURN_COUNT = 200
+BASE_RANGE = 6
 VALUES = {
     "id": 10000,
     "enemy_base": 5000,
@@ -149,7 +150,7 @@ def handle_exception(fn):
             # print('ERROR ERROR ERROR')
             # print(e)
             res = '', -50000, Model.Direction.get_random_direction()
-            #todo: Raise Error
+            # todo: Raise Error
             # raise
 
         return res

@@ -503,7 +503,7 @@ class AI:
                 AI.out_file = open(AI.output_path + t + '_' + str(AI.first_id) + '_' + str(AI.born_game_round) + ".txt", "a+")
             else:
                 AI.out_file = open(AI.output_path + t + '_' + str(AI.id) + '_' + str(AI.born_game_round) + ".txt", "a+")
-        
+
         print_with_debug("*************************************************", f=AI.out_file)
         print_with_debug(AI.found_history, f=AI.out_file)
         print_with_debug("ROUND START!", f=AI.out_file)
@@ -554,7 +554,7 @@ class AI:
         if self.game.ant.antType == AntType.SARBAAZ.value:
             self.soldier_update_history()
             print_with_debug("soldier history", AI.soldier_path_neighbors_history, f=AI.out_file)
-        
+
         if AI.game_round > 5:
             self.check_for_base()
 
@@ -715,10 +715,10 @@ class AI:
         AI.prev_round_resource = self.game.ant.currentResource.value
         AI.prev_hp = self.game.ant.health
         AI.prev_es = sum([AI.map.nodes[v].enemy_soldiers for v in get_view_distance_neighbors(self.pos, AI.w, AI.h, self.game.ant.viewDistance)])
-        
+
         if self.game.ant.currentX in range(10, 25):
             self.direction = Direction.RIGHT.value
-        
+
         return self.message, self.value, self.direction
 
     def determine_worker_state(self):
@@ -918,7 +918,9 @@ class AI:
                 AI.attack_dir = Direction.get_random_direction()
 
     def get_soldier_first_move_to_discover(self):
-        move, _ = AI.latest_map.get_first_move_to_discover(AI.map.nodes[self.pos], self.pos, len(AI.ids[self.game.ant.antType]), AI.id, AI.ids[self.game.ant.antType])
+        move, _ = AI.latest_map.get_first_move_to_discover(
+            AI.map.nodes[self.pos], self.pos, len(AI.ids[self.game.ant.antType]), AI.id, AI.ids[self.game.ant.antType]
+        )
         return Direction.get_value(move)
 
     def get_soldier_first_node_to_support(self):
@@ -996,8 +998,11 @@ class AI:
     #         print_with_debug("something went wrong, init ants move :", m, "from id:", AI.id, f=AI.out_file)
     #         return Direction.get_random_direction()
 
-    def get_first_move_to_target(self, src, dest):
+    def get_first_move_to_target(self, src, dest, unsafe_cells=None):
         print_with_debug(src, dest, f=AI.out_file)
         print_with_debug(AI.map.get_path(AI.map.nodes[src], AI.map.nodes[dest]), f=AI.out_file)
         return Direction.get_value(
-            AI.map.step(src, AI.map.get_path_with_non_discovered(AI.map.nodes[src], AI.map.nodes[dest])[0].pos))
+            AI.map.step(
+                src, AI.map.get_path_with_non_discovered(AI.map.nodes[src], AI.map.nodes[dest], unsafe_cells)[0].pos
+            )
+        )

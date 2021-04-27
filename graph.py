@@ -42,7 +42,8 @@ class Node:
     # todo: make default dist better
     def grass_value(self, src, dest, graph, number=0):
         distance = graph.get_shortest_distance(src, self, 'grass', default=math.inf)
-        return -distance * self.DISTANCE_WEIGH + min(self.GRASS_LIMIT, self.grass + src.grass + number) * self.GRASS_WEIGHT
+        return -distance * self.DISTANCE_WEIGH + min(self.GRASS_LIMIT,
+                                                     self.grass + src.grass + number) * self.GRASS_WEIGHT
 
     def bread_value(self, src, dest, graph, number=0):
         distance = graph.get_shortest_distance(src, self, 'bread', default=math.inf)
@@ -253,8 +254,18 @@ class Graph:
                             last_node_pos = parent[last_node_pos]
                         return list(reversed(path))
         return None
-    
-    def get_path_with_non_discovered(self, src, dest):
+
+    def get_path_with_non_discovered(self, src, dest, unsafe_cells=None):
+        unsafe_pos = {}
+        for pos in (unsafe_cells or []):
+            unsafe_pos.update(
+                set(
+                    Utils.get_view_distance_neighbors(
+                        pos, self.dim[0], self.dim[1], Utils.BASE_RANGE, exact=False, sort=False
+                    )
+                )
+            )
+
         q = [src]
         parent = {src.pos: src.pos}
 
@@ -267,6 +278,8 @@ class Graph:
 
             for neighbor in neighbors:
                 next_node = self.nodes[neighbor]
+                if next_node.pos in unsafe_pos:
+                    continue
                 if parent.get(next_node.pos) is None:
                     parent[next_node.pos] = current_node.pos
                     q.append(next_node)
@@ -485,7 +498,6 @@ class Graph:
         while parent[last] != src:
             last = parent[last]
         return last
-
 
     def bfs(self, src):
         q = [src]
