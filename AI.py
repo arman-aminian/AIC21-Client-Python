@@ -270,6 +270,12 @@ class AI:
 
     # @time_measure
     def get_new_ant_collect_move(self, own_discovered_search=False):
+        if own_discovered_search:
+            search_map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
+            for p in self.found_history:
+                search_map.nodes[p] = AI.map.nodes[p]
+        else:
+            search_map = AI.map
         if self.has_resource_in_map(2, 1) is None:
             m = self.get_init_ant_explore_move()
         elif self.game.ant.currentResource.type == ResourceType.BREAD.value:
@@ -278,7 +284,7 @@ class AI:
                                         WORKER_MAX_CARRYING_RESOURCE_AMOUNT - self.game.ant.currentResource.value) \
                     == ResourceType.BREAD.value:
                 print_with_debug("state has bread res to find")
-                m, AI.last_name_of_object, d = AI.map.get_resource_best_move(
+                m, AI.last_name_of_object, d = search_map.get_resource_best_move(
                     src_pos=self.pos,
                     dest_pos=AI.map.base_pos,
                     name_of_object='bread',
@@ -298,7 +304,7 @@ class AI:
                                         WORKER_MAX_CARRYING_RESOURCE_AMOUNT - self.game.ant.currentResource.value) \
                     == ResourceType.GRASS.value:
                 print_with_debug("state has grass res to find")
-                m, AI.last_name_of_object, d = AI.map.get_resource_best_move(
+                m, AI.last_name_of_object, d = search_map.get_resource_best_move(
                     src_pos=self.pos,
                     dest_pos=AI.map.base_pos,
                     name_of_object='grass',
