@@ -2,7 +2,7 @@ import time
 
 import Model
 
-INIT_ANTS_NUM = 4
+INIT_ANTS_NUM = 2
 MAX_MESSAGES_PER_TURN = 5
 
 INIT_STRAIGHT_ANTS_MOVES = [[1, 2, 3, 4],
@@ -28,6 +28,18 @@ BASE_DMG = 3
 SOLDIER_DMG = 2
 HP = [8, 6]  # soldier, worker
 MAX_TURN_COUNT = 200
+VALUES = {
+    "id": 10000,
+    "enemy_base": 5000,
+    "shot": 4000,
+    "bg": 700,
+    "disc_gt_5": 600,
+    "es": 500,
+    "disc_lt_5": 400,
+    "bg_add": 300,
+    "bg_sub": 200,
+    "none": 100,
+}
 
 
 def reverse_list(lst):
