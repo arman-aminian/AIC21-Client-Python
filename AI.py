@@ -349,10 +349,13 @@ class AI:
                 m = self.get_init_ant_explore_move()
         return m
 
-    def has_resource_in_map(self, res_type: int, res_num=10):
-        own_map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
-        for p in self.found_history:
-            own_map.nodes[p] = AI.map.nodes[p]
+    def has_resource_in_map(self, res_type: int, res_num=10, own_discovered_search=False):
+        if own_discovered_search:
+            own_map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
+            for p in self.found_history:
+                own_map.nodes[p] = AI.map
+        else:
+            own_map = AI.map
         print_with_debug("total bread num:", own_map.total_bread_number())
         print_with_debug("total grass num:", own_map.total_grass_number())
         if res_type == ResourceType.BREAD.value:
@@ -372,7 +375,6 @@ class AI:
     @handle_exception
     def turn(self) -> (str, int, int):
         print_with_debug("*************************************************")
-        print_with_debug("ROUND START!")
         print_with_debug("ROUND START!")
         self.update_ids_from_chat_box()
 
