@@ -325,10 +325,10 @@ class AI:
             bread_dir = None
             bread_dis = math.inf
             print_with_debug("ANT isn't hold anything")
-            if self.has_resource_in_map(ResourceType.BREAD.value,
+            if self.has_resource_in_map(ResourceType.GRASS.value,
                                         1,
                                         own_discovered_search) \
-                    == ResourceType.BREAD.GRASS:
+                    == ResourceType.GRASS.value:
                 grass_dir, AI.last_name_of_object, grass_dis = search_map.get_resource_best_move(
                     src_pos=self.pos,
                     dest_pos=AI.map.base_pos,
@@ -423,10 +423,10 @@ class AI:
             bread_dir = None
             bread_dis = math.inf
             print_with_debug("ANT isn't hold anything")
-            if self.has_resource_in_map(ResourceType.BREAD.value,
+            if self.has_resource_in_map(ResourceType.GRASS.value,
                                         1,
                                         own_discovered_search) \
-                    == ResourceType.BREAD.GRASS:
+                    == ResourceType.GRASS.value:
                 grass_dir, AI.last_name_of_object, grass_dis = search_map.get_resource_best_move(
                     src_pos=self.pos,
                     dest_pos=AI.map.base_pos,

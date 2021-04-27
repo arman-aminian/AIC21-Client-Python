@@ -86,14 +86,26 @@ class Graph:
 
     def total_grass_number(self):
         res = 0
+        print("###########")
+        print("total_grass_number:")
         for pos in self.nodes.keys():
-            res = res + self.nodes[pos].grass
+            if not self.nodes[pos].wall:
+                if self.get_path(self.nodes[pos], self.nodes[self.base_pos]) is not None:
+                    if self.nodes[pos].grass > 0:
+                        print(pos)
+                    res = res + self.nodes[pos].grass
         return res
 
     def total_bread_number(self):
         res = 0
+        print("###########")
+        print("total_bread_number:")
         for pos in self.nodes.keys():
-            res = res + self.nodes[pos].bread
+            if not self.nodes[pos].wall:
+                if self.get_path(self.nodes[pos], self.nodes[self.base_pos]) is not None:
+                    if self.nodes[pos].bread > 0:
+                        print(pos)
+                    res = res + self.nodes[pos].bread
         return res
 
     def shortest_path(self, src, dest):
@@ -192,9 +204,7 @@ class Graph:
         return self.nodes[pos] if self.nodes[pos].discovered else self.guess_node(self.nodes[pos])
 
     def get_weight(self, src, dest):
-        # todo: make it better on guessing nodes
-        weight = src.get_distance(dest)
-        return weight
+        return 1
 
     def get_shortest_path(self, src, name_of_other_object, number_of_object):
         q = [src]
@@ -253,7 +263,7 @@ class Graph:
                             last_node_pos = parent[last_node_pos]
                         return list(reversed(path))
         return None
-    
+
     def get_path_with_non_discovered(self, src, dest):
         q = [src]
         parent = {src.pos: src.pos}
