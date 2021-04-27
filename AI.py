@@ -551,6 +551,7 @@ class AI:
         self.search_neighbors()
         self.update_map_from_chat_box()
         self.update_map_from_neighbors()
+
         if self.game.ant.antType == AntType.SARBAAZ.value:
             self.soldier_update_history()
             print_with_debug("soldier history", AI.soldier_path_neighbors_history, f=AI.out_file)
@@ -581,6 +582,7 @@ class AI:
                 path = AI.map.get_path(AI.map.nodes[self.pos], AI.map.nodes[AI.map.base_pos])
                 self.direction = Direction.get_value(AI.map.step(self.pos, path[0].pos))
                 print_with_debug("bfs dir:", self.direction)
+                print_map(AI.map, self.pos)
             else:
                 if AI.id <= Utils.INIT_ANTS_NUM:
                     print_with_debug("INIT ANT", f=AI.out_file)
