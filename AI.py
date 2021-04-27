@@ -269,16 +269,21 @@ class AI:
             return Direction.get_random_direction()
 
     # @time_measure
-    def get_init_ant_collect_move(self):
-        # own_map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
-        # for p in self.found_history:
-        #     own_map.nodes[p] = AI.map.nodes[p]
+    def get_init_ant_collect_move(self, own_discovered_search=False):
+        if own_discovered_search:
+            search_map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
+            for p in self.found_history:
+                search_map.nodes[p] = AI.map.nodes[p]
+        else:
+            search_map = AI.map
+
         if self.game.ant.currentResource.type == ResourceType.BREAD.value:
             if self.has_resource_in_map(ResourceType.BREAD.value,
-                                        WORKER_MAX_CARRYING_RESOURCE_AMOUNT - self.game.ant.currentResource.value) \
+                                        WORKER_MAX_CARRYING_RESOURCE_AMOUNT - self.game.ant.currentResource.value,
+                                        own_discovered_search) \
                     == ResourceType.BREAD.value:
                 print_with_debug("state has res to find")
-                m, AI.last_name_of_object, d = AI.map.get_resource_best_move(
+                m, AI.last_name_of_object, d = search_map.get_resource_best_move(
                     src_pos=self.pos,
                     dest_pos=AI.map.base_pos,
                     name_of_object='bread',
@@ -297,10 +302,11 @@ class AI:
                 path = AI.map.get_path(AI.map.nodes[self.pos], AI.map.nodes[AI.map.base_pos])
                 return Direction.get_value(AI.map.step(self.pos, path[0].pos))
             if self.has_resource_in_map(ResourceType.GRASS.value,
-                                        WORKER_MAX_CARRYING_RESOURCE_AMOUNT - self.game.ant.currentResource.value) \
+                                        WORKER_MAX_CARRYING_RESOURCE_AMOUNT - self.game.ant.currentResource.value,
+                                        own_discovered_search) \
                     == ResourceType.GRASS.value:
                 print_with_debug("state has res to find")
-                m, AI.last_name_of_object, d = AI.map.get_resource_best_move(
+                m, AI.last_name_of_object, d = search_map.get_resource_best_move(
                     src_pos=self.pos,
                     dest_pos=AI.map.base_pos,
                     name_of_object='grass',
@@ -316,7 +322,7 @@ class AI:
                 return Direction.get_value(AI.map.step(self.pos, path[0].pos))
         else:
             print_with_debug("ANT isn't hold anything")
-            grass_dir, AI.last_name_of_object, grass_dis = AI.map.get_resource_best_move(
+            grass_dir, AI.last_name_of_object, grass_dis = search_map.get_resource_best_move(
                 src_pos=self.pos,
                 dest_pos=AI.map.base_pos,
                 name_of_object='grass',
@@ -326,7 +332,7 @@ class AI:
                 ),
                 number_of_object=get_number_of_object(self.game.ant.currentResource),
             )
-            bread_dir, AI.last_name_of_object, bread_dis = AI.map.get_resource_best_move(
+            bread_dir, AI.last_name_of_object, bread_dis = search_map.get_resource_best_move(
                 src_pos=self.pos,
                 dest_pos=AI.map.base_pos,
                 name_of_object='bread',
