@@ -723,7 +723,6 @@ class AI:
 
         return self.message, self.value, self.direction
 
-
     def determine_worker_state(self):
         # TODO discuss the logic and improve
         # AI.worker_state = WorkerState.Exploring
