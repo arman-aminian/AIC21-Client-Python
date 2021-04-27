@@ -10,8 +10,8 @@ class Node:
     GRASS_WEIGHT = 1
     BREAD_WEIGHT = 1
     DISTANCE_WEIGH = 2
-    GRASS_LIMIT = Utils.WORKER_MAX_CARRYING_RESOURCE_AMOUNT
-    BREAD_LIMIT = Utils.WORKER_MAX_CARRYING_RESOURCE_AMOUNT
+    GRASS_LIMIT = 10
+    BREAD_LIMIT = 10
 
     def __init__(self, pos, discovered, wall=False, bread=0, grass=0,
                  ally_workers=0, ally_soldiers=0, enemy_workers=0,
@@ -43,12 +43,12 @@ class Node:
     def grass_value(self, src, dest, graph, number=0):
         distance = graph.get_shortest_distance(src, self, 'grass', default=math.inf)
         return -distance * self.DISTANCE_WEIGH + min(self.GRASS_LIMIT,
-                                                     self.grass + number) * self.GRASS_WEIGHT
+                                                     self.grass + src.grass + number) * self.GRASS_WEIGHT
 
     def bread_value(self, src, dest, graph, number=0):
         distance = graph.get_shortest_distance(src, self, 'bread', default=math.inf)
         return -distance * self.DISTANCE_WEIGH + min(self.BREAD_LIMIT,
-                                                     self.bread + number) * self.BREAD_WEIGHT
+                                                     src.bread + self.bread + number) * self.BREAD_WEIGHT
 
 
 class Graph:
