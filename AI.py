@@ -9,7 +9,7 @@ from state import *
 from BT import *
 
 
-def print_with_debug(*args, f, debug=False):
+def print_with_debug(*args, f=None, debug=False):
     if debug:
         print(*args)
     if f is not None:
