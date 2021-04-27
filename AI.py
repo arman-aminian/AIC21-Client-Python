@@ -9,7 +9,7 @@ from state import *
 from BT import *
 
 
-def print_with_debug(*args, f, debug=False):
+def print_with_debug(*args, f, debug=True):
     if debug and f is not None:
         print(*args, file=f)
 
@@ -30,14 +30,14 @@ class AI:
     possible_base_cells = []
     soldier_targets = []
     prev_round_resource = 0
-    path_neighbors_history = []
+    soldier_path_neighbors_history = []
     own_cells_history = []
     latest_map = None
     cell_target = None
     attack_dir = None
     out_file = None
     output_path = "/media/mh/New Volume/AIC21-Client-Python/output/"
-    debug = False
+    debug = True
     born_game_round = -1
     prev_hp = 0
     prev_es = 0
@@ -289,7 +289,7 @@ class AI:
             if self.has_resource_in_map(ResourceType.BREAD.value,
                                         WORKER_MAX_CARRYING_RESOURCE_AMOUNT - self.game.ant.currentResource.value) \
                     == ResourceType.BREAD.value:
-                print_with_debug("state has bread res to find")
+                print_with_debug("state has bread res to find", f=AI.out_file)
                 m, AI.last_name_of_object, d = search_map.get_resource_best_move(
                     src_pos=self.pos,
                     dest_pos=AI.map.base_pos,
@@ -301,15 +301,15 @@ class AI:
                     number_of_object=get_number_of_object(self.game.ant.currentResource),
                 )
             else:
-                print_with_debug("state has not other res")
+                print_with_debug("state has not other res", f=AI.out_file)
                 path = AI.map.get_path(AI.map.nodes[self.pos], AI.map.nodes[AI.map.base_pos])
                 m = Direction.get_value(AI.map.step(self.pos, path[0].pos))
         elif self.game.ant.currentResource.type == ResourceType.GRASS.value:
-            print_with_debug("ANT is holding grass")
+            print_with_debug("ANT is holding grass", f=AI.out_file)
             if self.has_resource_in_map(ResourceType.GRASS.value,
                                         WORKER_MAX_CARRYING_RESOURCE_AMOUNT - self.game.ant.currentResource.value) \
                     == ResourceType.GRASS.value:
-                print_with_debug("state has grass res to find")
+                print_with_debug("state has grass res to find", f=AI.out_file)
                 m, AI.last_name_of_object, d = search_map.get_resource_best_move(
                     src_pos=self.pos,
                     dest_pos=AI.map.base_pos,
@@ -321,16 +321,16 @@ class AI:
                     number_of_object=get_number_of_object(self.game.ant.currentResource),
                 )
             else:
-                print_with_debug("state has not to find")
+                print_with_debug("state has not to find", f=AI.out_file)
                 path = AI.map.get_path(AI.map.nodes[self.pos], AI.map.nodes[AI.map.base_pos])
                 m = Direction.get_value(AI.map.step(self.pos, path[0].pos))
         else:
-            print_with_debug("ANT isn't hold anything")
+            print_with_debug("ANT isn't hold anything", f=AI.out_file)
             grass_dir = None
             grass_dis = math.inf
             bread_dir = None
             bread_dis = math.inf
-            print_with_debug("ANT isn't hold anything")
+            print_with_debug("ANT isn't hold anything", f=AI.out_file)
             if self.has_resource_in_map(ResourceType.BREAD.value,
                                         1,
                                         own_discovered_search) \
@@ -360,10 +360,10 @@ class AI:
                     number_of_object=get_number_of_object(
                         self.game.ant.currentResource),
                 )
-            print_with_debug("grass_dir:", grass_dir)
-            print_with_debug("grass_dis:", grass_dis)
-            print_with_debug("bread_dir:", bread_dir)
-            print_with_debug("bread_dis:", bread_dis)
+            print_with_debug("grass_dir:", grass_dir, f=AI.out_file)
+            print_with_debug("grass_dis:", grass_dis, f=AI.out_file)
+            print_with_debug("bread_dir:", bread_dir, f=AI.out_file)
+            print_with_debug("bread_dis:", bread_dis, f=AI.out_file)
             if grass_dis <= bread_dis and grass_dis != math.inf:
                 m = grass_dir
             elif bread_dir is not None:
@@ -428,7 +428,7 @@ class AI:
             grass_dis = math.inf
             bread_dir = None
             bread_dis = math.inf
-            print_with_debug("ANT isn't hold anything")
+            print_with_debug("ANT isn't hold anything", f=AI.out_file)
             if self.has_resource_in_map(ResourceType.BREAD.value,
                                         1,
                                         own_discovered_search) \
@@ -458,10 +458,10 @@ class AI:
                     number_of_object=get_number_of_object(
                         self.game.ant.currentResource),
                 )
-            print_with_debug("grass_dir:", grass_dir)
-            print_with_debug("grass_dis:", grass_dis)
-            print_with_debug("bread_dir:", bread_dir)
-            print_with_debug("bread_dis:", bread_dis)
+            print_with_debug("grass_dir:", grass_dir, f=AI.out_file)
+            print_with_debug("grass_dis:", grass_dis, f=AI.out_file)
+            print_with_debug("bread_dir:", bread_dir, f=AI.out_file)
+            print_with_debug("bread_dis:", bread_dis, f=AI.out_file)
             if grass_dis <= bread_dis and grass_dis != math.inf:
                 m = grass_dir
             elif bread_dir is not None:
@@ -477,8 +477,8 @@ class AI:
                 own_map.nodes[p] = AI.map
         else:
             own_map = AI.map
-        print_with_debug("total bread num:", own_map.total_bread_number())
-        print_with_debug("total grass num:", own_map.total_grass_number())
+        print_with_debug("total bread num:", own_map.total_bread_number(), f=AI.out_file)
+        print_with_debug("total grass num:", own_map.total_grass_number(), f=AI.out_file)
         if res_type == ResourceType.BREAD.value:
             if AI.map.total_bread_number() >= res_num:
                 return res_type
@@ -503,6 +503,7 @@ class AI:
                 AI.out_file = open(AI.output_path + t + '_' + str(AI.id) + '_' + str(AI.born_game_round) + ".txt", "a+")
         
         print_with_debug("*************************************************", f=AI.out_file)
+        print_with_debug(AI.found_history, f=AI.out_file)
         print_with_debug("ROUND START!", f=AI.out_file)
         self.update_ids_from_chat_box()
 
@@ -550,7 +551,7 @@ class AI:
         self.update_map_from_neighbors()
         if self.game.ant.antType == AntType.SARBAAZ.value:
             self.soldier_update_history()
-            print_with_debug("soldier history", AI.path_neighbors_history, f=AI.out_file)
+            print_with_debug("soldier history", AI.soldier_path_neighbors_history, f=AI.out_file)
         
         if AI.game_round > 5:
             self.check_for_base()
@@ -574,7 +575,7 @@ class AI:
         elif self.game.ant.antType == AntType.KARGAR.value:
             if self.game.ant.currentResource.value is not None \
                     and self.game.ant.currentResource.value >= (WORKER_MAX_CARRYING_RESOURCE_AMOUNT / 2):
-                print_with_debug("worker has >= (max carrying resources amount / 2) => back to base with bfs")
+                print_with_debug("worker has >= (max carrying resources amount / 2) => back to base with bfs", f=AI.out_file)
                 path = AI.map.get_path(AI.map.nodes[self.pos], AI.map.nodes[AI.map.base_pos])
                 self.direction = Direction.get_value(AI.map.step(self.pos, path[0].pos))
             else:
@@ -686,7 +687,7 @@ class AI:
             possible_cells = Utils.get_view_distance_neighbors(self.pos, AI.w,
                                                                AI.h, 6, True)
             possible_cells = [p for p in possible_cells if
-                              p not in AI.path_neighbors_history]
+                              p not in AI.soldier_path_neighbors_history]
             AI.possible_base_cells = list(set(AI.possible_base_cells).
                                           intersection(possible_cells))
             print_with_debug("tell them", AI.latest_pos[AI.id][0], possible_cells, f=AI.out_file)
@@ -875,8 +876,8 @@ class AI:
     def soldier_update_history(self):
         neighbors = get_view_distance_neighbors(self.pos, AI.w, AI.h,
                                                 5 if self.shot else 6)
-        new_neighbors = [p for p in neighbors if p not in AI.path_neighbors_history]
-        AI.path_neighbors_history += new_neighbors
+        new_neighbors = [p for p in neighbors if p not in AI.soldier_path_neighbors_history]
+        AI.soldier_path_neighbors_history += new_neighbors
 
     def check_for_possible_base_cells(self):
         possible_msgs = [msg.text for msg in
