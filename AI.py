@@ -9,8 +9,10 @@ from state import *
 from BT import *
 
 
-def print_with_debug(*args, f, debug=True):
-    if debug and f is not None:
+def print_with_debug(*args, f, debug=False):
+    if debug:
+        print(*args)
+    if f is not None:
         print(*args, file=f)
 
 
@@ -37,7 +39,7 @@ class AI:
     attack_dir = None
     out_file = None
     output_path = "/media/mh/New Volume/AIC21-Client-Python/output/"
-    debug = True
+    debug = False
     born_game_round = -1
     prev_hp = 0
     prev_es = 0
