@@ -42,7 +42,8 @@ class Node:
     # todo: make default dist better
     def grass_value(self, src, dest, graph, number=0):
         distance = graph.get_shortest_distance(src, self, 'grass', default=math.inf)
-        return -distance * self.DISTANCE_WEIGH + min(self.GRASS_LIMIT, self.grass + src.grass + number) * self.GRASS_WEIGHT
+        return -distance * self.DISTANCE_WEIGH + min(self.GRASS_LIMIT,
+                                                     self.grass + src.grass + number) * self.GRASS_WEIGHT
 
     def bread_value(self, src, dest, graph, number=0):
         distance = graph.get_shortest_distance(src, self, 'bread', default=math.inf)
@@ -86,8 +87,6 @@ class Graph:
 
     def total_grass_number(self):
         res = 0
-        print("###########")
-        print("total_grass_number:")
         for pos in self.nodes.keys():
             if not self.nodes[pos].wall:
                 if self.get_path(self.nodes[pos], self.nodes[self.base_pos]) is not None:
@@ -264,7 +263,17 @@ class Graph:
                         return list(reversed(path))
         return None
 
-    def get_path_with_non_discovered(self, src, dest):
+    def get_path_with_non_discovered(self, src, dest, unsafe_cells=None):
+        unsafe_pos = {}
+        for pos in (unsafe_cells or []):
+            unsafe_pos.update(
+                set(
+                    Utils.get_view_distance_neighbors(
+                        pos, self.dim[0], self.dim[1], Utils.BASE_RANGE, exact=False, sort=False
+                    )
+                )
+            )
+
         q = [src]
         parent = {src.pos: src.pos}
 
@@ -277,6 +286,8 @@ class Graph:
 
             for neighbor in neighbors:
                 next_node = self.nodes[neighbor]
+                if next_node.pos in unsafe_pos:
+                    continue
                 if parent.get(next_node.pos) is None:
                     parent[next_node.pos] = current_node.pos
                     q.append(next_node)
@@ -484,7 +495,7 @@ class Graph:
                 idx = i
                 break
 
-        print("MY GOAL IS TO REACH", best_list[idx % len(best_list)])
+        # print("MY GOAL IS TO REACH", best_list[idx % len(best_list)])
 
         return self.step(curr_pos.pos, self.get_path(curr_pos, self.nodes[best_list[idx % len(best_list)]])[0].pos), \
                best_list[idx % len(best_list)]
@@ -495,7 +506,6 @@ class Graph:
         while parent[last] != src:
             last = parent[last]
         return last
-
 
     def bfs(self, src):
         q = [src]
