@@ -21,7 +21,7 @@ INIT_CENTER_ANTS_MOVES2 = [[1, 4, 2, 3],  # left-up
                            [3, 2, 4, 1]]  # right-down
 
 GENERATE_KARGAR = 10
-GENERATE_SARBAAZ = 10
+GENERATE_SARBAAZ = 15
 WORKER_MAX_CARRYING_RESOURCE_AMOUNT = 10
 
 BASE_DMG = 3

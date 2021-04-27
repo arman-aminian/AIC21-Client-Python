@@ -9,7 +9,7 @@ from state import *
 from BT import *
 
 
-def print_with_debug(*args, f=None, debug=False):
+def print_with_debug(*args, f=None, debug=True):
     if debug:
         print(*args)
     if f is not None:
@@ -580,6 +580,7 @@ class AI:
                 print_with_debug("worker has >= (max carrying resources amount / 2) => back to base with bfs", f=AI.out_file)
                 path = AI.map.get_path(AI.map.nodes[self.pos], AI.map.nodes[AI.map.base_pos])
                 self.direction = Direction.get_value(AI.map.step(self.pos, path[0].pos))
+                print_with_debug("bfs dir:", self.direction)
             else:
                 if AI.id <= Utils.INIT_ANTS_NUM:
                     print_with_debug("INIT ANT", f=AI.out_file)
@@ -669,6 +670,7 @@ class AI:
                     self.direction = self.get_soldier_first_node_to_support()
                     print_with_debug(f'in soldier support: pos = {self.pos}, direction = {self.direction}', f=AI.out_file)
 
+        print_with_debug("pos before if:", self.pos)
         if AI.life_cycle > 1 and (not self.shot or self.value == VALUES["enemy_base"]):
             if self.direction is None:
                 print_with_debug("turn", AI.game_round, "id", AI.id, "pos", self.pos,
@@ -701,6 +703,7 @@ class AI:
             AI.soldier_state = SoldierState.HasBeenShot
             self.value = VALUES["shot"]
 
+        print_with_debug("pos after if:", self.pos)
         print_with_debug("turn", AI.game_round, "id", AI.id, "pos", self.pos,
                          "worker state", AI.worker_state,
                          "soldier state", AI.soldier_state,
@@ -716,10 +719,8 @@ class AI:
         AI.prev_hp = self.game.ant.health
         AI.prev_es = sum([AI.map.nodes[v].enemy_soldiers for v in get_view_distance_neighbors(self.pos, AI.w, AI.h, self.game.ant.viewDistance)])
 
-        if self.game.ant.currentX in range(10, 25):
-            self.direction = Direction.RIGHT.value
-
         return self.message, self.value, self.direction
+
 
     def determine_worker_state(self):
         # TODO discuss the logic and improve
