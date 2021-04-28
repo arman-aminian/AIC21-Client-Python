@@ -23,5 +23,8 @@ class SoldierState(Enum):
     HasBeenShot = 6
     AttackingBase = 7
     WaitingForComrades = 8
-    BaseKnown_GoingNearEnemyBase = 10
-    BaseKnown_StayingNearBase = 11
+    BK_GoingNearEnemyBase = 9
+    BU_GoingNearEnemyBase = 10
+    BK_StayingNearBase = 11
+    BU_StayingNearBase = 12
+    Explorer_Supporter = 13

@@ -46,11 +46,11 @@ def str_pos(s, w, h):
 def encode_graph_nodes(pos, nodes: dict, w, h, view, ant_id, direction,
                        shot: bool, enemy_base_pos=None):
     # CURRENT SCHEME:
-    # id 1c, pos 2c (14b), walls w*1c,
-    # breads b*2c, grasses g*2c, ally workers aw*1c, ally soldiers as*1c,
-    # enemy workers ew*1c, enemy soldiers es*1c, status 1c
+    # id 1c, pos 2c (14b), walls w*1c, swamps s*1c, traps s*1c
+    # breads b*2c, grasses g*2c, ally soldiers as*1c,
+    # enemy soldiers es*1c, status 1c
     neighbors = get_view_distance_neighbors(pos, w, h, view)
-    arr = [[], [], [], [], [], []]  # for the values (b, g, aw, as, ew, es)
+    arr = [[], [], [], []]  # for the values (b, g, as, es)
     s = chr(ant_id + CONSTANT) + pos_str(pos, w, h)
     for p, n in nodes.items():
         if n.wall:
@@ -58,7 +58,17 @@ def encode_graph_nodes(pos, nodes: dict, w, h, view, ant_id, direction,
     s += DELIM
     
     for p, n in nodes.items():
-        values = list(n.__dict__.values())[3:]
+        if n.swamp:
+            s += chr(neighbors.index(p) + CONSTANT)
+    s += DELIM
+    
+    for p, n in nodes.items():
+        if n.trap:
+            s += chr(neighbors.index(p) + CONSTANT)
+    s += DELIM
+    
+    for p, n in nodes.items():
+        values = [list(n.__dict__.values())[5], list(n.__dict__.values())[6], list(n.__dict__.values())[8], list(n.__dict__.values())[10]]
         for i, v in enumerate(values):
             if v > 0:
                 if i < 2:
@@ -95,35 +105,46 @@ def decode_nodes(nodes_str: str, w, h, view):
         idx = ord(c) - CONSTANT
         non_empties.append(neighbors[idx])
         ret[neighbors[idx]] = Node(neighbors[idx], True, True)
-        # print("wall", neighbors[idx])
+
+    part = nodes_str.split(DELIM)[1]  # swamp
+    for c in part:
+        idx = ord(c) - CONSTANT
+        non_empties.append(neighbors[idx])
+        ret[neighbors[idx]] = Node(neighbors[idx], True, False, swamp=True)
+
+    part = nodes_str.split(DELIM)[2]  # trap
+    for c in part:
+        idx = ord(c) - CONSTANT
+        non_empties.append(neighbors[idx])
+        ret[neighbors[idx]] = Node(neighbors[idx], True, False, trap=True)
     
     for i, part in enumerate(nodes_str.split(DELIM)):
-        if i == 1:  # bread
+        if i == 3:  # bread
             for j in range(0, len(part), 2):
                 c, v = part[j], part[j + 1]
                 idx = ord(c) - CONSTANT
                 non_empties.append(neighbors[idx])
                 ret[neighbors[idx]] = Node(neighbors[idx], True, False,
                                            bread=ord(v) - CONSTANT)
-        if i == 2:  # grass
+        if i == 4:  # grass
             for j in range(0, len(part), 2):
                 c, v = part[j], part[j + 1]
                 idx = ord(c) - CONSTANT
                 non_empties.append(neighbors[idx])
                 ret[neighbors[idx]] = Node(neighbors[idx], True, False,
                                            grass=ord(v) - CONSTANT)
-        if i == 3:  # ally worker
-            for j in range(len(part)):
-                p, v = int(f'{ord(part[j]) - CONSTANT:08b}'[:6], 2), \
-                       unit_count_dec(f'{ord(part[j]) - CONSTANT:08b}'[6:])
-                idx = p
-                non_empties.append(neighbors[idx])
-                if neighbors[idx] in ret:
-                    ret[neighbors[idx]].ally_workers = v
-                else:
-                    ret[neighbors[idx]] = Node(neighbors[idx], True, False,
-                                               ally_workers=v)
-        if i == 4:  # ally soldier
+        # if i == 3:  # ally worker
+        #     for j in range(len(part)):
+        #         p, v = int(f'{ord(part[j]) - CONSTANT:08b}'[:6], 2), \
+        #                unit_count_dec(f'{ord(part[j]) - CONSTANT:08b}'[6:])
+        #         idx = p
+        #         non_empties.append(neighbors[idx])
+        #         if neighbors[idx] in ret:
+        #             ret[neighbors[idx]].ally_workers = v
+        #         else:
+        #             ret[neighbors[idx]] = Node(neighbors[idx], True, False,
+        #                                        ally_workers=v)
+        if i == 5:  # ally soldier
             for j in range(len(part)):
                 p, v = int(f'{ord(part[j]) - CONSTANT:08b}'[:6], 2), \
                        unit_count_dec(f'{ord(part[j]) - CONSTANT:08b}'[6:])
@@ -134,17 +155,17 @@ def decode_nodes(nodes_str: str, w, h, view):
                 else:
                     ret[neighbors[idx]] = Node(neighbors[idx], True, False,
                                                ally_soldiers=v)
-        if i == 5:  # enemy worker
-            for j in range(len(part)):
-                p, v = int(f'{ord(part[j]) - CONSTANT:08b}'[:6], 2), \
-                       unit_count_dec(f'{ord(part[j]) - CONSTANT:08b}'[6:])
-                idx = p
-                non_empties.append(neighbors[idx])
-                if neighbors[idx] in ret:
-                    ret[neighbors[idx]].enemy_workers = v
-                else:
-                    ret[neighbors[idx]] = Node(neighbors[idx], True, False,
-                                               enemy_workers=v)
+        # if i == 5:  # enemy worker
+        #     for j in range(len(part)):
+        #         p, v = int(f'{ord(part[j]) - CONSTANT:08b}'[:6], 2), \
+        #                unit_count_dec(f'{ord(part[j]) - CONSTANT:08b}'[6:])
+        #         idx = p
+        #         non_empties.append(neighbors[idx])
+        #         if neighbors[idx] in ret:
+        #             ret[neighbors[idx]].enemy_workers = v
+        #         else:
+        #             ret[neighbors[idx]] = Node(neighbors[idx], True, False,
+        #                                        enemy_workers=v)
         if i == 6:  # enemy soldier
             for j in range(len(part)):
                 p, v = int(f'{ord(part[j]) - CONSTANT:08b}'[:6], 2), \
