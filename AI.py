@@ -101,8 +101,13 @@ class AI:
                             ew += 1
                         elif a.antType == AntType.SARBAAZ.value:
                             es += 1
-                neighbor_nodes.append(Node((n.x, n.y), True, False, bread=b, grass=g, ally_workers=aw,
-                                           ally_soldiers=ally_s, enemy_workers=ew, enemy_soldiers=es))
+                neighbor_nodes.append(Node((n.x, n.y), True, False,
+                                           bread=b,
+                                           grass=g,
+                                           ally_workers=aw,
+                                           ally_soldiers=ally_s,
+                                           enemy_workers=ew,
+                                           enemy_soldiers=es))
 
         self.new_neighbors = {n.pos: n for n in neighbor_nodes if
                               AI.map.nodes[n.pos] != n}
@@ -256,6 +261,7 @@ class AI:
                 return True
         return False
 
+    # @time_measure
     def get_init_ants_next_move(self, preferred_moves, map) -> int:
         for m in preferred_moves:
             if (not self.is_road_to_wall(m, map)) and (self.get_next_pos(self.pos, m) != AI.latest_pos[AI.id][0]):
@@ -295,7 +301,7 @@ class AI:
             print_with_debug("something went wrong, init ants move :", m, "from id:", AI.id, f=AI.out_file)
             return Direction.get_random_direction()
 
-    @time_measure
+    # @time_measure
     def get_new_ant_collect_move(self, own_discovered_search=False):
         if own_discovered_search:
             search_map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
@@ -394,7 +400,7 @@ class AI:
                 m = self.get_init_ant_explore_move()
         return m
 
-    @time_measure
+    # @time_measure
     def get_init_ant_collect_move(self, own_discovered_search=False):
         if own_discovered_search:
             search_map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
@@ -519,8 +525,8 @@ class AI:
         else:
             return None
 
-    @time_measure
-    # @handle_exception
+    # @time_measure
+    @handle_exception
     def turn(self) -> (str, int, int):
         if AI.debug and AI.life_cycle > 2 and (AI.id in AI.ids[0] or AI.id in AI.ids[1]):
             t = "soldier" if self.game.ant.antType == AntType.SARBAAZ.value else "worker"
@@ -648,12 +654,15 @@ class AI:
             if AI.life_cycle == 1:
                 self.direction = Direction.get_random_direction()
             else:
+                # if AI.born_game_round < 30:
+                #     AI.soldier_state = SoldierState.Explorer_Supporter
+
                 self.handle_base()
                 self.handle_shot()
 
                 if AI.soldier_state == SoldierState.Explorer_Supporter:
                     # TODO fill this
-                    pass
+                    self.direction = self.get_first_move_to_go()
 
                 # ####################################### DEFAULT SECTION
                 if AI.soldier_state == SoldierState.Null:
@@ -911,7 +920,7 @@ class AI:
 
     def get_soldier_first_move_to_discover(self):
         move, _ = AI.latest_map.get_first_move_to_discover(
-            AI.map.nodes[self.pos], self.pos, len(AI.ids[self.game.ant.antType]), AI.id, AI.ids[self.game.ant.antType]
+            AI.map.nodes[self.pos], self.pos, len(AI.ids[self.game.ant.antType]) if AI.ids[self.game.ant.antType] else 4, AI.id, AI.ids[self.game.ant.antType]
         )
         return Direction.get_value(move)
 
@@ -930,7 +939,7 @@ class AI:
             )
         )
 
-    @time_measure
+    # @time_measure
     def handle_base(self):
         if AI.map.enemy_base_pos is not None and AI.soldier_state != SoldierState.BK_GoingNearEnemyBase:
             AI.soldier_state = SoldierState.BK_GoingNearEnemyBase
@@ -985,7 +994,7 @@ class AI:
             if ally_s >= ALLIES_REQUIRED_TO_ATTACK:
                 AI.soldier_state = SoldierState.AttackingBase
 
-    @time_measure
+    # @time_measure
     def handle_shot(self):
         if AI.soldier_state == SoldierState.HasBeenShot:
             # GOING FORWARD ONE CELL WHEN SHOT
