@@ -265,8 +265,11 @@ class AI:
     def get_init_ant_explore_move(self):
         AI.worker_state = WorkerState.InitCollecting
         if AI.id <= Utils.INIT_ANTS_NUM:
-            # if
-            m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
+            if AI.id == 1:
+                m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1], AI.map.convert_bread_cells_to_wall())
+            else:
+                m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1], AI.map)
+
         else:
             m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id % 4], AI.map)
 
