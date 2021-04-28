@@ -520,7 +520,7 @@ class Graph:
 
         return self.step(
             curr_pos.pos, self.get_first_move_from_parent(
-                parent, curr_pos, best_list[idx % len(best_list)])
+                parent, src_pos, best_list[idx % len(best_list)])
         ), best_list[idx % len(best_list)]
 
     @staticmethod
