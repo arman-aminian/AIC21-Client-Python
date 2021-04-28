@@ -194,15 +194,3 @@ def print_map(input_map, pos, f=None):
             print(' ', file=f)
         else:
             print()
-
-
-def print_map(map, pos):
-    for j in range(map.dim[1]):
-        for i in range(map.dim[0]):
-            if (i, j) == pos:
-                print('P', end='')
-            elif map.nodes[(i, j)].wall:
-                print('W', end="")
-            else:
-                print('N' if not map.nodes[(i, j)].discovered else 'D', end='')
-        print()
