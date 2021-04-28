@@ -93,22 +93,23 @@ def decode_nodes(nodes_str: str, w, h, view):
     part = nodes_str.split(DELIM)[0]  # wall
     for c in part:
         idx = ord(c) - CONSTANT
-        non_empties.append(idx)
+        non_empties.append(neighbors[idx])
         ret[neighbors[idx]] = Node(neighbors[idx], True, True)
+        # print("wall", neighbors[idx])
     
     for i, part in enumerate(nodes_str.split(DELIM)):
         if i == 1:  # bread
             for j in range(0, len(part), 2):
                 c, v = part[j], part[j + 1]
                 idx = ord(c) - CONSTANT
-                non_empties.append(idx)
+                non_empties.append(neighbors[idx])
                 ret[neighbors[idx]] = Node(neighbors[idx], True, False,
                                            bread=ord(v) - CONSTANT)
         if i == 2:  # grass
             for j in range(0, len(part), 2):
                 c, v = part[j], part[j + 1]
                 idx = ord(c) - CONSTANT
-                non_empties.append(idx)
+                non_empties.append(neighbors[idx])
                 ret[neighbors[idx]] = Node(neighbors[idx], True, False,
                                            grass=ord(v) - CONSTANT)
         if i == 3:  # ally worker
@@ -116,7 +117,7 @@ def decode_nodes(nodes_str: str, w, h, view):
                 p, v = int(f'{ord(part[j]) - CONSTANT:08b}'[:6], 2), \
                        unit_count_dec(f'{ord(part[j]) - CONSTANT:08b}'[6:])
                 idx = p
-                non_empties.append(idx)
+                non_empties.append(neighbors[idx])
                 if neighbors[idx] in ret:
                     ret[neighbors[idx]].ally_workers = v
                 else:
@@ -127,7 +128,7 @@ def decode_nodes(nodes_str: str, w, h, view):
                 p, v = int(f'{ord(part[j]) - CONSTANT:08b}'[:6], 2), \
                        unit_count_dec(f'{ord(part[j]) - CONSTANT:08b}'[6:])
                 idx = p
-                non_empties.append(idx)
+                non_empties.append(neighbors[idx])
                 if neighbors[idx] in ret:
                     ret[neighbors[idx]].ally_soldiers = v
                 else:
@@ -138,7 +139,7 @@ def decode_nodes(nodes_str: str, w, h, view):
                 p, v = int(f'{ord(part[j]) - CONSTANT:08b}'[:6], 2), \
                        unit_count_dec(f'{ord(part[j]) - CONSTANT:08b}'[6:])
                 idx = p
-                non_empties.append(idx)
+                non_empties.append(neighbors[idx])
                 if neighbors[idx] in ret:
                     ret[neighbors[idx]].enemy_workers = v
                 else:
@@ -149,7 +150,7 @@ def decode_nodes(nodes_str: str, w, h, view):
                 p, v = int(f'{ord(part[j]) - CONSTANT:08b}'[:6], 2), \
                        unit_count_dec(f'{ord(part[j]) - CONSTANT:08b}'[6:])
                 idx = p
-                non_empties.append(idx)
+                non_empties.append(neighbors[idx])
                 if neighbors[idx] in ret:
                     ret[neighbors[idx]].enemy_soldiers = v
                 else:
@@ -164,8 +165,8 @@ def decode_nodes(nodes_str: str, w, h, view):
         if i == 8 and len(part) > 0:  # enemy base pos
             enemy_base_pos = str_pos(part, w, h)
     
-    for i in range(len(neighbors)):
+    for i in get_view_distance_neighbors(pos, w, h, view):
         if i not in non_empties:
-            ret[neighbors[i]] = Node(neighbors[i], True, False)
+            ret[i] = Node(i, True, False)
     
     return ant_id, pos, direction, shot, ret, enemy_base_pos
