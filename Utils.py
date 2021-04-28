@@ -41,7 +41,7 @@ PRIORITY_GAP = 4
 BASE_DMG = 3
 SOLDIER_DMG = 2
 HP = [8, 6]  # soldier, worker
-MAX_TURN_COUNT = 200
+MAX_TURN_COUNT = 100
 BASE_RANGE = 6
 VALUES = {
     "id": 10000,
@@ -138,12 +138,10 @@ def shortest_path(src, dest, w, h):
 
 def time_measure(fn):
     def wrapper(*args, **kwargs):
-        # now = time.time()
+        now = time.time()
         res = fn(*args, **kwargs)
-        # delay = time.time() - now
-        # todo delete
-        delay = 1
-        print_with_debug(f'{fn.__name__} took {delay} seconds!')
+        delay = time.time() - now
+        print_with_debug(f'{fn.__name__} took {delay} seconds!', debug=True)
 
         return res
 
