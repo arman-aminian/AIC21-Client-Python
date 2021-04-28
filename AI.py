@@ -265,11 +265,10 @@ class AI:
     def get_init_ant_explore_move(self):
         AI.worker_state = WorkerState.InitCollecting
         if AI.id <= Utils.INIT_ANTS_NUM:
-            if AI.id == 1:
+            if AI.id == Utils.GRASS_ONLY_ID:
                 m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1], AI.map.convert_bread_cells_to_wall())
             else:
                 m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1], AI.map)
-
         else:
             m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id % 4], AI.map)
 
@@ -452,7 +451,8 @@ class AI:
             if self.has_resource_in_map(ResourceType.BREAD.value,
                                         1,
                                         own_discovered_search) \
-                    == ResourceType.BREAD.value:
+                    == ResourceType.BREAD.value \
+                    and AI.id != Utils.GRASS_ONLY_ID:
                 bread_dir, AI.last_name_of_object, bread_dis = search_map.get_resource_best_move(
                     src_pos=self.pos,
                     dest_pos=AI.map.base_pos,
@@ -510,6 +510,9 @@ class AI:
 
         print_with_debug("*************************************************", f=AI.out_file)
         print_with_debug("ROUND START!", f=AI.out_file)
+        if AI.id == Utils.GRASS_ONLY_ID:
+            print_with_debug("Grass only ant", f=AI.out_file)
+
         print_with_debug(AI.found_history, f=AI.out_file)
         self.update_ids_from_chat_box()
 
