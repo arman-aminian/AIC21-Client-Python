@@ -605,7 +605,12 @@ class AI:
                 path = AI.map.get_path(AI.map.nodes[self.pos], AI.map.nodes[AI.map.base_pos])
                 self.direction = Direction.get_value(AI.map.step(self.pos, path[0].pos))
                 print_with_debug("bfs dir:", self.direction)
-
+            elif self.game_round > MAX_TURN_COUNT - 10:
+                print_with_debug("last rounds => back to base with bfs",
+                                 f=AI.out_file)
+                path = AI.map.get_path(AI.map.nodes[self.pos], AI.map.nodes[AI.map.base_pos])
+                self.direction = Direction.get_value(AI.map.step(self.pos, path[0].pos))
+                print_with_debug("bfs dir:", self.direction)
             else:
                 if AI.id <= Utils.INIT_ANTS_NUM:
                     print_with_debug("INIT ANT", f=AI.out_file)
