@@ -654,8 +654,8 @@ class AI:
             if AI.life_cycle == 1:
                 self.direction = Direction.get_random_direction()
             else:
-                if AI.born_game_round < 30:
-                    AI.soldier_state = SoldierState.Explorer_Supporter
+                # if AI.born_game_round < 30:
+                #     AI.soldier_state = SoldierState.Explorer_Supporter
                 
                 self.handle_base()
                 self.handle_shot()
@@ -920,7 +920,7 @@ class AI:
 
     def get_soldier_first_move_to_discover(self):
         move, _ = AI.latest_map.get_first_move_to_discover(
-            AI.map.nodes[self.pos], self.pos, len(AI.ids[self.game.ant.antType]), AI.id, AI.ids[self.game.ant.antType]
+            AI.map.nodes[self.pos], self.pos, len(AI.ids[self.game.ant.antType]) if AI.ids[self.game.ant.antType] else 4, AI.id, AI.ids[self.game.ant.antType]
         )
         return Direction.get_value(move)
 
