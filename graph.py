@@ -62,6 +62,8 @@ class Graph:
         self.dim = dim  # width, height
         self.enemy_base_pos = None
         self.nodes = {}
+        self.bfs_info = {}
+        self.edge_nodes = []
         self.shortest_path_info = {'bread': {}, 'grass': {}}
         for i in range(dim[0]):
             for j in range(dim[1]):
@@ -464,10 +466,9 @@ class Graph:
 
     @Utils.time_measure
     def get_best_list(self, src, each_list_max_size):
-        edge_nodes_info = self.get_edge_nodes(src)
-        edge_nodes = edge_nodes_info.get('edge_nodes')
-        distance = edge_nodes_info.get('distance')
-        parent = edge_nodes_info.get('parent')
+        edge_nodes = self.edge_nodes
+        distance = self.bfs_info.get('distance')
+        parent = self.bfs_info.get('parent')
         # print(edge_nodes)
 
         while len(edge_nodes) > each_list_max_size and len(
@@ -528,27 +529,34 @@ class Graph:
     @Utils.time_measure
     def bfs(self, src):
         q = [src]
-        parent = {src.pos: src.pos}
+        in_queue = {src.pos: True}
         dist = {src.pos: 0}
-
-        if src.wall:
-            return None
+        parent = {src.pos: src.pos}
 
         while q:
             current_node = q.pop(0)
             neighbors = self.get_neighbors_with_not_discovered_nodes(current_node.pos)
+            in_queue[current_node.pos] = False
 
             for neighbor in neighbors:
                 next_node = self.nodes[neighbor]
-                if parent.get(next_node.pos) is None:
+                if not next_node.discovered:
+                    self.edge_nodes.append(current_node.pos)
+                    continue
+                weight = self.get_soldier_weight(current_node, next_node)
+                if dist.get(next_node.pos) is None or weight + dist[current_node.pos] < dist.get(next_node.pos):
+                    dist[next_node.pos] = weight + dist[current_node.pos]
                     parent[next_node.pos] = current_node.pos
-                    dist[next_node.pos] = dist[current_node.pos] + 1
-                    q.append(next_node)
-
+                    if not in_queue.get(next_node.pos):
+                        in_queue[next_node.pos] = True
+                        q.append(next_node)
         return {
-            'distance': dist,
+            'dist': dist,
             'parent': parent,
         }
+
+    def get_soldier_weight(self, src, dest):
+        return 1
 
     @Utils.time_measure
     def get_best_node_to_support(self, src_pos, grass_weight=1, bread_weight=1, distance_weight=1):
@@ -556,9 +564,8 @@ class Graph:
         best_value = -math.inf
         best_pos = None
 
-        bfs_info = self.bfs(src)
-        dist = bfs_info.get('distance')
-        parent = bfs_info.get('parent')
+        dist = self.bfs_info.get('distance')
+        parent = self.bfs_info.get('parent')
 
         for node in self.nodes.values():
             poses = Utils.get_view_distance_neighbors(node.pos, self.dim[0], self.dim[1], 3, sort=False)
@@ -601,10 +608,10 @@ class Graph:
         for pos in self.nodes.keys():
             if self.nodes[pos].grass > 0:
                 converted_map.nodes[pos] = Node(
-                        pos=pos,
-                        discovered=True,
-                        wall=True
-                    )
+                    pos=pos,
+                    discovered=True,
+                    wall=True
+                )
             else:
                 converted_map.nodes[pos] = self.nodes[pos]
         return converted_map
@@ -615,10 +622,10 @@ class Graph:
         for pos in self.nodes.keys():
             if self.nodes[pos].bread > 0:
                 converted_map.nodes[pos] = Node(
-                        pos=pos,
-                        discovered=True,
-                        wall=True
-                    )
+                    pos=pos,
+                    discovered=True,
+                    wall=True
+                )
             else:
                 converted_map.nodes[pos] = self.nodes[pos]
         return converted_map
