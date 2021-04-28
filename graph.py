@@ -518,8 +518,10 @@ class Graph:
 
         # print("MY GOAL IS TO REACH", best_list[idx % len(best_list)])
 
-        return self.step(curr_pos.pos, self.get_path(curr_pos, self.nodes[best_list[idx % len(best_list)]])[0].pos), \
-               best_list[idx % len(best_list)]
+        return self.step(
+            curr_pos.pos, self.get_first_move_from_parent(
+                parent, curr_pos, self.nodes[best_list[idx % len(best_list)]])
+        ), best_list[idx % len(best_list)]
 
     @staticmethod
     def get_first_move_from_parent(parent, src, dest):
