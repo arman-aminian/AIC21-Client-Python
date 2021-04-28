@@ -238,6 +238,7 @@ class Graph:
             'parent': parent,
         }
 
+    @Utils.time_measure
     def get_path(self, src, dest):
         q = [src]
         parent = {src.pos: src.pos}

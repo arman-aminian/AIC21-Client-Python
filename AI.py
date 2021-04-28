@@ -246,6 +246,7 @@ class AI:
                 return True
         return False
 
+    @time_measure
     def get_init_ants_next_move(self, preferred_moves) -> int:
         for m in preferred_moves:
             if (not self.is_road_to_wall(m)) and (self.get_next_pos(self.pos, m) != AI.latest_pos[AI.id][0]):
@@ -281,7 +282,7 @@ class AI:
             print_with_debug("something went wrong, init ants move :", m, "from id:", AI.id, f=AI.out_file)
             return Direction.get_random_direction()
 
-    # @time_measure
+    @time_measure
     def get_new_ant_collect_move(self, own_discovered_search=False):
         if own_discovered_search:
             search_map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
@@ -379,6 +380,7 @@ class AI:
                 m = self.get_init_ant_explore_move()
         return m
 
+    @time_measure
     def get_init_ant_collect_move(self, own_discovered_search=False):
         if own_discovered_search:
             search_map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
@@ -499,7 +501,7 @@ class AI:
         else:
             return None
 
-    # @time_measure
+    @time_measure
     # @handle_exception
     def turn(self) -> (str, int, int):
         if AI.debug and AI.life_cycle > 2 and (AI.id in AI.ids[0] or AI.id in AI.ids[1]):
@@ -561,7 +563,7 @@ class AI:
         if self.game.ant.antType == AntType.SARBAAZ.value:
             self.soldier_update_history()
             print_with_debug("soldier history", AI.soldier_path_neighbors_history, f=AI.out_file)
-        
+
         self.check_for_possible_base_cells()
 
         print_with_debug("known cells", [k for k, v in AI.map.nodes.items() if v.discovered], f=AI.out_file)
