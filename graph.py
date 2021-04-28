@@ -553,12 +553,12 @@ class Graph:
                         in_queue[next_node.pos] = True
                         q.append(next_node)
 
+        self.edge_nodes.sort()
+        self.bfs_info = {
+            'dist': dist,
+            'parent': parent,
+        }
         return self.bfs_info
-        
-        # return {
-        #     'dist': dist,
-        #     'parent': parent,
-        # }
 
     def get_soldier_weight(self, src, dest):
         return int(src.swamp) * 3 + 1
