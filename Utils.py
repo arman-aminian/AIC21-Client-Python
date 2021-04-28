@@ -2,6 +2,14 @@ import time
 
 import Model
 
+
+def print_with_debug(*args, f=None, debug=True):
+    if debug:
+        print(*args)
+    if f is not None:
+        print(*args, file=f)
+
+
 INIT_ANTS_NUM = 4
 MAX_MESSAGES_PER_TURN = 5
 
@@ -129,7 +137,7 @@ def time_measure(fn):
         res = fn(*args, **kwargs)
         delay = time.time() - now
 
-        # print(f'{fn.__name__} took {delay} seconds!')
+        print_with_debug(f'{fn.__name__} took {delay} seconds!')
 
         return res
 

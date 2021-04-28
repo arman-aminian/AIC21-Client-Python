@@ -89,10 +89,10 @@ class Graph:
         res = 0
         for pos in self.nodes.keys():
             if not self.nodes[pos].wall:
-                if self.get_path(self.nodes[pos], self.nodes[self.base_pos]) is not None:
-                    # if self.nodes[pos].grass > 0:
-                    #     print(pos)
-                    res = res + self.nodes[pos].grass
+                if self.nodes[pos].grass > 0:
+                    if self.get_path(self.nodes[pos], self.nodes[self.base_pos]) is not None:
+                        #     print(pos)
+                        res = res + self.nodes[pos].grass
         return res
 
     def total_bread_number(self):
@@ -101,10 +101,10 @@ class Graph:
         # print("total_bread_number:")
         for pos in self.nodes.keys():
             if not self.nodes[pos].wall:
-                if self.get_path(self.nodes[pos], self.nodes[self.base_pos]) is not None:
-                    # if self.nodes[pos].bread > 0:
-                    #     print(pos)
-                    res = res + self.nodes[pos].bread
+                if self.nodes[pos].bread > 0:
+                    if self.get_path(self.nodes[pos], self.nodes[self.base_pos]) is not None:
+                        #     print(pos)
+                        res = res + self.nodes[pos].bread
         return res
 
     def shortest_path(self, src, dest):
