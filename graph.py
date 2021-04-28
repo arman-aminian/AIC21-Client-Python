@@ -210,7 +210,7 @@ class Graph:
         return self.nodes[pos] if self.nodes[pos].discovered else self.guess_node(self.nodes[pos])
 
     def get_weight(self, src, dest, number_of_object):
-        return number_of_object * int(dest.trap) * 1000000 + int(src.swamp) * SWAMP_TURNS + 1
+        return number_of_object * int(dest.trap) * 1000000 + int(src.swamp) * Utils.SWAMP_TURNS + 1
 
     # @Utils.time_measure
     def get_shortest_path(self, src, name_of_other_object, number_of_object):
