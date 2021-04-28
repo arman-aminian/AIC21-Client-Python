@@ -209,8 +209,8 @@ class Graph:
     def get_node(self, pos):
         return self.nodes[pos] if self.nodes[pos].discovered else self.guess_node(self.nodes[pos])
 
-    def get_weight(self, src, dest):
-        return int(dest.trap) * 1000000 + int(src.swamp) * 3 + 1
+    def get_weight(self, src, dest, number_of_object):
+        return number_of_object * int(dest.trap) * 1000000 + int(src.swamp) * 3 + 1
 
     @Utils.time_measure
     def get_shortest_path(self, src, name_of_other_object, number_of_object):
@@ -234,7 +234,7 @@ class Graph:
                 next_node = self.nodes[neighbor]
                 if getattr(next_node, name_of_other_object) > 0 and number_of_object == 0:
                     continue
-                weight = self.get_weight(current_node, next_node)
+                weight = self.get_weight(current_node, next_node, number_of_object)
                 if dist.get(next_node.pos) is None or weight + dist[current_node.pos] < dist.get(next_node.pos):
                     dist[next_node.pos] = weight + dist[current_node.pos]
                     parent[next_node.pos] = current_node.pos
