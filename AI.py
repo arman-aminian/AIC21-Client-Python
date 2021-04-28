@@ -44,7 +44,7 @@ class AI:
     prev_hp = 0
     prev_es = 0
     shot_once = False
-    
+
     # NEW SHIT
     chosen_near_base_cell = None
     near_base_cell_targets = []
