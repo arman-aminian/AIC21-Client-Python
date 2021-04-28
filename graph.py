@@ -207,7 +207,7 @@ class Graph:
         return self.nodes[pos] if self.nodes[pos].discovered else self.guess_node(self.nodes[pos])
 
     def get_weight(self, src, dest):
-        return 1
+        return int(dest.trap) * 1000000 + int(src.swamp) * 3 + 1
 
     def get_shortest_path(self, src, name_of_other_object, number_of_object):
         q = [src]
@@ -540,7 +540,7 @@ class Graph:
         }
 
     def get_soldier_weight(self, src, dest):
-        return 1
+        return int(src.swamp) * 3 + 1
 
     @Utils.time_measure
     def get_best_node_to_support(self, src_pos, grass_weight=1, bread_weight=1, distance_weight=1):
