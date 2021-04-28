@@ -578,3 +578,29 @@ class Graph:
         ), name_of_object, self.get_shortest_distance(
             self.nodes[src_pos], self.nodes[best_nodes[0].pos], name_of_object, default=math.inf
         )
+
+    def convert_grass_cells_to_wall(self):
+        converted_map = Graph((self.dim[0], self.dim[1]), self.base_pos)
+        for pos in self.nodes.keys():
+            if self.nodes[pos].grass > 0:
+                converted_map.nodes[pos] = Node(
+                        pos=pos,
+                        discovered=True,
+                        wall=True
+                    )
+            else:
+                converted_map.nodes[pos] = self.nodes[pos]
+        return converted_map
+
+    def convert_bread_cells_to_wall(self):
+        converted_map = Graph((self.dim[0], self.dim[1]), self.base_pos)
+        for pos in self.nodes.keys():
+            if self.nodes[pos].bread > 0:
+                converted_map.nodes[pos] = Node(
+                        pos=pos,
+                        discovered=True,
+                        wall=True
+                    )
+            else:
+                converted_map.nodes[pos] = self.nodes[pos]
+        return converted_map

@@ -249,7 +249,7 @@ class AI:
         return False
 
     @time_measure
-    def get_init_ants_next_move(self, preferred_moves) -> int:
+    def get_init_ants_next_move(self, preferred_moves, map) -> int:
         for m in preferred_moves:
             if (not self.is_road_to_wall(m)) and (self.get_next_pos(self.pos, m) != AI.latest_pos[AI.id][0]):
                 for j in [0, 1, -1]:
@@ -264,9 +264,9 @@ class AI:
                     # own_map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
                     # for p in self.found_history:
                     #     own_map.nodes[p] = AI.map.nodes[p]
-                    path = AI.map.get_path_with_max_length(AI.map.nodes[self.pos], AI.map.nodes[self.fix_pos(p)], 2)
+                    path = map.get_path_with_max_length(map.nodes[self.pos], map.nodes[self.fix_pos(p)], 2)
                     if path is not None:
-                        return Direction.get_value(AI.map.step(self.pos, path[0].pos))
+                        return Direction.get_value(map.step(self.pos, path[0].pos))
 
         print_with_debug("error on get_init_ants_next_move", f=AI.out_file)
         return Direction.get_random_direction()
@@ -274,9 +274,12 @@ class AI:
     def get_init_ant_explore_move(self):
         AI.worker_state = WorkerState.InitCollecting
         if AI.id <= Utils.INIT_ANTS_NUM:
-            m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1])
+            if AI.id == Utils.GRASS_ONLY_ID:
+                m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1], AI.map.convert_bread_cells_to_wall())
+            else:
+                m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id - 1], AI.map)
         else:
-            m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id % 4])
+            m = self.get_init_ants_next_move(Utils.INIT_STRAIGHT_ANTS_MOVES[AI.id % 4], AI.map)
 
         if m < 5:
             return m
@@ -457,7 +460,8 @@ class AI:
             if self.has_resource_in_map(ResourceType.BREAD.value,
                                         1,
                                         own_discovered_search) \
-                    == ResourceType.BREAD.value:
+                    == ResourceType.BREAD.value \
+                    and AI.id != Utils.GRASS_ONLY_ID:
                 bread_dir, AI.last_name_of_object, bread_dis = search_map.get_resource_best_move(
                     src_pos=self.pos,
                     dest_pos=AI.map.base_pos,
@@ -515,6 +519,9 @@ class AI:
 
         print_with_debug("*************************************************", f=AI.out_file)
         print_with_debug("ROUND START!", f=AI.out_file)
+        if AI.id == Utils.GRASS_ONLY_ID:
+            print_with_debug("Grass only ant", f=AI.out_file)
+
         print_with_debug(AI.found_history, f=AI.out_file)
         self.update_ids_from_chat_box()
 
