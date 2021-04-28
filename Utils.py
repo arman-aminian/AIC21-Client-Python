@@ -3,7 +3,7 @@ import time
 import Model
 
 
-def print_with_debug(*args, f=None, debug=True):
+def print_with_debug(*args, f=None, debug=False):
     if debug:
         print(*args)
     if f is not None:
@@ -33,6 +33,10 @@ GENERATE_SARBAAZ = 10
 WORKER_MAX_CARRYING_RESOURCE_AMOUNT = 10
 
 GRASS_ONLY_ID = 1
+NEW_GRASS_ONLY_PER_ROUND = 4
+GRASS_PRIORITY_ID = 3
+BREAD_PRIORITY_ID = 4
+PRIORITY_GAP = 4
 
 BASE_DMG = 3
 SOLDIER_DMG = 2
@@ -134,10 +138,11 @@ def shortest_path(src, dest, w, h):
 
 def time_measure(fn):
     def wrapper(*args, **kwargs):
-        now = time.time()
+        # now = time.time()
         res = fn(*args, **kwargs)
-        delay = time.time() - now
-
+        # delay = time.time() - now
+        # todo delete
+        delay = 1
         print_with_debug(f'{fn.__name__} took {delay} seconds!')
 
         return res

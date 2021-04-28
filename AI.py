@@ -358,7 +358,8 @@ class AI:
             if self.has_resource_in_map(ResourceType.BREAD.value,
                                         1,
                                         own_discovered_search) \
-                    == ResourceType.BREAD.value:
+                    == ResourceType.BREAD.value \
+                    and (AI.id % Utils.NEW_GRASS_ONLY_PER_ROUND) != 0:
                 bread_dir, AI.last_name_of_object, bread_dis = search_map.get_resource_best_move(
                     src_pos=self.pos,
                     dest_pos=AI.map.base_pos,
@@ -474,7 +475,10 @@ class AI:
             print_with_debug("grass_dis:", grass_dis, f=AI.out_file)
             print_with_debug("bread_dir:", bread_dir, f=AI.out_file)
             print_with_debug("bread_dis:", bread_dis, f=AI.out_file)
-            if grass_dis <= bread_dis and grass_dis != math.inf:
+            if ((grass_dis <= bread_dis and AI.id != GRASS_PRIORITY_ID and AI.id != BREAD_PRIORITY_ID)
+                or (AI.id == GRASS_PRIORITY_ID and grass_dis - PRIORITY_GAP <= bread_dis)
+                or (AI.id == BREAD_PRIORITY_ID and grass_dis + PRIORITY_GAP < bread_dis)) \
+                    and grass_dis != math.inf:
                 m = grass_dir
             elif bread_dir is not None:
                 m = bread_dir
