@@ -548,8 +548,8 @@ class AI:
         print_with_debug("ROUND:", self.game_round, f=AI.out_file)
         print_with_debug("POS:", self.pos, f=AI.out_file)
         AI.own_cells_history.append(self.pos)
-        self.search_neighbors()
         self.update_map_from_chat_box()
+        self.search_neighbors()
         self.update_map_from_neighbors()
 
         if self.game.ant.antType == AntType.SARBAAZ.value:
