@@ -57,6 +57,7 @@ class AI:
         self.encoded_neighbors = ""
         self.shot = False
 
+    @time_measure
     def search_neighbors(self):
         # TODO improve by creating the list of indices instead of all the cells
         ant = self.game.ant
@@ -141,6 +142,7 @@ class AI:
 
         return VALUES["none"]
 
+    @time_measure
     def update_map_from_neighbors(self):
         if not self.new_neighbors:
             return
@@ -148,6 +150,7 @@ class AI:
         for pos, n in self.new_neighbors.items():
             AI.map.nodes[pos] = copy.deepcopy(n)
 
+    @time_measure
     def update_map_from_chat_box(self):
         maps = [msg for msg in
                 self.game.chatBox.allChats[-MAX_MESSAGES_PER_TURN:] if '!' in
@@ -173,6 +176,7 @@ class AI:
                 target = add_pos_dir(ant_pos, ant_dir, AI.w, AI.h)
                 AI.soldier_targets.append(target)
 
+    @time_measure
     def update_ids_from_chat_box(self):
         id_msgs = [msg.text for msg in
                    self.game.chatBox.allChats[-MAX_MESSAGES_PER_TURN:] if
@@ -220,6 +224,7 @@ class AI:
         return ((pos[0] + self.game.mapWidth) % self.game.mapWidth,
                 (pos[1] + self.game.mapHeight) % self.game.mapHeight)
 
+    @time_measure
     def is_road_to_wall(self, move: int):
         for i in [1, 2]:
             tf = True
@@ -262,6 +267,7 @@ class AI:
         print_with_debug("error on get_init_ants_next_move", f=AI.out_file)
         return Direction.get_random_direction()
 
+    @time_measure
     def get_init_ant_explore_move(self):
         AI.worker_state = WorkerState.InitCollecting
         if AI.id <= Utils.INIT_ANTS_NUM:
@@ -476,6 +482,7 @@ class AI:
                 m = self.get_init_ant_explore_move()
         return m
 
+    @time_measure
     def has_resource_in_map(self, res_type: int, res_num=10, own_discovered_search=False):
         if own_discovered_search:
             own_map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
@@ -508,7 +515,9 @@ class AI:
             else:
                 AI.out_file = open(AI.output_path + t + '_' + str(AI.id) + '_' + str(AI.born_game_round) + ".txt", "a+")
 
-        print_with_debug("*************************************************", f=AI.out_file)
+        print_with_debug("************************************************************************", f=AI.out_file)
+        print_with_debug("************************************************************************", f=AI.out_file)
+        print_with_debug("************************************************************************", f=AI.out_file)
         print_with_debug("ROUND START!", f=AI.out_file)
         if AI.id == Utils.GRASS_ONLY_ID:
             print_with_debug("Grass only ant", f=AI.out_file)
@@ -565,7 +574,7 @@ class AI:
             print_with_debug("soldier history", AI.soldier_path_neighbors_history, f=AI.out_file)
 
         self.check_for_possible_base_cells()
-
+        #
         print_with_debug("known cells", [k for k, v in AI.map.nodes.items() if v.discovered], f=AI.out_file)
         print_with_debug("found history", AI.found_history, f=AI.out_file)
 
@@ -580,7 +589,7 @@ class AI:
         # ########################################################KAARGAAAR########################################################
         # *************************************************************************************************************************
         elif self.game.ant.antType == AntType.KARGAR.value:
-            print_map(AI.map, self.pos)
+            # print_map(AI.map, self.pos)
             if self.game.ant.currentResource.value is not None \
                     and self.game.ant.currentResource.value >= (WORKER_MAX_CARRYING_RESOURCE_AMOUNT / 2):
                 print_with_debug("worker has >= (max carrying resources amount / 2) => back to base with bfs", f=AI.out_file)
@@ -610,7 +619,7 @@ class AI:
         # ########################################################SAARBAAAZ########################################################
         # *************************************************************************************************************************
         elif self.game.ant.antType == AntType.SARBAAZ.value:
-            print_map(AI.map, self.pos)
+            # print_map(AI.map, self.pos)
             if AI.life_cycle == 1:
                 self.direction = Direction.get_random_direction()
             else:
@@ -709,7 +718,7 @@ class AI:
                                                         self.shot,
                                                         AI.map.enemy_base_pos)
                 self.message = self.encoded_neighbors
-        elif AI.life_cycle > 1 and self.shot and (AI.soldier_state == SoldierState.Null or AI.soldier_state == SoldierState.CellTargetFound):
+        elif AI.life_cycle > 1 and self.shot and self.game.ant.antType == AntType.SARBAAZ.value and (AI.soldier_state == SoldierState.Null or AI.soldier_state == SoldierState.CellTargetFound):
             possible_cells = get_view_distance_neighbors(AI.latest_pos[AI.id][0], AI.w,
                                                          AI.h, 6, exact=True)
             possible_cells = [p for p in possible_cells if
@@ -742,6 +751,7 @@ class AI:
             AI.shot_once = True
         return self.message, self.value, self.direction
 
+    @time_measure
     def determine_worker_state(self):
         # TODO discuss the logic and improve
         # AI.worker_state = WorkerState.Exploring
@@ -755,6 +765,7 @@ class AI:
         else:
             AI.worker_state = WorkerState.Exploring
 
+    @time_measure
     def worker_explore(self):
         # third version (BT)
         d = solve_bt(AI.map, self.pos)
@@ -797,6 +808,7 @@ class AI:
         # # do it for all the points in the radius
         # self.total_non_discovered_points()
 
+    @time_measure
     def is_radius_fully_discovered(self, size):
         for i in range(self.pos[0] - size, self.pos[0] + size + 1):
             for j in range(self.pos[1] - size, self.pos[1] + size + 1):
@@ -806,6 +818,7 @@ class AI:
                     return False
         return True
 
+    @time_measure
     def calculate_score(self, size):
         # right -> up -> left -> down
         d = [[(0, -size), (size, size)],
@@ -860,6 +873,7 @@ class AI:
             AI.soldier_state = SoldierState.FirstFewRounds
             AI.soldier_init_random_dir = Direction.get_random_direction()
 
+    @time_measure
     def check_for_base(self):
         hp = self.game.ant.health
         neighbors = get_view_distance_neighbors(AI.latest_pos[AI.id][0], AI.w, AI.h,
@@ -873,6 +887,7 @@ class AI:
             print_with_debug("YESSSSS I GOT SHOTTTTTTTTTT", f=AI.out_file)
             self.shot = True
 
+    @time_measure
     def find_possible_base_cells(self):
         for target in AI.soldier_targets:
             possible_cells = Utils.get_view_distance_neighbors(target, AI.w,
@@ -885,6 +900,7 @@ class AI:
             if not AI.possible_base_cells:
                 print_with_debug("HUGE MOTHERFUCKING ERROR!", f=AI.out_file)
 
+    @time_measure
     def chosse_best_target(self):
         if len(AI.soldier_targets) == 1:
             return AI.soldier_targets[0]
@@ -902,6 +918,7 @@ class AI:
             new_neighbors = [p for p in neighbors if p not in AI.soldier_path_neighbors_history]
             AI.soldier_path_neighbors_history += new_neighbors.copy()
 
+    @time_measure
     def check_for_possible_base_cells(self):
         possible_msgs = [msg.text for msg in
                          self.game.chatBox.allChats[-MAX_MESSAGES_PER_TURN:] if
@@ -938,17 +955,20 @@ class AI:
         #     else:
         #         AI.attack_dir = Direction.get_random_direction()
 
+    @time_measure
     def get_soldier_first_move_to_discover(self):
         move, _ = AI.latest_map.get_first_move_to_discover(
             AI.map.nodes[self.pos], self.pos, len(AI.ids[self.game.ant.antType]), AI.id, AI.ids[self.game.ant.antType]
         )
         return Direction.get_value(move)
 
+    @time_measure
     def get_soldier_first_node_to_support(self):
         return Direction.get_value(
             AI.map.step(self.pos, AI.map.get_best_node_to_support(self.pos))
         )
 
+    @time_measure
     def get_first_move_to_target(self, src, dest, unsafe_cells=None):
         print_with_debug(src, dest, f=AI.out_file)
         print_with_debug(AI.map.get_path(AI.map.nodes[src], AI.map.nodes[dest]), f=AI.out_file)

@@ -83,7 +83,6 @@ def manhattan_dist(p, q, w, h) -> int:
     y_diff = min(abs(p[1] - q[1]), h - abs(p[1] - q[1]))
     return x_diff + y_diff
 
-
 def get_view_distance_neighbors(pos, w, h, view: int, exact: bool = False, sort=True):
     ret = []
     for i in range(-view, view + 1):

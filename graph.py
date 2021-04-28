@@ -9,7 +9,7 @@ from Model import Direction
 class Node:
     GRASS_WEIGHT = 1
     BREAD_WEIGHT = 1
-    DISTANCE_WEIGH = 2
+    DISTANCE_WEIGH = 10
     GRASS_LIMIT = 10
     BREAD_LIMIT = 10
 
@@ -41,14 +41,14 @@ class Node:
     # todo: make get value better(use dest)
     # todo: make default dist better
     def grass_value(self, src, dest, graph, number=0):
-        distance = graph.get_shortest_distance(src, self, 'grass', default=math.inf)
-        return -distance * self.DISTANCE_WEIGH + min(self.GRASS_LIMIT,
-                                                     self.grass + src.grass + number) * self.GRASS_WEIGHT
+        distance = graph.get_shortest_distance(src, self, 'grass', default=math.inf) \
+                   + graph.get_shortest_distance(dest, self, 'grass', default=math.inf)
+        return -distance * self.DISTANCE_WEIGH + self.grass + number * self.GRASS_WEIGHT
 
     def bread_value(self, src, dest, graph, number=0):
-        distance = graph.get_shortest_distance(src, self, 'bread', default=math.inf)
-        return -distance * self.DISTANCE_WEIGH + min(self.BREAD_LIMIT,
-                                                     src.bread + self.bread + number) * self.BREAD_WEIGHT
+        distance = graph.get_shortest_distance(src, self, 'bread', default=math.inf) \
+                   + graph.get_shortest_distance(dest, self, 'bread', default=math.inf)
+        return -distance * self.DISTANCE_WEIGH + self.bread + number * self.BREAD_WEIGHT
 
 
 class Graph:
@@ -85,6 +85,7 @@ class Graph:
         if next_pos[1] - src[1] in [1, -(self.dim[1] - 1)]:
             return "DOWN"
 
+    @Utils.time_measure
     def total_grass_number(self):
         res = 0
         for pos in self.nodes.keys():
@@ -95,6 +96,7 @@ class Graph:
                         res = res + self.nodes[pos].grass
         return res
 
+    @Utils.time_measure
     def total_bread_number(self):
         res = 0
         # print("###########")
@@ -107,6 +109,7 @@ class Graph:
                         res = res + self.nodes[pos].bread
         return res
 
+    @Utils.time_measure
     def shortest_path(self, src, dest):
         q = [[src]]
         visited = []
@@ -205,6 +208,7 @@ class Graph:
     def get_weight(self, src, dest):
         return 1
 
+    @Utils.time_measure
     def get_shortest_path(self, src, name_of_other_object, number_of_object):
         q = [src]
         in_queue = {src.pos: True}
@@ -264,6 +268,7 @@ class Graph:
                         return list(reversed(path))
         return None
 
+    @Utils.time_measure
     def get_path_with_non_discovered(self, src, dest, unsafe_cells=None):
         unsafe_pos = {}
         for pos in (unsafe_cells or []):
@@ -301,6 +306,7 @@ class Graph:
                         return list(reversed(path))
         return None
 
+    @Utils.time_measure
     def get_path_with_max_length(self, src, dest, max_len):
         q = [src]
         parent = {src.pos: src.pos}
@@ -339,6 +345,7 @@ class Graph:
     def get_random_nodes(self):
         return {pos: self.get_node(pos) for pos in self.nodes.keys()}
 
+    @Utils.time_measure
     def find_all_shortest_path(self, number_of_object, name_of_object, nodes):
         for node in nodes:
             pos = node.pos
@@ -347,6 +354,7 @@ class Graph:
                 number_of_object.get(name_of_object, 0)
             )
 
+    @Utils.time_measure
     def get_nearest_grass_nodes(self, src, dest, number_of_object):
         number = number_of_object.get('grass', 0)
         grass_nodes_temp = []
@@ -371,6 +379,7 @@ class Graph:
         return sorted(grass_nodes, key=lambda n: n.grass_value(src, dest, self, number), reverse=True)[
                :self.TSP_NODE_LIMIT]
 
+    @Utils.time_measure
     def get_nearest_bread_nodes(self, src, dest, number_of_object):
         number = number_of_object.get('bread', 0)
         bread_nodes_temp = []
@@ -394,9 +403,11 @@ class Graph:
         return sorted(bread_nodes, key=lambda n: n.bread_value(src, dest, self, number), reverse=True)[
                :self.TSP_NODE_LIMIT]
 
+    @Utils.time_measure
     def get_shortest_distance(self, src, dest, name_of_object, default=None):
         return self.shortest_path_info[name_of_object].get(src.pos, {}).get('dist', {}).get(dest.pos, default)
 
+    @Utils.time_measure
     def get_shortest_path_from_shortest_path_info(self, src_pos, dest_pos, name_of_object):
         parent = self.shortest_path_info[name_of_object][src_pos].get('parent', [])
         pos = dest_pos
@@ -406,17 +417,20 @@ class Graph:
             pos = parent[pos]
         return list(reversed(path))
 
+    @Utils.time_measure
     def get_first_move_to_enemy_base(self, src_pos):
         our_base = self.base_pos
         their_base = self.enemy_base_pos or (self.dim[0] - 1 - our_base[0], self.dim[1] - 1 - our_base[1])
         path = self.get_path(self.nodes[src_pos], self.nodes[their_base])
         return self.step(src_pos, path[0].pos) if path else "None"
 
+    @Utils.time_measure
     def get_first_move_to_opposite_node(self, src_pos):
         opposite_node_pos = (self.dim[0] - 1 - src_pos[0], self.dim[1] - 1 - src_pos[1])
         path = self.get_path(self.nodes[src_pos], self.nodes[opposite_node_pos])
         return self.step(src_pos, path[0].pos) if path else "None"
 
+    @Utils.time_measure
     def get_edge_nodes(self, src):
         q = [src]
         parent = {src.pos: src.pos}
@@ -446,7 +460,7 @@ class Graph:
             'parent': parent,
         }
 
-    # @Utils.time_measure
+    @Utils.time_measure
     def get_best_list(self, src, each_list_max_size):
         edge_nodes_info = self.get_edge_nodes(src)
         edge_nodes = edge_nodes_info.get('edge_nodes')
@@ -484,6 +498,7 @@ class Graph:
             value += dist.get(pos)
         return value / len(list_of_candidate)
 
+    @Utils.time_measure
     def get_first_move_to_discover(self, curr_pos, src_pos, each_list_max_size, my_id, all_ids):
         src = self.nodes[src_pos]
         best_list, parent = self.get_best_list(src, each_list_max_size)
@@ -508,6 +523,7 @@ class Graph:
             last = parent[last]
         return last
 
+    @Utils.time_measure
     def bfs(self, src):
         q = [src]
         parent = {src.pos: src.pos}
@@ -558,7 +574,7 @@ class Graph:
 
         return self.get_first_move_from_parent(parent, src.pos, best_pos)
 
-    # @Utils.time_measure
+    @Utils.time_measure
     def get_resource_best_move(self, src_pos, dest_pos, name_of_object, limit, number_of_object):
         best_nodes = getattr(
             self, f'get_nearest_{name_of_object}_nodes'
@@ -577,6 +593,7 @@ class Graph:
             self.nodes[src_pos], self.nodes[best_nodes[0].pos], name_of_object, default=math.inf
         )
 
+    @Utils.time_measure
     def convert_grass_cells_to_wall(self):
         converted_map = Graph((self.dim[0], self.dim[1]), self.base_pos)
         for pos in self.nodes.keys():
@@ -590,6 +607,7 @@ class Graph:
                 converted_map.nodes[pos] = self.nodes[pos]
         return converted_map
 
+    @Utils.time_measure
     def convert_bread_cells_to_wall(self):
         converted_map = Graph((self.dim[0], self.dim[1]), self.base_pos)
         for pos in self.nodes.keys():
