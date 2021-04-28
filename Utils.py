@@ -2,7 +2,7 @@ import time
 
 import Model
 
-INIT_ANTS_NUM = 2
+INIT_ANTS_NUM = 4
 MAX_MESSAGES_PER_TURN = 5
 
 INIT_STRAIGHT_ANTS_MOVES = [[1, 2, 3, 4],

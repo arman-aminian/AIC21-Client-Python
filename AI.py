@@ -9,7 +9,7 @@ from state import *
 from BT import *
 
 
-def print_with_debug(*args, f=None, debug=False):
+def print_with_debug(*args, f=None, debug=True):
     if debug:
         print(*args)
     if f is not None:
@@ -555,6 +555,7 @@ class AI:
         AI.own_cells_history.append(self.pos)
         self.search_neighbors()
         self.update_map_from_chat_box()
+        self.update_map_from_neighbors()
         if AI.game_round > 5 and not AI.shot_once:
             self.check_for_base()
         if self.game.ant.antType == AntType.SARBAAZ.value:
@@ -577,13 +578,14 @@ class AI:
         # ########################################################KAARGAAAR########################################################
         # *************************************************************************************************************************
         elif self.game.ant.antType == AntType.KARGAR.value:
+            print_map(AI.map, self.pos)
             if self.game.ant.currentResource.value is not None \
                     and self.game.ant.currentResource.value >= (WORKER_MAX_CARRYING_RESOURCE_AMOUNT / 2):
                 print_with_debug("worker has >= (max carrying resources amount / 2) => back to base with bfs", f=AI.out_file)
                 path = AI.map.get_path(AI.map.nodes[self.pos], AI.map.nodes[AI.map.base_pos])
                 self.direction = Direction.get_value(AI.map.step(self.pos, path[0].pos))
                 print_with_debug("bfs dir:", self.direction)
-                print_map(AI.map, self.pos)
+
             else:
                 if AI.id <= Utils.INIT_ANTS_NUM:
                     print_with_debug("INIT ANT", f=AI.out_file)
@@ -606,6 +608,7 @@ class AI:
         # ########################################################SAARBAAAZ########################################################
         # *************************************************************************************************************************
         elif self.game.ant.antType == AntType.SARBAAZ.value:
+            print_map(AI.map, self.pos)
             if AI.life_cycle == 1:
                 self.direction = Direction.get_random_direction()
             else:
