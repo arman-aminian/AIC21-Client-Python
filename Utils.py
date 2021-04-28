@@ -3,7 +3,7 @@ import time
 import Model
 
 
-def print_with_debug(*args, f=None, debug=False):
+def print_with_debug(*args, f=None, debug=True):
     if debug:
         print(*args)
     if f is not None:
@@ -33,7 +33,7 @@ GENERATE_SARBAAZ = 10
 WORKER_MAX_CARRYING_RESOURCE_AMOUNT = 10
 
 GRASS_ONLY_ID = 1
-NEW_GRASS_ONLY_PER_ROUND = 4
+NEW_GRASS_PRIORITY_PER_ROUND = 4
 GRASS_PRIORITY_ID = 3
 BREAD_PRIORITY_ID = 4
 PRIORITY_GAP = 4

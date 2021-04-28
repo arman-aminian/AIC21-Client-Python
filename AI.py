@@ -237,7 +237,7 @@ class AI:
         return ((pos[0] + self.game.mapWidth) % self.game.mapWidth,
                 (pos[1] + self.game.mapHeight) % self.game.mapHeight)
 
-    def is_road_to_wall(self, move: int):
+    def is_road_to_wall(self, move: int, map):
         for i in [1, 2]:
             tf = True
             for j in [-1, 0, 1]:
@@ -249,17 +249,16 @@ class AI:
                     p = (self.pos[0] - i, self.pos[1] + j)
                 else:
                     p = (self.pos[0] + j, self.pos[1] + i)
-                node = AI.map.nodes[self.fix_pos(pos=p)]
+                node = map.nodes[self.fix_pos(pos=p)]
                 if not node.wall:
                     tf = False
             if tf:
                 return True
         return False
 
-    @time_measure
     def get_init_ants_next_move(self, preferred_moves, map) -> int:
         for m in preferred_moves:
-            if (not self.is_road_to_wall(m)) and (self.get_next_pos(self.pos, m) != AI.latest_pos[AI.id][0]):
+            if (not self.is_road_to_wall(m, map)) and (self.get_next_pos(self.pos, m) != AI.latest_pos[AI.id][0]):
                 for j in [0, 1, -1]:
                     if m == 1:
                         p = (self.pos[0] + 2, self.pos[1] + j)
@@ -370,8 +369,7 @@ class AI:
             if self.has_resource_in_map(ResourceType.BREAD.value,
                                         1,
                                         own_discovered_search) \
-                    == ResourceType.BREAD.value \
-                    and (AI.id % Utils.NEW_GRASS_ONLY_PER_ROUND) != 0:
+                    == ResourceType.BREAD.value:
                 bread_dir, AI.last_name_of_object, bread_dis = search_map.get_resource_best_move(
                     src_pos=self.pos,
                     dest_pos=AI.map.base_pos,
@@ -387,7 +385,8 @@ class AI:
             print_with_debug("grass_dis:", grass_dis, f=AI.out_file)
             print_with_debug("bread_dir:", bread_dir, f=AI.out_file)
             print_with_debug("bread_dis:", bread_dis, f=AI.out_file)
-            if grass_dis <= bread_dis and grass_dis != math.inf:
+            if (grass_dis <= bread_dis or (AI.id % NEW_GRASS_PRIORITY_PER_ROUND == 0 and grass_dis - PRIORITY_GAP <= bread_dis)) \
+                    and grass_dis != math.inf:
                 m = grass_dir
             elif bread_dir is not None:
                 m = bread_dir
