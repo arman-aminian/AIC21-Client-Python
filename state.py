@@ -21,6 +21,7 @@ class SoldierState(Enum):
     FirstFewRounds = 4
     CellTargetFound = 5
     HasBeenShot = 6
-    Attacking = 7
+    AttackingBase = 7
     WaitingForComrades = 8
-    AttackingBase = 9
+    BaseKnown_GoingNearEnemyBase = 10
+    BaseKnown_StayingNearBase = 11
