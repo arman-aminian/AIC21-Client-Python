@@ -39,8 +39,11 @@ class AI:
     shot_once = False
 
     # NEW SHIT
-    chosen_near_base_cell = None
-    near_base_cell_targets = []
+    chosen_near_base_cell_BK = None
+    chosen_near_base_cell_BU = None
+    near_base_safe_cells = []
+    shot_default_dir = None
+    first_id = 0
 
     def __init__(self):
         # Current Game State
@@ -65,8 +68,14 @@ class AI:
         neighbor_nodes = []
         for n in neighbor_cells:
             w = n.type == CellType.WALL.value
+            s = n.type == CellType.SWAMP.value
+            t = n.type == CellType.TRAP.value
             if w:
                 neighbor_nodes.append(Node((n.x, n.y), True, True))
+            elif s:
+                neighbor_nodes.append(Node((n.x, n.y), True, False, swamp=True))
+            elif t:
+                neighbor_nodes.append(Node((n.x, n.y), True, False, trap=True))
             else:
                 b = n.resource_value if \
                     n.resource_type == ResourceType.BREAD.value else 0
@@ -84,8 +93,8 @@ class AI:
                             ew += 1
                         elif a.antType == AntType.SARBAAZ.value:
                             es += 1
-                neighbor_nodes.append(Node((n.x, n.y), True, False, b, g, aw,
-                                           ally_s, ew, es))
+                neighbor_nodes.append(Node((n.x, n.y), True, False, bread=b, grass=g, ally_workers=aw,
+                                           ally_soldiers=ally_s, enemy_workers=ew, enemy_soldiers=es))
 
         self.new_neighbors = {n.pos: n for n in neighbor_nodes if
                               AI.map.nodes[n.pos] != n}
@@ -500,9 +509,9 @@ class AI:
         if AI.debug and AI.life_cycle > 2 and (AI.id in AI.ids[0] or AI.id in AI.ids[1]):
             t = "soldier" if self.game.ant.antType == AntType.SARBAAZ.value else "worker"
             if AI.id in range(1, INIT_ANTS_NUM + 1):
-                AI.out_file = open(AI.output_path + t + '_' + str(AI.first_id) + '_' + str(AI.born_game_round) + ".txt", "a+")
+                AI.out_file = open(AI.output_path + t + '_' + str(AI.born_game_round) + '_' + str(AI.first_id) + ".txt", "a+")
             else:
-                AI.out_file = open(AI.output_path + t + '_' + str(AI.id) + '_' + str(AI.born_game_round) + ".txt", "a+")
+                AI.out_file = open(AI.output_path + t + '_' + str(AI.born_game_round) + '_' + str(AI.first_id) + ".txt", "a+")
 
         print_with_debug("*************************************************", f=AI.out_file)
         print_with_debug("ROUND START!", f=AI.out_file)
@@ -547,10 +556,12 @@ class AI:
         self.pos = (self.game.ant.currentX, self.game.ant.currentY)
         print_with_debug("ROUND:", self.game_round, f=AI.out_file)
         print_with_debug("POS:", self.pos, f=AI.out_file)
-        AI.own_cells_history.append(self.pos)
         self.search_neighbors()
         self.update_map_from_chat_box()
         self.update_map_from_neighbors()
+        
+        # ####################################### ROUND INITIALIZATION END
+        
         if AI.game_round > 5 and not AI.shot_once:
             self.check_for_base()
         if self.game.ant.antType == AntType.SARBAAZ.value:
@@ -558,6 +569,7 @@ class AI:
             print_with_debug("soldier history", AI.soldier_path_neighbors_history, f=AI.out_file)
 
         self.check_for_possible_base_cells()
+        AI.own_cells_history.append(self.pos)
 
         print_with_debug("known cells", [k for k, v in AI.map.nodes.items() if v.discovered], f=AI.out_file)
         print_with_debug("found history", AI.found_history, f=AI.out_file)
@@ -573,7 +585,7 @@ class AI:
         # ########################################################KAARGAAAR########################################################
         # *************************************************************************************************************************
         elif self.game.ant.antType == AntType.KARGAR.value:
-            print_map(AI.map, self.pos)
+            print_map(AI.map, self.pos, f=AI.out_file)
             if self.game.ant.currentResource.value is not None \
                     and self.game.ant.currentResource.value >= (WORKER_MAX_CARRYING_RESOURCE_AMOUNT / 2):
                 print_with_debug("worker has >= (max carrying resources amount / 2) => back to base with bfs", f=AI.out_file)
@@ -603,86 +615,20 @@ class AI:
         # ########################################################SAARBAAAZ########################################################
         # *************************************************************************************************************************
         elif self.game.ant.antType == AntType.SARBAAZ.value:
-            print_map(AI.map, self.pos)
+            print_map(AI.map, self.pos, f=AI.out_file)
             if AI.life_cycle == 1:
                 self.direction = Direction.get_random_direction()
             else:
-                # BASE FOUND
-                if AI.map.enemy_base_pos is not None and AI.soldier_state != SoldierState.BaseKnown_GoingNearEnemyBase:
-                    AI.soldier_state = SoldierState.BaseKnown_GoingNearEnemyBase
-                    near_base_cells = get_view_distance_neighbors(AI.map.enemy_base_pos, AI.w, AI.h, BASE_RANGE + 1, exact=True)
-                    # TODO manhattan dist or bfs?
-                    distances = [manhattan_dist(self.pos, p, AI.w, AI.h) for p in near_base_cells]
-                    candidates_idx = sorted(enumerate(distances), key=lambda x: x[1])[:5]
-                    AI.chosen_near_base_cell = near_base_cells[random.choice(candidates_idx)[0]]
+                self.handle_base()
+                self.handle_shot()
 
-                # going to the chosen cell near enemy base
-                if AI.soldier_state == SoldierState.BaseKnown_GoingNearEnemyBase:
-                    # TODO bfs to chosen cell
-                    if self.pos == AI.chosen_near_base_cell:
-                        AI.soldier_state = SoldierState.BaseKnown_StayingNearBase
+                if AI.soldier_state == SoldierState.Explorer_Supporter:
+                    # TODO fill this
+                    pass
 
-                if AI.soldier_state == SoldierState.BaseKnown_StayingNearBase:
-                    # TODO decide to either stay or attack
-                    # ATTACK
-                    ally_s = len(
-                        [a for a in self.game.ant.getMapRelativeCell(0, 0).ants if
-                         a.antType == AntType.SARBAAZ.value and a.antTeam == AntTeam.ALLIED.value])
-                    # TODO add other attacking conditions
-                    if ally_s >= ALLIES_REQUIRED_TO_ATTACK:
-                        AI.soldier_state = SoldierState.AttackingBase
-
-                if AI.soldier_state == SoldierState.AttackingBase:
-                    if AI.map.enemy_base_pos is not None:
-                        self.direction = self.get_first_move_to_target(self.pos, AI.map.enemy_base_pos)
-                    # else:
-                    #     self.direction = solve_bt(AI.map, self.pos, max_distance=7)
-                    #     if self.direction == Direction.CENTER.value:
-                    #         print_with_debug("CENTER VALUE FROM BT", f=AI.out_file)
-                    #         self.direction = AI.attack_dir
-
-                ###################### OLD SHIT ###################
-                if AI.soldier_state == SoldierState.WaitingForComrades:
-                    ally_s = len(
-                        [a for a in self.game.ant.getMapRelativeCell(0, 0).ants
-                         if a.antType == AntType.SARBAAZ.value and a.antTeam == self.game.ant.antTeam])
-                    if ally_s > 2 or abs(MAX_TURN_COUNT - AI.game_round) <= 30:
-                        AI.soldier_state = SoldierState.PreparingForAttack
-                    else:
-                        self.direction = Direction.CENTER.value
-
-                if AI.soldier_state == SoldierState.PreparingForAttack:
-                    ally_s = len([a for a in self.game.ant.getMapRelativeCell(0, 0).ants if a.antType == AntType.SARBAAZ.value
-                                  and a.antTeam == self.game.ant.antTeam])
-                    if self.pos == AI.cell_target and (ally_s > 2 or abs(MAX_TURN_COUNT - AI.game_round) <= 10):
-                        AI.soldier_state = SoldierState.AttackingBase
-                    elif AI.cell_target is not None and self.pos != AI.cell_target:
-                        self.direction = self.get_first_move_to_target(self.pos, AI.cell_target)
-                    elif self.pos == AI.cell_target and ally_s <= 2:
-                        self.direction = Direction.CENTER.value
-                    elif AI.cell_target is None and AI.map.enemy_base_pos is not None:
-                        self.direction = Direction.get_random_direction()
-
-                if AI.soldier_state == SoldierState.HasBeenShot:
-                    self.direction = Direction.CENTER.value
-                    ally_s = len(
-                        [a for a in self.game.ant.getMapRelativeCell(0, 0).ants
-                         if a.antType == AntType.SARBAAZ.value and a.antTeam == self.game.ant.antTeam])
-                    if ally_s > 2:
-                        self.soldier_state = SoldierState.AttackingBase
-
-                if AI.soldier_state == SoldierState.CellTargetFound:
-                    if self.pos == AI.cell_target:
-                        AI.soldier_state = SoldierState.Null
-                    elif AI.cell_target is not None:
-                        self.direction = self.get_first_move_to_target(self.pos, AI.cell_target)
-                    else:
-                        AI.soldier_state = SoldierState.Null
-
+                # ####################################### DEFAULT SECTION
                 if AI.soldier_state == SoldierState.Null:
                     self.direction = self.get_soldier_first_move_to_discover()
-                    if AI.cell_target is not None:
-                        AI.soldier_state = SoldierState.CellTargetFound
                     print_with_debug(f'in soldier discover: pos = {self.pos}, direction = {self.direction}', f=AI.out_file)
 
         if AI.life_cycle > 1 and (not self.shot or self.value == VALUES["enemy_base"]):
@@ -691,18 +637,18 @@ class AI:
                                  "worker state", AI.worker_state,
                                  "soldier state", AI.soldier_state,
                                  "map value", self.value,
-                                 "enemy base pos", AI.map.enemy_base_pos,
-                                 "soldier target cell", AI.cell_target, f=AI.out_file)
+                                 "enemy base pos", AI.map.enemy_base_pos, f=AI.out_file)
             if AI.map is not None:
+                neighbors = {pos: n for pos, n in AI.map.nodes.items() if pos in get_view_distance_neighbors(self.pos, AI.w, AI.h, 4)}
                 self.encoded_neighbors = encode_graph_nodes(self.pos,
-                                                        {pos: n for pos, n in AI.map.nodes.items() if pos in get_view_distance_neighbors(self.pos, AI.w, AI.h, 4)},
+                                                        neighbors,
                                                         AI.w, AI.h,
                                                         self.game.viewDistance,
                                                         AI.id, self.direction,
                                                         self.shot,
                                                         AI.map.enemy_base_pos)
                 self.message = self.encoded_neighbors
-        elif AI.life_cycle > 1 and self.shot and (AI.soldier_state == SoldierState.Null or AI.soldier_state == SoldierState.CellTargetFound):
+        elif AI.life_cycle > 1 and self.shot and AI.soldier_state == SoldierState.Null:
             possible_cells = get_view_distance_neighbors(AI.latest_pos[AI.id][0], AI.w,
                                                          AI.h, 6, exact=True)
             possible_cells = [p for p in possible_cells if
@@ -722,8 +668,7 @@ class AI:
                          "worker state", AI.worker_state,
                          "soldier state", AI.soldier_state,
                          "dir", Direction.get_string(self.direction),
-                         "map value", self.value,
-                         "enemy base pos", AI.map.enemy_base_pos, f=AI.out_file)
+                         "map value", self.value, f=AI.out_file, debug=False)
 
         AI.latest_pos[AI.id] = (self.pos, AI.game_round)
         AI.game_round += 1
@@ -857,7 +802,6 @@ class AI:
         hp = self.game.ant.health
         neighbors = get_view_distance_neighbors(AI.latest_pos[AI.id][0], AI.w, AI.h,
                                                 self.game.ant.viewDistance)
-        es = sum([AI.map.nodes[v].enemy_soldiers for v in neighbors])
         cond = (hp == AI.prev_hp - BASE_DMG and AI.prev_es == 0) or \
                (hp == AI.prev_hp - BASE_DMG - SOLDIER_DMG and AI.prev_es == 1) or \
                (hp == AI.prev_hp - BASE_DMG - 2 * SOLDIER_DMG and AI.prev_es == 2)
@@ -865,6 +809,7 @@ class AI:
         if cond:
             print_with_debug("YESSSSS I GOT SHOTTTTTTTTTT", f=AI.out_file)
             self.shot = True
+            AI.soldier_state = SoldierState.HasBeenShot
 
     def find_possible_base_cells(self):
         for target in AI.soldier_targets:
@@ -913,12 +858,11 @@ class AI:
         #     AI.cell_target = None
 
         for m in possible_msgs:
-            # TODO use this info
             ant_id, pos, prev_pos, possible_cells = decode_possible_cells(m, AI.w, AI.h)
             AI.possible_base_cells = list(set(AI.possible_base_cells).
                                           intersection(possible_cells))
-            if (prev_pos, pos) not in AI.near_base_cell_targets:
-                AI.near_base_cell_targets.append((prev_pos, pos))
+            if (prev_pos, pos) not in AI.near_base_safe_cells:
+                AI.near_base_safe_cells.append((prev_pos, pos))
 
         # if AI.near_base_targets:
         #     AI.near_base_targets.sort()
@@ -1012,11 +956,167 @@ class AI:
     #         print_with_debug("something went wrong, init ants move :", m, "from id:", AI.id, f=AI.out_file)
     #         return Direction.get_random_direction()
 
+    @time_measure
     def get_first_move_to_target(self, src, dest, unsafe_cells=None):
         print_with_debug(src, dest, f=AI.out_file)
-        print_with_debug(AI.map.get_path(AI.map.nodes[src], AI.map.nodes[dest]), f=AI.out_file)
+        print_with_debug(AI.map.get_path_with_non_discovered(AI.map.nodes[src], AI.map.nodes[dest], unsafe_cells), f=AI.out_file)
         return Direction.get_value(
             AI.map.step(
                 src, AI.map.get_path_with_non_discovered(AI.map.nodes[src], AI.map.nodes[dest], unsafe_cells)[0].pos
             )
         )
+
+    @time_measure
+    def handle_base(self):
+        if AI.map.enemy_base_pos is not None and AI.soldier_state != SoldierState.BK_GoingNearEnemyBase:
+            AI.soldier_state = SoldierState.BK_GoingNearEnemyBase
+            near_base_cells = get_view_distance_neighbors(
+                AI.map.enemy_base_pos, AI.w, AI.h, BASE_RANGE + 1, exact=True)
+            # TODO manhattan dist or bfs?
+            distances = [manhattan_dist(self.pos, p, AI.w, AI.h) for p in
+                         near_base_cells]
+            candidates_idx = sorted(enumerate(distances), key=lambda x: x[1])[
+                             :4]
+            AI.chosen_near_base_cell_BK = near_base_cells[
+                random.choice(candidates_idx)[0]]
+            print_with_debug("BASE WAS FOUND STATE",
+                             "pos", self.pos,
+                             "near base cells", near_base_cells,
+                             "distances", distances,
+                             "chosen cell BK", AI.chosen_near_base_cell_BK,
+                             f=AI.out_file)
+    
+        # going to the chosen cell near enemy base
+        if AI.soldier_state == SoldierState.BK_GoingNearEnemyBase:
+            if self.pos == AI.chosen_near_base_cell_BK:
+                AI.soldier_state = SoldierState.BK_StayingNearBase
+                AI.chosen_near_base_cell_BK = None
+                print_with_debug("BK GOING NEAR ENEMY BASE STATE",
+                                 "REACHED DEST",
+                                 "pos", self.pos,
+                                 "chosen cell BK",
+                                 AI.chosen_near_base_cell_BK,
+                                 f=AI.out_file)
+            else:
+                self.direction = self.get_first_move_to_target(self.pos,
+                                                               AI.chosen_near_base_cell_BK)
+                print_with_debug("BK GOING NEAR ENEMY BASE STATE",
+                                 "pos", self.pos,
+                                 "chosen cell BK",
+                                 AI.chosen_near_base_cell_BK,
+                                 f=AI.out_file)
+    
+        if AI.soldier_state == SoldierState.BK_StayingNearBase:
+            # TODO decide to either stay or attack
+            # ATTACK
+            self.direction = Direction.CENTER.value
+            ally_s = len(
+                [a for a in self.game.ant.getMapRelativeCell(0, 0).ants if
+                 a.antType == AntType.SARBAAZ.value and a.antTeam == AntTeam.ALLIED.value])
+            print_with_debug("BK STAYING NEAR BASE STATE",
+                             "pos", self.pos,
+                             "allies", ally_s,
+                             f=AI.out_file)
+            # TODO add other attacking conditions
+            if ally_s >= ALLIES_REQUIRED_TO_ATTACK:
+                AI.soldier_state = SoldierState.AttackingBase
+
+    @time_measure
+    def handle_shot(self):
+        if AI.soldier_state == SoldierState.HasBeenShot:
+            # GOING FORWARD ONE CELL WHEN SHOT
+            self.direction = Direction.get_value(
+                AI.map.step(AI.latest_pos[AI.id][0], self.pos))
+            if AI.latest_pos[AI.id][0] == self.pos:
+                self.direction = Direction.get_random_direction()
+            print_with_debug("GOT SHOT STATE",
+                             "prev pos", AI.latest_pos[AI.id][0],
+                             "pos", self.pos,
+                             "dir", self.direction,
+                             f=AI.out_file)
+    
+        if AI.soldier_state == SoldierState.Null and AI.near_base_safe_cells:
+            AI.soldier_state = SoldierState.BU_GoingNearEnemyBase
+            # TODO manhattan dist or bfs?
+            distances = [manhattan_dist(self.pos, p[0], AI.w, AI.h) for p in
+                         AI.near_base_safe_cells]
+            candidates_idx = sorted(enumerate(distances), key=lambda x: x[1])[
+                             :4]
+            AI.chosen_near_base_cell_BU = AI.near_base_safe_cells[
+                random.choice(candidates_idx)[0]]
+            print_with_debug("FOUND SHOT MSG STATE",
+                             "pos", self.pos,
+                             "near base cells", AI.near_base_safe_cells,
+                             "distances", distances,
+                             "chosen cell BU",
+                             AI.chosen_near_base_cell_BU,
+                             f=AI.out_file)
+    
+        if AI.soldier_state == SoldierState.BU_GoingNearEnemyBase:
+            if self.pos == AI.chosen_near_base_cell_BU[0]:
+                AI.soldier_state = SoldierState.BU_StayingNearBase
+                print_with_debug("BU GOING NEAR ENEMY BASE STATE",
+                                 "REACHED DEST",
+                                 "pos", self.pos,
+                                 "chosen cell BU",
+                                 AI.chosen_near_base_cell_BU,
+                                 f=AI.out_file)
+            else:
+                self.direction = self.get_first_move_to_target(self.pos,
+                                                               AI.chosen_near_base_cell_BU[
+                                                                   0])
+                print_with_debug("BU GOING NEAR ENEMY BASE STATE",
+                                 "pos", self.pos,
+                                 "dir", self.direction,
+                                 "chosen cell BU",
+                                 AI.chosen_near_base_cell_BU,
+                                 f=AI.out_file)
+    
+        if AI.soldier_state == SoldierState.BU_StayingNearBase:
+            # TODO decide to either stay or attack
+            # ATTACK
+            self.direction = Direction.CENTER.value
+            ally_s = len(
+                [a for a in self.game.ant.getMapRelativeCell(0, 0).ants if
+                 a.antType == AntType.SARBAAZ.value and a.antTeam == AntTeam.ALLIED.value])
+            print_with_debug("BU STAYING NEAR BASE STATE",
+                             "pos", self.pos,
+                             "allies", ally_s,
+                             f=AI.out_file)
+            # TODO add other attacking conditions
+            if ally_s >= ALLIES_REQUIRED_TO_ATTACK:
+                AI.soldier_state = SoldierState.AttackingBase
+    
+        if AI.soldier_state == SoldierState.AttackingBase:
+            if AI.map.enemy_base_pos is not None:
+                if self.pos == AI.map.enemy_base_pos:
+                    self.direction = Direction.CENTER.value
+                else:
+                    self.direction = self.get_first_move_to_target(self.pos,
+                                                                   AI.map.enemy_base_pos)
+                print_with_debug("ATT BASE FOUND",
+                                 "pos", self.pos,
+                                 "target", AI.map.enemy_base_pos,
+                                 "dir", self.direction,
+                                 f=AI.out_file)
+            else:
+                self.direction = solve_bt(AI.map, self.pos, max_distance=7)
+                print_with_debug("ATT BASE NOT FOUND",
+                                 "dir from bt",
+                                 "pos", self.pos,
+                                 "dir", self.direction,
+                                 f=AI.out_file)
+                if self.direction == Direction.CENTER.value:
+                    print_with_debug("CENTER VALUE FROM BT", f=AI.out_file)
+                    # TODO go in the dir of prev -> pos
+                    if self.pos == AI.chosen_near_base_cell_BU[0]:
+                        AI.shot_default_dir = Direction.get_value(
+                            AI.map.step(self.pos,
+                                        AI.chosen_near_base_cell_BU[1]))
+                    self.direction = AI.shot_default_dir
+                    print_with_debug("ATT BASE NOT FOUND",
+                                     "dir from logic",
+                                     "pos", self.pos,
+                                     "dir", self.direction,
+                                     "default dir", AI.shot_default_dir,
+                                     f=AI.out_file)

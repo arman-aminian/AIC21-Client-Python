@@ -24,16 +24,13 @@ class BT:
         if delay > 0.08:
             return
         now = len(self.visited)
-        # print(cur, dist, now)
         if not self.best or now > self.best:
-            # print(self.path)
             self.best_path = self.path.copy()
             self.best = now
         if dist == self.max_distance:
             return
 
         neighbors = self.graph.get_neighbors_with_not_discovered_nodes(cur)
-        # print(neighbors)
         for next_node in neighbors:
             vis = set(get_view_distance_neighbors(next_node, self.graph.dim[0],
                                                   self.graph.dim[1], 4))
@@ -47,10 +44,7 @@ class BT:
 def solve_bt(graph, pos, max_distance=10, start=None):
     self = BT(graph, pos, max_distance, start)
     self.bt(pos, 0)
-    # print("best", self.best_path)
     self.best_path = [p for p in self.best_path if p != -1]
     if not self.best_path:
-        # print("FUCKED UP")
         return 0
-    # print(self.best_path)
     return Direction.get_value(self.graph.step(pos, self.best_path[0]))

@@ -13,13 +13,16 @@ class Node:
     GRASS_LIMIT = 10
     BREAD_LIMIT = 10
 
-    def __init__(self, pos, discovered, wall=False, bread=0, grass=0,
+    def __init__(self, pos, discovered, wall=False, swamp=False, trap=False,
+                 bread=0, grass=0,
                  ally_workers=0, ally_soldiers=0, enemy_workers=0,
                  enemy_soldiers=0):
         # REMEMBER to change the encode/decode function after adding attrs
         self.pos = pos
         self.discovered = discovered
         self.wall = wall
+        self.swamp = swamp
+        self.trap = trap
         self.bread = bread
         self.grass = grass
         self.ally_workers = ally_workers
@@ -75,14 +78,13 @@ class Graph:
                     )
 
     def step(self, src, dest):
-        next_pos = dest
-        if next_pos[0] - src[0] in [1, -(self.dim[0] - 1)]:
+        if dest[0] - src[0] in [1, -(self.dim[0] - 1)]:
             return "RIGHT"
-        if next_pos[0] - src[0] in [-1, self.dim[0] - 1]:
+        if dest[0] - src[0] in [-1, self.dim[0] - 1]:
             return "LEFT"
-        if next_pos[1] - src[1] in [-1, self.dim[1] - 1]:
+        if dest[1] - src[1] in [-1, self.dim[1] - 1]:
             return "UP"
-        if next_pos[1] - src[1] in [1, -(self.dim[1] - 1)]:
+        if dest[1] - src[1] in [1, -(self.dim[1] - 1)]:
             return "DOWN"
 
     def total_grass_number(self):

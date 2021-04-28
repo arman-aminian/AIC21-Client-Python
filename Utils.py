@@ -49,7 +49,7 @@ VALUES = {
     "bg_sub": 200,
     "none": 100,
 }
-ALLIES_REQUIRED_TO_ATTACK = 3
+ALLIES_REQUIRED_TO_ATTACK = 2
 
 
 def reverse_list(lst):
@@ -172,25 +172,35 @@ def print_map(input_map, pos, f=None):
         for i in range(input_map.dim[0]):
             if (i, j) == input_map.base_pos:
                 if f is not None:
-                    print('B', end=' ', file=f)
+                    print('B', end='', file=f)
                 else:
-                    print('B', end=' ')
+                    print('B', end='')
             elif (i, j) == pos:
                 if f is not None:
-                    print('P', end=' ', file=f)
+                    print('P', end='', file=f)
                 else:
-                    print('P', end=' ')
+                    print('P', end='')
             elif input_map.nodes[(i, j)].wall:
                 if f is not None:
-                    print('W', end=" ", file=f)
+                    print('W', end="", file=f)
                 else:
-                    print('W', end=" ", file=f)
+                    print('W', end="", file=f)
+            elif input_map.nodes[(i, j)].swamp:
+                if f is not None:
+                    print('S', end="", file=f)
+                else:
+                    print('S', end="", file=f)
+            elif input_map.nodes[(i, j)].trap:
+                if f is not None:
+                    print('T', end="", file=f)
+                else:
+                    print('T', end="", file=f)
             else:
                 if f is not None:
-                    print('N' if not input_map.nodes[(i, j)].discovered else 'D', end=' ', file=f)
+                    print('N' if not input_map.nodes[(i, j)].discovered else 'D', end='', file=f)
                 else:
-                    print('N' if not input_map.nodes[(i, j)].discovered else 'D', end=' ')
+                    print('N' if not input_map.nodes[(i, j)].discovered else 'D', end='')
         if f is not None:
-            print(' ', file=f)
+            print('', file=f)
         else:
             print()
