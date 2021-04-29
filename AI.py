@@ -1136,18 +1136,18 @@ class AI:
         grass_number = 0
         AI.map.bfs(AI.map.nodes[self.pos])
         distance_to_base = AI.map.bfs_info['dist'][AI.map.base_pos]
-        
+        reachable_resource = AI.map.get_reachable_resource_from_base()
         if distance_to_base < MIN_DIST_SUPPORT:
             return self.discover_wrapper()
 
         for d in self.visible_bread:
             num, pos = d["number"], d["pos"]
-            if AI.map.bfs_info['dist'].get(pos) is not None:
+            if AI.map.bfs_info['dist'].get(pos) is not None and pos in reachable_resource:
                 bread_number += num
 
         for d in self.visible_grass:
             num, pos = d["number"], d["pos"]
-            if AI.map.bfs_info['dist'].get(pos) is not None:
+            if AI.map.bfs_info['dist'].get(pos) is not None and pos in reachable_resource:
                 grass_number += num
 
         if self.get_value(bread_number, grass_number, distance_to_base) > VALUE_TO_SUPPORT:
