@@ -1165,7 +1165,7 @@ class AI:
     def remove_occupied_from_candidates(self, candidates_idx):
         print("CANDIDATES ARE", candidates_idx)
         temp = candidates_idx.copy()
-        for pos in [p[0] for p in AI.latest_pos.keys()]:
+        for pos in [p[0] for p in AI.latest_pos.values()]:
             if pos not in candidates_idx:
                 temp.append(pos)
             else:
