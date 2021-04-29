@@ -181,7 +181,7 @@ class AI:
                 msg.text and msg.turn == AI.game_round - 1]
         if AI.life_cycle == 1:
             if AI.born_game_round > MAX_MESSAGES_INIT:
-                maps = [msg for msg in self.game.chatBox.allChats[-MAX_MESSAGES_INIT*MAX_MESSAGES_PER_TURN:] if '!' in
+                maps = [msg for msg in self.game.chatBox.allChats[-MAX_MESSAGES_INIT * MAX_MESSAGES_PER_TURN:] if '!' in
                         msg.text]
             else:
                 maps = [msg for msg in self.game.chatBox.allChats if '!' in
@@ -501,7 +501,8 @@ class AI:
             print_with_debug("bread_dir:", bread_dir, f=AI.out_file)
             print_with_debug("bread_dis:", bread_dis, f=AI.out_file)
             if ((grass_dis <= bread_dis and AI.id != BREAD_PRIORITY_ID)
-                or ((AI.id == GRASS_PRIORITY_ID1 or AI.id == GRASS_PRIORITY_ID2) and grass_dis - PRIORITY_GAP <= bread_dis)
+                or ((
+                            AI.id == GRASS_PRIORITY_ID1 or AI.id == GRASS_PRIORITY_ID2) and grass_dis - PRIORITY_GAP <= bread_dis)
                 or (AI.id == BREAD_PRIORITY_ID and grass_dis + PRIORITY_GAP < bread_dis)) \
                     and grass_dis != math.inf:
                 m = grass_dir
@@ -518,6 +519,7 @@ class AI:
                 own_map.nodes[p] = AI.map
         else:
             own_map = AI.map
+
         print_with_debug("total bread num:", own_map.total_bread_number(), f=AI.out_file)
         print_with_debug("total grass num:", own_map.total_grass_number(), f=AI.out_file)
         if res_type == ResourceType.BREAD.value:
@@ -533,8 +535,8 @@ class AI:
         else:
             return None
 
-#     # @time_measure
-#     @handle_exception
+    #     # @time_measure
+    #     @handle_exception
     def turn(self) -> (str, int, int):
         if AI.debug and AI.life_cycle > 2 and (AI.ids and (AI.id in AI.ids[0] or AI.id in AI.ids[1])):
             t = "soldier" if self.game.ant.antType == AntType.SARBAAZ.value else "worker"
@@ -558,7 +560,8 @@ class AI:
                 print_with_debug("worker has >= (max carrying resources amount / 2) => back to base with bfs",
                                  f=AI.out_file)
 
-                dir = AI.map.get_first_move_to_base(AI.map.nodes[self.pos], get_number_of_object(self.game.ant.currentResource))
+                dir = AI.map.get_first_move_to_base(AI.map.nodes[self.pos],
+                                                    get_number_of_object(self.game.ant.currentResource))
                 if dir is None:
                     self.direction = Direction.CENTER.value
                 else:
@@ -570,7 +573,8 @@ class AI:
                 if self.pos == AI.map.base_pos:
                     self.direction = Direction.CENTER.value
                 else:
-                    dir = AI.map.get_first_move_to_base(AI.map.nodes[self.pos], get_number_of_object(self.game.ant.currentResource))
+                    dir = AI.map.get_first_move_to_base(AI.map.nodes[self.pos],
+                                                        get_number_of_object(self.game.ant.currentResource))
                     if dir is None:
                         self.direction = Direction.CENTER.value
                     else:
@@ -604,7 +608,7 @@ class AI:
             else:
                 if AI.born_game_round < 50:
                     AI.soldier_state = SoldierState.Explorer_Supporter
-                
+
                 self.handle_base()
                 self.handle_shot()
 
@@ -639,7 +643,7 @@ class AI:
         if self.message is not None and len(self.message) > 32:
             self.message = ""
             self.value = -100000
-        
+
         if self.direction is None:
             self.direction = self.random_valid_dir()
             if self.direction is None or self.direction == Direction.CENTER.value:
