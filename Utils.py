@@ -171,8 +171,8 @@ def handle_exception(fn):
         try:
             res = fn(*args, **kwargs)
         except Exception as e:
-            # print('ERROR ERROR ERROR')
-            # print(e)
+            print_with_debug('ERROR ERROR ERROR')
+            print_with_debug(e)
             res = '', -50000, Model.Direction.get_random_direction()
             # todo: Raise Error
             # raise

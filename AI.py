@@ -645,22 +645,22 @@ class AI:
 
         self.send_msg()
 
-        print_with_debug("turn", AI.game_round, "id", AI.id, "pos", self.pos,
-                         "worker state", AI.worker_state,
-                         "soldier state", AI.soldier_state,
-                         "dir", Direction.get_string(self.direction),
-                         "map value", self.value, f=AI.out_file)
-
         self.end_round()
 
         if self.message is not None and len(self.message) > 32:
             self.message = ""
             self.value = -100000
 
-        # if self.direction is None:
-        #     self.direction = self.random_valid_dir()
-        #     if self.direction is None or self.direction == Direction.CENTER.value:
-        #         self.direction = Direction.get_random_direction()
+        if self.direction is None:
+            self.direction = self.random_valid_dir()
+            if self.direction is None or self.direction == Direction.CENTER.value:
+                self.direction = Direction.get_random_direction()
+
+        print_with_debug("turn", AI.game_round, "id", AI.id, "pos", self.pos,
+                         "worker state", AI.worker_state,
+                         "soldier state", AI.soldier_state,
+                         "dir", Direction.get_string(self.direction),
+                         "map value", self.value, f=AI.out_file)
 
         return self.message, self.value, self.direction
 
