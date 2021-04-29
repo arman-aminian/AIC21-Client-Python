@@ -758,7 +758,7 @@ class AI:
                                                             self.shot,
                                                             AI.map.enemy_base_pos)
                 self.message = self.encoded_neighbors
-        elif AI.life_cycle > 1 and self.shot and AI.soldier_state == SoldierState.Null:
+        elif AI.life_cycle > 1 and self.shot and self.game.ant.antType == AntType.SARBAAZ.value and AI.soldier_state == SoldierState.Null:
             possible_cells = get_view_distance_neighbors(AI.latest_pos[AI.id][0], AI.w,
                                                          AI.h, 6, exact=True)
             possible_cells = [p for p in possible_cells if
@@ -875,19 +875,6 @@ class AI:
 
         return scores
 
-    # first version
-    # def total_non_discovered_points(self, src, dest):
-    #     paths = shortest_path(src, dest, AI.w, AI.h)
-    #     num_discovered = [0] * len(paths)
-    #     for i, path in enumerate(paths):
-    #         temp_map = copy.deepcopy(AI.map)
-    #         for pos in path:
-    #             new_positions = get_view_distance_neighbors(pos, AI.w, AI.h, self.game.ant.viewDistance)
-    #             n = sum([p for p in new_positions if not temp_map[p].discovered])
-    #             num_discovered[i] += n
-    #             for p in new_positions:
-    #                 temp_map[p].discovered = True
-
     def determine_soldier_state(self):
         if AI.life_cycle < 5:
             AI.soldier_state = SoldierState.FirstFewRounds
@@ -992,9 +979,9 @@ class AI:
             # TODO manhattan dist or bfs?
             distances = [manhattan_dist(self.pos, p, AI.w, AI.h) for p in
                          near_base_cells]
-            candidates_idx = sorted(enumerate(distances), key=lambda x: x[1])[:4]
-            AI.chosen_near_base_cell_BK = near_base_cells[
-                random.choice(candidates_idx)[0]]
+            candidates_idx = sorted(enumerate(distances), key=lambda x: x[1])[:5]
+            candidates_idx = self.remove_occupied_from_candidates(candidates_idx)
+            AI.chosen_near_base_cell_BK = near_base_cells[random.choice(candidates_idx)[0]]
             print_with_debug("BASE WAS FOUND STATE",
                              "pos", self.pos,
                              "near base cells", near_base_cells,
@@ -1056,10 +1043,9 @@ class AI:
             # TODO manhattan dist or bfs?
             distances = [manhattan_dist(self.pos, p[0], AI.w, AI.h) for p in
                          AI.near_base_safe_cells]
-            candidates_idx = sorted(enumerate(distances), key=lambda x: x[1])[
-                             :4]
-            AI.chosen_near_base_cell_BU = AI.near_base_safe_cells[
-                random.choice(candidates_idx)[0]]
+            candidates_idx = sorted(enumerate(distances), key=lambda x: x[1])[:5]
+            candidates_idx = self.remove_occupied_from_candidates(candidates_idx)
+            AI.chosen_near_base_cell_BU = AI.near_base_safe_cells[random.choice(candidates_idx)[0]]
             print_with_debug("FOUND SHOT MSG STATE",
                              "pos", self.pos,
                              "near base cells", AI.near_base_safe_cells,
@@ -1175,3 +1161,13 @@ class AI:
                 return self.get_soldier_first_move_to_discover()
             else:
                 return self.get_first_move_to_target(self.pos, AI.exploration_target)
+
+    def remove_occupied_from_candidates(self, candidates_idx):
+        print("CANDIDATES ARE", candidates_idx)
+        temp = candidates_idx.copy()
+        for pos in [p[0] for p in AI.latest_pos.keys()]:
+            if pos not in candidates_idx:
+                temp.append(pos)
+            else:
+                print("HAHA ALREADY OCCUPIED", pos)
+        return temp
