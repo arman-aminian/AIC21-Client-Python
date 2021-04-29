@@ -46,6 +46,7 @@ class AI:
     first_id = -1
     exploration_target = None
     sup_cells = []
+    attack_random_target = None
 
     def __init__(self):
         # Current Game State
@@ -558,20 +559,18 @@ class AI:
         else:
             return None
 
-    @handle_exception
+    # @handle_exception
     # @time_measure
     def turn(self) -> (str, int, int):
         if AI.debug and AI.life_cycle > 2 and (AI.ids and (AI.id in AI.ids[0] or AI.id in AI.ids[1])):
             t = "soldier" if self.game.ant.antType == AntType.SARBAAZ.value else "worker"
-            AI.out_file = open(AI.output_path + t + '_' + str(AI.born_game_round) + '_' + str(AI.first_id) + ".txt",
-                               "a+")
+            AI.out_file = open(AI.output_path + t + '_' + str(AI.born_game_round) + '_' + str(AI.first_id) + ".txt", "a+")
 
         self.round_initialization()
 
         if AI.game_round == 1:
             AI.worker_state = WorkerState.InitExploring if self.game.ant.antType == AntType.KARGAR.value else WorkerState.Null
             self.direction = self.get_new_ant_collect_move()
-
 
         # *************************************************************************************************************************
         # ########################################################KAARGAAAR########################################################
@@ -629,17 +628,37 @@ class AI:
             if AI.life_cycle == 1:
                 self.direction = self.random_valid_dir()
             else:
-                if AI.born_game_round < EXPLORER_SUPPORT_MIN_ROUND:
+                if AI.born_game_round < EXPLORER_SUPPORT_MAX_ROUND:
                     AI.soldier_state = SoldierState.Explorer_Supporter
-
-                self.handle_base()
-                self.handle_shot()
+                elif EXPLORER_SUPPORT_MAX_ROUND <= AI.born_game_round < ATTACKING_SOLDIERS_ROUND:
+                    AI.exploration_target = None if AI.soldier_state != SoldierState.Null else AI.exploration_target
+                    AI.soldier_state = SoldierState.Null
+                
+                if AI.game_round > ATTACKING_SOLDIERS_ROUND:
+                    AI.soldier_state = SoldierState.AllInAttack
 
                 if AI.soldier_state == SoldierState.Explorer_Supporter:
-                    # TODO fill this
                     self.direction = self.get_first_move_to_go()
+                elif AI.soldier_state == SoldierState.AllInAttack:
+                    if AI.map.enemy_base_pos is not None:
+                        self.direction = self.get_first_move_to_target(self.pos, AI.map.enemy_base_pos)
+                    elif AI.possible_base_cells:
+                        if AI.attack_random_target is None:
+                            AI.attack_random_target = random.choice(AI.possible_base_cells)
+                        if self.pos == AI.attack_random_target:
+                            AI.attack_random_target = random.choice(AI.possible_base_cells)
+                        self.direction = self.get_first_move_to_target(self.pos, AI.attack_random_target)
+                    else:
+                        AI.exploration_target = None if AI.soldier_state != SoldierState.Null else AI.exploration_target
+                        AI.soldier_state = SoldierState.Null
+                else:
+                    AI.exploration_target = None if AI.soldier_state != SoldierState.Null else AI.exploration_target
+                    AI.soldier_state = SoldierState.Null
+                # else:
+                #     self.handle_base()
+                #     self.handle_shot()
 
-                # ####################################### DEFAULT SECTION
+                # ############### DEFAULT SECTION ###############
                 if AI.soldier_state == SoldierState.Null:
                     self.direction = self.discover_wrapper()
 
@@ -902,11 +921,6 @@ class AI:
 
         return scores
 
-    def determine_soldier_state(self):
-        if AI.life_cycle < 5:
-            AI.soldier_state = SoldierState.FirstFewRounds
-            AI.soldier_init_random_dir = Direction.get_random_direction()
-
     # @time_measure
     def check_for_base(self):
         hp = self.game.ant.health
@@ -920,7 +934,8 @@ class AI:
         if cond:
             print_with_debug("YESSSSS I GOT SHOTTTTTTTTTT", f=AI.out_file)
             self.shot = True
-            AI.soldier_state = SoldierState.HasBeenShot
+            if AI.soldier_state == SoldierState.Null or AI.soldier_state == SoldierState.Explorer_Supporter:
+                AI.soldier_state = SoldierState.HasBeenShot
 
     def find_possible_base_cells(self):
         for target in AI.soldier_targets:
@@ -1051,9 +1066,7 @@ class AI:
     # @time_measure
     def handle_shot(self):
         if AI.soldier_state == SoldierState.HasBeenShot:
-            # GOING FORWARD ONE CELL WHEN SHOT
-            self.direction = Direction.get_value(
-                AI.map.step(AI.latest_pos[AI.id][0], self.pos))
+            self.direction = Direction.get_value(AI.map.step(AI.latest_pos[AI.id][0], self.pos))
             if AI.latest_pos[AI.id][0] == self.pos:
                 self.direction = Direction.get_random_direction()
             print_with_debug("GOT SHOT STATE",
@@ -1088,9 +1101,7 @@ class AI:
                                  AI.chosen_near_base_cell_BU,
                                  f=AI.out_file)
             else:
-                self.direction = self.get_first_move_to_target(self.pos,
-                                                               AI.chosen_near_base_cell_BU[
-                                                                   0])
+                self.direction = self.get_first_move_to_target(self.pos, AI.chosen_near_base_cell_BU[0])
                 print_with_debug("BU GOING NEAR ENEMY BASE STATE",
                                  "pos", self.pos,
                                  "dir", self.direction,
@@ -1099,11 +1110,8 @@ class AI:
                                  f=AI.out_file)
 
         if AI.soldier_state == SoldierState.BU_StayingNearBase:
-            # TODO decide to either stay or attack
-            # ATTACK
             self.direction = Direction.CENTER.value
-            ally_s = len(
-                [a for a in self.game.ant.getMapRelativeCell(0, 0).ants if
+            ally_s = len([a for a in self.game.ant.getMapRelativeCell(0, 0).ants if
                  a.antType == AntType.SARBAAZ.value and a.antTeam == AntTeam.ALLIED.value])
             print_with_debug("BU STAYING NEAR BASE STATE",
                              "pos", self.pos,
@@ -1111,6 +1119,11 @@ class AI:
                              f=AI.out_file)
             # TODO add other attacking conditions
             if ally_s >= ALLIES_REQUIRED_TO_ATTACK:
+                if AI.possible_base_cells:
+                    AI.attack_random_target = random.choice(AI.possible_base_cells)
+                else:
+                    # TODO what to do?
+                    pass
                 AI.soldier_state = SoldierState.AttackingBase
 
         if AI.soldier_state == SoldierState.AttackingBase:
@@ -1118,34 +1131,26 @@ class AI:
                 if self.pos == AI.map.enemy_base_pos:
                     self.direction = Direction.CENTER.value
                 else:
-                    self.direction = self.get_first_move_to_target(self.pos,
-                                                                   AI.map.enemy_base_pos)
+                    self.direction = self.get_first_move_to_target(self.pos, AI.map.enemy_base_pos)
                 print_with_debug("ATT BASE FOUND",
                                  "pos", self.pos,
                                  "target", AI.map.enemy_base_pos,
                                  "dir", self.direction,
                                  f=AI.out_file)
             else:
-                self.direction = solve_bt(AI.map, self.pos, max_distance=7)
-                print_with_debug("ATT BASE NOT FOUND",
-                                 "dir from bt",
-                                 "pos", self.pos,
-                                 "dir", self.direction,
-                                 f=AI.out_file)
-                if self.direction == Direction.CENTER.value:
-                    print_with_debug("CENTER VALUE FROM BT", f=AI.out_file)
-                    # TODO go in the dir of prev -> pos
-                    if self.pos == AI.chosen_near_base_cell_BU[0]:
-                        AI.shot_default_dir = Direction.get_value(
-                            AI.map.step(self.pos,
-                                        AI.chosen_near_base_cell_BU[1]))
-                    self.direction = AI.shot_default_dir
+                if AI.attack_random_target is not None:
+                    if self.pos != AI.attack_random_target:
+                        self.direction = self.get_first_move_to_target(self.pos, AI.attack_random_target)
+                    else:
+                        self.direction = Direction.CENTER.value
                     print_with_debug("ATT BASE NOT FOUND",
-                                     "dir from logic",
+                                     "dir from random",
                                      "pos", self.pos,
+                                     "random target", AI.attack_random_target,
                                      "dir", self.direction,
-                                     "default dir", AI.shot_default_dir,
                                      f=AI.out_file)
+                else:
+                    pass
 
     def get_first_move_to_go(self):
         bread_number = 0

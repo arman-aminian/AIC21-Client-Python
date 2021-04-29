@@ -14,12 +14,6 @@ class WorkerState(Enum):
 
 class SoldierState(Enum):
     Null = -1
-    FindingBase = 0
-    HelpingWorker = 1
-    PreparingForAttack = 2
-    Defending = 3
-    FirstFewRounds = 4
-    CellTargetFound = 5
     HasBeenShot = 6
     AttackingBase = 7
     WaitingForComrades = 8
@@ -28,3 +22,4 @@ class SoldierState(Enum):
     BK_StayingNearBase = 11
     BU_StayingNearBase = 12
     Explorer_Supporter = 13
+    AllInAttack = 14
