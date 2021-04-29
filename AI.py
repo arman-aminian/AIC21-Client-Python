@@ -1174,7 +1174,7 @@ class AI:
                 self.resource_count = bread_number + grass_number
             return Direction.CENTER.value
 
-        if AI.sup_cells and self.pos not in AI.sup_cells:
+        if AI.sup_cells and self.pos not in AI.sup_cells and AI.exploration_target is None:
             AI.exploration_target = AI.sup_cells[-1]
 
         return self.discover_wrapper()
