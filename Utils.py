@@ -3,7 +3,7 @@ import time
 import Model
 
 
-def print_with_debug(*args, f=None, debug=False):
+def print_with_debug(*args, f=None, debug=True):
     if debug:
         print(*args)
     if f is not None:

@@ -534,7 +534,7 @@ class AI:
             return None
 
 #     # @time_measure
-    @handle_exception
+#     @handle_exception
     def turn(self) -> (str, int, int):
         if AI.debug and AI.life_cycle > 2 and (AI.ids and (AI.id in AI.ids[0] or AI.id in AI.ids[1])):
             t = "soldier" if self.game.ant.antType == AntType.SARBAAZ.value else "worker"
@@ -769,27 +769,6 @@ class AI:
             self.direction = solve_bt(AI.map, self.pos, max_distance=5)
             AI.soldier_state = SoldierState.HasBeenShot
             self.value = VALUES["shot"]
-
-        print_with_debug("turn", AI.game_round, "id", AI.id, "pos", self.pos,
-                         "worker state", AI.worker_state,
-                         "soldier state", AI.soldier_state,
-                         "dir", Direction.get_string(self.direction),
-                         "map value", self.value, f=AI.out_file, debug=False)
-
-        AI.latest_pos[AI.id] = (self.pos, AI.game_round)
-        AI.game_round += 1
-        AI.life_cycle += 1
-        AI.prev_round_resource = self.game.ant.currentResource.value
-        AI.prev_hp = self.game.ant.health
-        AI.prev_es = sum([AI.map.nodes[v].enemy_soldiers for v in
-                          get_view_distance_neighbors(self.pos, AI.w, AI.h, self.game.ant.viewDistance)])
-        if not AI.shot_once and self.shot:
-            AI.shot_once = True
-
-        if self.message is not None and len(self.message) >= 32:
-            self.message = ""
-            self.value = -100000
-        return self.message, self.value, self.direction
 
     def determine_worker_state(self):
         # TODO discuss the logic and improve
