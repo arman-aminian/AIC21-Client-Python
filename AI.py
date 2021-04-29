@@ -649,7 +649,7 @@ class AI:
                          "worker state", AI.worker_state,
                          "soldier state", AI.soldier_state,
                          "dir", Direction.get_string(self.direction),
-                         "map value", self.value, f=AI.out_file, debug=True)
+                         "map value", self.value, f=AI.out_file)
 
         self.end_round()
 
@@ -1197,5 +1197,4 @@ class AI:
         for pos in [p[0] for p in AI.latest_pos.values()]:
             if pos not in candidates_idx:
                 temp.append(pos)
-            else:
         return temp
