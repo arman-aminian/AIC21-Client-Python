@@ -557,16 +557,8 @@ class AI:
                     and self.game.ant.currentResource.value >= (WORKER_MAX_CARRYING_RESOURCE_AMOUNT / 2):
                 print_with_debug("worker has >= (max carrying resources amount / 2) => back to base with bfs",
                                  f=AI.out_file)
-                dir, AI.last_name_of_object, dis = AI.map.get_resource_best_move(
-                    src_pos=self.pos,
-                    dest_pos=AI.map.base_pos,
-                    name_of_object='grass',
-                    limit=get_limit(
-                        bread_min=0,
-                        grass_min=0
-                    ),
-                    number_of_object=get_number_of_object(self.game.ant.currentResource),
-                )
+
+                dir = AI.map.get_first_move_to_base(AI.map.nodes[self.pos], get_number_of_object(self.game.ant.currentResource))
                 if dir is None:
                     self.direction = Direction.CENTER.value
                 else:
@@ -578,16 +570,7 @@ class AI:
                 if self.pos == AI.map.base_pos:
                     self.direction = Direction.CENTER.value
                 else:
-                    dir, AI.last_name_of_object, dis = AI.map.get_resource_best_move(
-                        src_pos=self.pos,
-                        dest_pos=AI.map.base_pos,
-                        name_of_object='grass',
-                        limit=get_limit(
-                            bread_min=0,
-                            grass_min=0
-                        ),
-                        number_of_object=get_number_of_object(self.game.ant.currentResource),
-                    )
+                    dir = AI.map.get_first_move_to_base(AI.map.nodes[self.pos], get_number_of_object(self.game.ant.currentResource))
                     if dir is None:
                         self.direction = Direction.CENTER.value
                     else:
