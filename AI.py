@@ -181,7 +181,7 @@ class AI:
                 msg.text and msg.turn == AI.game_round - 1]
         if AI.life_cycle == 1:
             if AI.born_game_round > MAX_MESSAGES_INIT:
-                maps = [msg for msg in self.game.chatBox.allChats[-MAX_MESSAGES_INIT*MAX_MESSAGES_PER_TURN:] if '!' in
+                maps = [msg for msg in self.game.chatBox.allChats[-MAX_MESSAGES_INIT * MAX_MESSAGES_PER_TURN:] if '!' in
                         msg.text]
             else:
                 maps = [msg for msg in self.game.chatBox.allChats if '!' in
@@ -367,7 +367,6 @@ class AI:
             grass_dis = math.inf
             bread_dir = None
             bread_dis = math.inf
-            print_with_debug("ANT isn't hold anything")
             if self.has_resource_in_map(ResourceType.GRASS.value,
                                         1,
                                         own_discovered_search) \
@@ -506,7 +505,8 @@ class AI:
             print_with_debug("bread_dir:", bread_dir, f=AI.out_file)
             print_with_debug("bread_dis:", bread_dis, f=AI.out_file)
             if ((grass_dis <= bread_dis and AI.id != BREAD_PRIORITY_ID)
-                or ((AI.id == GRASS_PRIORITY_ID1 or AI.id == GRASS_PRIORITY_ID2) and grass_dis - PRIORITY_GAP <= bread_dis)
+                or ((
+                            AI.id == GRASS_PRIORITY_ID1 or AI.id == GRASS_PRIORITY_ID2) and grass_dis - PRIORITY_GAP <= bread_dis)
                 or (AI.id == BREAD_PRIORITY_ID and grass_dis + PRIORITY_GAP < bread_dis)) \
                     and grass_dis != math.inf:
                 m = grass_dir
@@ -539,8 +539,8 @@ class AI:
         else:
             return None
 
-#     # @time_measure
-#     @handle_exception
+    #     @handle_exception
+    @time_measure
     def turn(self) -> (str, int, int):
         if AI.debug and AI.life_cycle > 2 and (AI.ids and (AI.id in AI.ids[0] or AI.id in AI.ids[1])):
             t = "soldier" if self.game.ant.antType == AntType.SARBAAZ.value else "worker"
@@ -612,7 +612,7 @@ class AI:
             else:
                 if AI.born_game_round < EXPLORER_SUPPORT_MIN_ROUND:
                     AI.soldier_state = SoldierState.Explorer_Supporter
-                
+
                 self.handle_base()
                 self.handle_shot()
 
@@ -631,12 +631,12 @@ class AI:
                          "worker state", AI.worker_state,
                          "soldier state", AI.soldier_state,
                          "dir", Direction.get_string(self.direction),
-                         "map value", self.value, f=AI.out_file, debug=False)
+                         "map value", self.value, f=AI.out_file)
 
         if self.message is not None and len(self.message) > 32:
             self.message = ""
             self.value = -100000
-        
+
         # if self.direction is None:
         #     self.direction = self.random_valid_dir()
         #     if self.direction is None or self.direction == Direction.CENTER.value:
@@ -739,8 +739,6 @@ class AI:
 
     # @time_measure
     def send_msg(self):
-        now = time.time()
-
         if AI.life_cycle > 1 and (not self.shot or self.value == VALUES["enemy_base"]):
             if self.direction is None:
                 print_with_debug("turn", AI.game_round, "id", AI.id, "pos", self.pos,
