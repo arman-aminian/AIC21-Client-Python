@@ -558,8 +558,8 @@ class AI:
         else:
             return None
 
-    #     @handle_exception
-    @time_measure
+    @handle_exception
+    # @time_measure
     def turn(self) -> (str, int, int):
         if AI.debug and AI.life_cycle > 2 and (AI.ids and (AI.id in AI.ids[0] or AI.id in AI.ids[1])):
             t = "soldier" if self.game.ant.antType == AntType.SARBAAZ.value else "worker"
@@ -625,7 +625,7 @@ class AI:
         # ########################################################SAARBAAAZ########################################################
         # *************************************************************************************************************************
         elif self.game.ant.antType == AntType.SARBAAZ.value:
-            print_map(AI.map, self.pos, f=AI.out_file)
+            # print_map(AI.map, self.pos, f=AI.out_file)
             if AI.life_cycle == 1:
                 self.direction = self.random_valid_dir()
             else:
@@ -657,10 +657,10 @@ class AI:
             self.message = ""
             self.value = -100000
 
-        # if self.direction is None:
-        #     self.direction = self.random_valid_dir()
-        #     if self.direction is None or self.direction == Direction.CENTER.value:
-        #         self.direction = Direction.get_random_direction()
+        if self.direction is None:
+            self.direction = self.random_valid_dir()
+            if self.direction is None or self.direction == Direction.CENTER.value:
+                self.direction = Direction.get_random_direction()
 
         return self.message, self.value, self.direction
 
@@ -956,11 +956,11 @@ class AI:
     def check_for_possible_base_cells(self):
         possible_msgs = [msg.text for msg in
                          self.game.chatBox.allChats[-MAX_MESSAGES_PER_TURN:] if
-                         msg.text.startswith("s") and
+                         msg.text.startswith("s") and not msg.text.startswith("sc") and
                          msg.turn == AI.game_round - 1]
         if AI.life_cycle == 1:
             possible_msgs = [msg.text for msg in self.game.chatBox.allChats if
-                             msg.text.startswith("s")]
+                             msg.text.startswith("s") and not msg.text.startswith("sc")]
 
         for m in possible_msgs:
             print_with_debug("possible msg:", m)
@@ -1004,7 +1004,7 @@ class AI:
             distances = [manhattan_dist(self.pos, p, AI.w, AI.h) for p in
                          near_base_cells]
             candidates_idx = sorted(enumerate(distances), key=lambda x: x[1])[:5]
-            candidates_idx = self.remove_occupied_from_candidates(candidates_idx)
+            # candidates_idx = self.remove_occupied_from_candidates(candidates_idx)
             AI.chosen_near_base_cell_BK = near_base_cells[random.choice(candidates_idx)[0]]
             print_with_debug("BASE WAS FOUND STATE",
                              "pos", self.pos,
@@ -1068,7 +1068,7 @@ class AI:
             distances = [manhattan_dist(self.pos, p[0], AI.w, AI.h) for p in
                          AI.near_base_safe_cells]
             candidates_idx = sorted(enumerate(distances), key=lambda x: x[1])[:5]
-            candidates_idx = self.remove_occupied_from_candidates(candidates_idx)
+            # candidates_idx = self.remove_occupied_from_candidates(candidates_idx)
             AI.chosen_near_base_cell_BU = AI.near_base_safe_cells[random.choice(candidates_idx)[0]]
             print_with_debug("FOUND SHOT MSG STATE",
                              "pos", self.pos,
