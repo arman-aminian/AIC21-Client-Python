@@ -551,7 +551,7 @@ class AI:
 
         if AI.game_round == 1:
             AI.worker_state = WorkerState.InitExploring if self.game.ant.antType == AntType.KARGAR.value else WorkerState.Null
-            self.direction = self.random_valid_dir()
+            self.direction = self.get_new_ant_collect_move()
 
 
         # *************************************************************************************************************************
