@@ -956,11 +956,12 @@ class AI:
     def check_for_possible_base_cells(self):
         possible_msgs = [msg.text for msg in
                          self.game.chatBox.allChats[-MAX_MESSAGES_PER_TURN:] if
-                         msg.text.startswith("s") and
-                         msg.turn == AI.game_round - 1]
+                         msg.text.startswith("s")
+                         and not msg.text.startswith("sc")
+                         and msg.turn == AI.game_round - 1]
         if AI.life_cycle == 1:
             possible_msgs = [msg.text for msg in self.game.chatBox.allChats if
-                             msg.text.startswith("s")]
+                             msg.text.startswith("s") and not msg.text.startswith("sc")]
 
         for m in possible_msgs:
             print_with_debug("possible msg:", m)
@@ -1004,7 +1005,7 @@ class AI:
             distances = [manhattan_dist(self.pos, p, AI.w, AI.h) for p in
                          near_base_cells]
             candidates_idx = sorted(enumerate(distances), key=lambda x: x[1])[:5]
-            candidates_idx = self.remove_occupied_from_candidates(candidates_idx)
+            # candidates_idx = self.remove_occupied_from_candidates(candidates_idx)
             AI.chosen_near_base_cell_BK = near_base_cells[random.choice(candidates_idx)[0]]
             print_with_debug("BASE WAS FOUND STATE",
                              "pos", self.pos,
@@ -1068,7 +1069,7 @@ class AI:
             distances = [manhattan_dist(self.pos, p[0], AI.w, AI.h) for p in
                          AI.near_base_safe_cells]
             candidates_idx = sorted(enumerate(distances), key=lambda x: x[1])[:5]
-            candidates_idx = self.remove_occupied_from_candidates(candidates_idx)
+            # candidates_idx = self.remove_occupied_from_candidates(candidates_idx)
             AI.chosen_near_base_cell_BU = AI.near_base_safe_cells[random.choice(candidates_idx)[0]]
             print_with_debug("FOUND SHOT MSG STATE",
                              "pos", self.pos,
