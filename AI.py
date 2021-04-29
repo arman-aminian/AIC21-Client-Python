@@ -558,8 +558,8 @@ class AI:
         else:
             return None
 
-    #     @handle_exception
-    @time_measure
+    @handle_exception
+    # @time_measure
     def turn(self) -> (str, int, int):
         if AI.debug and AI.life_cycle > 2 and (AI.ids and (AI.id in AI.ids[0] or AI.id in AI.ids[1])):
             t = "soldier" if self.game.ant.antType == AntType.SARBAAZ.value else "worker"
