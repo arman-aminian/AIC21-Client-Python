@@ -42,7 +42,8 @@ class AI:
     chosen_near_base_cell_BU = None
     near_base_safe_cells = []
     shot_default_dir = None
-    first_id = 0
+    first_id = -1
+    exploration_target = None
 
     def __init__(self):
         # Current Game State
@@ -102,8 +103,13 @@ class AI:
                             ew += 1
                         elif a.antType == AntType.SARBAAZ.value:
                             es += 1
-                neighbor_nodes.append(Node((n.x, n.y), True, False, bread=b, grass=g, ally_workers=aw,
-                                           ally_soldiers=ally_s, enemy_workers=ew, enemy_soldiers=es))
+                neighbor_nodes.append(Node((n.x, n.y), True, False,
+                                           bread=b,
+                                           grass=g,
+                                           ally_workers=aw,
+                                           ally_soldiers=ally_s,
+                                           enemy_workers=ew,
+                                           enemy_soldiers=es))
 
         self.new_neighbors = {n.pos: n for n in neighbor_nodes if
                               AI.map.nodes[n.pos] != n}
@@ -278,9 +284,6 @@ class AI:
                         p = (self.pos[0] - 2, self.pos[1] + j)
                     else:
                         p = (self.pos[0] + j, self.pos[1] + 2)
-                    # own_map = Graph((AI.w, AI.h), (self.game.baseX, self.game.baseY))
-                    # for p in self.found_history:
-                    #     own_map.nodes[p] = AI.map.nodes[p]
                     path = map.get_path_with_max_length(map.nodes[self.pos], map.nodes[self.fix_pos(p)], 2)
                     if path is not None:
                         return Direction.get_value(map.step(self.pos, path[0].pos))
@@ -533,20 +536,12 @@ class AI:
     @time_measure
     # @handle_exception
     def turn(self) -> (str, int, int):
-        if AI.debug and AI.life_cycle > 2 and (AI.id in AI.ids[0] or AI.id in AI.ids[1]):
+        if AI.debug and AI.life_cycle > 2 and (AI.ids and (AI.id in AI.ids[0] or AI.id in AI.ids[1])):
             t = "soldier" if self.game.ant.antType == AntType.SARBAAZ.value else "worker"
-            if AI.id in range(1, INIT_ANTS_NUM + 1):
-                AI.out_file = open(AI.output_path + t + '_' + str(AI.born_game_round) + '_' + str(AI.first_id) + ".txt",
-                                   "a+")
-            else:
-                AI.out_file = open(AI.output_path + t + '_' + str(AI.born_game_round) + '_' + str(AI.first_id) + ".txt",
-                                   "a+")
+            AI.out_file = open(AI.output_path + t + '_' + str(AI.born_game_round) + '_' + str(AI.first_id) + ".txt",
+                               "a+")
 
         self.round_initialization()
-        # ####################################### ROUND INITIALIZATION END
-
-        # if AI.out_file is not None:
-        #     print_map(AI.map, self.pos, f=AI.out_file)
 
         if AI.game_round == 1:
             AI.worker_state = WorkerState.InitExploring if self.game.ant.antType == AntType.KARGAR.value else WorkerState.Null
@@ -595,7 +590,7 @@ class AI:
         # ########################################################SAARBAAAZ########################################################
         # *************************************************************************************************************************
         elif self.game.ant.antType == AntType.SARBAAZ.value:
-            print_map(AI.map, self.pos)
+            print_map(AI.map, self.pos, f=AI.out_file)
             if AI.life_cycle == 1:
                 self.direction = Direction.get_random_direction()
             else:
@@ -604,13 +599,22 @@ class AI:
 
                 if AI.soldier_state == SoldierState.Explorer_Supporter:
                     # TODO fill this
-                    pass
+                    self.direction = self.get_first_move_to_go()
 
                 # ####################################### DEFAULT SECTION
                 if AI.soldier_state == SoldierState.Null:
-                    self.direction = self.get_soldier_first_move_to_discover()
-                    print_with_debug(f'in soldier discover: pos = {self.pos}, direction = {self.direction}',
-                                     f=AI.out_file)
+                    print("exp target", AI.game_round, self.pos, AI.exploration_target)
+                    if AI.exploration_target is None:
+                        self.direction = self.get_soldier_first_move_to_discover()
+                        print_with_debug(f'in soldier discover: pos = {self.pos}, direction = {self.direction}',
+                                         f=AI.out_file)
+                    else:
+                        if self.pos == AI.exploration_target:
+                            print("NONE TARGET", self.pos, AI.exploration_target)
+                            AI.exploration_target = None
+                            self.direction = self.get_soldier_first_move_to_discover()
+                        else:
+                            self.direction = self.get_first_move_to_target(self.pos, AI.exploration_target)
 
         self.send_msg()
         self.end_round()
@@ -720,8 +724,6 @@ class AI:
                 dis_list = get_view_distance_neighbors(self.pos, AI.w, AI.h, 4)
                 neighbors = {pos: n for pos, n in AI.map.nodes.items() if
                              pos in dis_list}
-                delay = time.time() - now
-                print_with_debug("send_msg 111.111:", delay)
                 self.encoded_neighbors = encode_graph_nodes(self.pos,
                                                             neighbors,
                                                             AI.w, AI.h,
@@ -729,40 +731,44 @@ class AI:
                                                             AI.id, self.direction,
                                                             self.shot,
                                                             AI.map.enemy_base_pos)
-                delay = time.time() - now
-                print_with_debug("send_msg 111.222:", delay)
                 self.message = self.encoded_neighbors
-
-            delay = time.time() - now
-            print_with_debug("send_msg 111:", delay)
         elif AI.life_cycle > 1 and self.shot and AI.soldier_state == SoldierState.Null:
             possible_cells = get_view_distance_neighbors(AI.latest_pos[AI.id][0], AI.w,
                                                          AI.h, 6, exact=True)
-            delay = time.time() - now
-            print_with_debug("send_msg 222.111:", delay)
             possible_cells = [p for p in possible_cells if
                               p not in AI.soldier_path_neighbors_history]
-            delay = time.time() - now
-            print_with_debug("send_msg 222.222:", delay)
             AI.possible_base_cells = list(set(AI.possible_base_cells).
                                           intersection(possible_cells))
-            delay = time.time() - now
-            print_with_debug("send_msg 222.333:", delay)
             print_with_debug("tell them", AI.latest_pos[AI.id][0], possible_cells, AI.own_cells_history[-3],
                              f=AI.out_file)
             self.message = encode_possible_cells(AI.id, AI.latest_pos[AI.id][0],
                                                  AI.own_cells_history[-3],
                                                  AI.w, AI.h, possible_cells)
-            delay = time.time() - now
-            print_with_debug("send_msg 222.444:", delay)
             print_with_debug(self.message, f=AI.out_file)
             self.direction = solve_bt(AI.map, self.pos, max_distance=5)
-            delay = time.time() - now
-            print_with_debug("send_msg 222.555:", delay)
             AI.soldier_state = SoldierState.HasBeenShot
             self.value = VALUES["shot"]
-            delay = time.time() - now
-            print_with_debug("send_msg 222:", delay)
+
+        print_with_debug("turn", AI.game_round, "id", AI.id, "pos", self.pos,
+                         "worker state", AI.worker_state,
+                         "soldier state", AI.soldier_state,
+                         "dir", Direction.get_string(self.direction),
+                         "map value", self.value, f=AI.out_file, debug=False)
+
+        AI.latest_pos[AI.id] = (self.pos, AI.game_round)
+        AI.game_round += 1
+        AI.life_cycle += 1
+        AI.prev_round_resource = self.game.ant.currentResource.value
+        AI.prev_hp = self.game.ant.health
+        AI.prev_es = sum([AI.map.nodes[v].enemy_soldiers for v in
+                          get_view_distance_neighbors(self.pos, AI.w, AI.h, self.game.ant.viewDistance)])
+        if not AI.shot_once and self.shot:
+            AI.shot_once = True
+
+        if self.message is not None and len(self.message) >= 32:
+            self.message = ""
+            self.value = -100000
+        return self.message, self.value, self.direction
 
     def determine_worker_state(self):
         # TODO discuss the logic and improve
@@ -964,8 +970,12 @@ class AI:
         #     else:
         #         AI.attack_dir = Direction.get_random_direction()
 
-    def get_soldier_first_move_to_discover(self):
-        move, _ = AI.latest_map.get_first_move_to_discover(
+    def get_soldier_first_move_to_discover(self, init=True):
+        if init:
+            print("GOT IN INIT.")
+            AI.latest_map.bfs(AI.map.nodes[self.pos])
+            print("INIT EDGE NODES", AI.map.edge_nodes)
+        move, AI.exploration_target = AI.latest_map.get_first_move_to_discover(
             AI.map.nodes[self.pos], self.pos, len(AI.ids[self.game.ant.antType]), AI.id, AI.ids[self.game.ant.antType]
         )
         return Direction.get_value(move)
@@ -987,22 +997,22 @@ class AI:
 
     @time_measure
     def handle_base(self):
-        if AI.map.enemy_base_pos is not None and AI.soldier_state != SoldierState.BK_GoingNearEnemyBase:
+        if AI.map.enemy_base_pos is not None and \
+                AI.soldier_state == SoldierState.Null:
             AI.soldier_state = SoldierState.BK_GoingNearEnemyBase
             near_base_cells = get_view_distance_neighbors(
                 AI.map.enemy_base_pos, AI.w, AI.h, BASE_RANGE + 1, exact=True)
             # TODO manhattan dist or bfs?
             distances = [manhattan_dist(self.pos, p, AI.w, AI.h) for p in
                          near_base_cells]
-            candidates_idx = sorted(enumerate(distances), key=lambda x: x[1])[
-                             :4]
+            candidates_idx = sorted(enumerate(distances), key=lambda x: x[1])[:4]
             AI.chosen_near_base_cell_BK = near_base_cells[
                 random.choice(candidates_idx)[0]]
             print_with_debug("BASE WAS FOUND STATE",
                              "pos", self.pos,
                              "near base cells", near_base_cells,
                              "distances", distances,
-                             "chosen cell BK", AI.chosen_near_base_cell_BK,
+                             "chosen near cell BK", AI.chosen_near_base_cell_BK,
                              f=AI.out_file)
 
         # going to the chosen cell near enemy base
@@ -1013,7 +1023,7 @@ class AI:
                 print_with_debug("BK GOING NEAR ENEMY BASE STATE",
                                  "REACHED DEST",
                                  "pos", self.pos,
-                                 "chosen cell BK",
+                                 "chosen near cell BK",
                                  AI.chosen_near_base_cell_BK,
                                  f=AI.out_file)
             else:
@@ -1021,7 +1031,7 @@ class AI:
                                                                AI.chosen_near_base_cell_BK)
                 print_with_debug("BK GOING NEAR ENEMY BASE STATE",
                                  "pos", self.pos,
-                                 "chosen cell BK",
+                                 "chosen near cell BK",
                                  AI.chosen_near_base_cell_BK,
                                  f=AI.out_file)
 
@@ -1144,20 +1154,20 @@ class AI:
         VALUE_TO_SUPPORT = 100
         bread_number = 0
         grass_number = 0
-        AI.map.bfs(self.pos)
-        distance_to_base = AI.map.bfs['distance'][AI.map.base_pos]
+        AI.map.bfs(AI.map.nodes[self.pos])
+        distance_to_base = AI.map.bfs['dist'][AI.map.base_pos]
         for num, pos in self.visible_bread:
-            if AI.map.bfs_info['distance'].get(pos) is not None:
+            if AI.map.bfs_info['dist'].get(pos) is not None:
                 bread_number += num
 
         for num, pos in self.visible_grass:
-            if AI.map.bfs_info['distance'].get(pos) is not None:
+            if AI.map.bfs_info['dist'].get(pos) is not None:
                 grass_number += num
 
         if self.get_value(bread_number, grass_number, distance_to_base) > VALUE_TO_SUPPORT:
             return Direction.CENTER.value
 
-        return self.get_soldier_first_move_to_discover()
+        return self.get_soldier_first_move_to_discover(init=False)
 
     def get_value(self, bread_number, grass_number, distance_to_base):
         return bread_number + grass_number + distance_to_base
