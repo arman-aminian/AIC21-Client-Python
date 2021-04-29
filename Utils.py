@@ -3,7 +3,7 @@ import time
 import Model
 
 
-def print_with_debug(*args, f=None, debug=False):
+def print_with_debug(*args, f=None, debug=True):
     if debug:
         print(*args)
     if f is not None:
@@ -47,9 +47,9 @@ MAX_TURN_COUNT = 200
 BASE_RANGE = 6
 SWAMP_TURNS = 3
 
-VALUE_TO_SUPPORT = 70
-MIN_DIST_SUPPORT = 7
-EXPLORER_SUPPORT_MIN_ROUND = 30
+VALUE_TO_SUPPORT = 60
+MIN_DIST_SUPPORT = 8
+EXPLORER_SUPPORT_MIN_ROUND = 50
 
 
 VALUES = {
