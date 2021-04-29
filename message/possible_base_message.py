@@ -10,13 +10,13 @@ def sp(s, w, h):
 
 
 def encode_possible_cells(ant_id, pos, prev_pos, w, h, possible_cells):
-    s = "s" + chr(ant_id + CONSTANT)
+    s = "sh" + chr(ant_id + CONSTANT)
     
     binary = ps(pos, w, h) + ps(prev_pos, w, h)
     for p in possible_cells:
         binary += ps(p, w, h)
     
-    for i in range(0, len(binary), 8):
+    for i in range(0, len(binary) - 8, 8):
         part = binary[i:i + 8]
         s += chr(int(part, 2) + CONSTANT)
     

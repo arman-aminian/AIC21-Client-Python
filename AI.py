@@ -956,11 +956,11 @@ class AI:
     def check_for_possible_base_cells(self):
         possible_msgs = [msg.text for msg in
                          self.game.chatBox.allChats[-MAX_MESSAGES_PER_TURN:] if
-                         msg.text.startswith("s") and not msg.text.startswith("sc") and
+                         msg.text.startswith("sh") and not msg.text.startswith("sc") and
                          msg.turn == AI.game_round - 1]
         if AI.life_cycle == 1:
             possible_msgs = [msg.text for msg in self.game.chatBox.allChats if
-                             msg.text.startswith("s") and not msg.text.startswith("sc")]
+                             msg.text.startswith("sh") and not msg.text.startswith("sc")]
 
         for m in possible_msgs:
             print_with_debug("possible msg:", m)
