@@ -181,7 +181,7 @@ class AI:
                 msg.text and msg.turn == AI.game_round - 1]
         if AI.life_cycle == 1:
             if AI.born_game_round > MAX_MESSAGES_INIT:
-                maps = [msg for msg in self.game.chatBox.allChats[-MAX_MESSAGES_INIT * MAX_MESSAGES_PER_TURN:] if '!' in
+                maps = [msg for msg in self.game.chatBox.allChats[-MAX_MESSAGES_INIT*MAX_MESSAGES_PER_TURN:] if '!' in
                         msg.text]
             else:
                 maps = [msg for msg in self.game.chatBox.allChats if '!' in
@@ -501,8 +501,7 @@ class AI:
             print_with_debug("bread_dir:", bread_dir, f=AI.out_file)
             print_with_debug("bread_dis:", bread_dis, f=AI.out_file)
             if ((grass_dis <= bread_dis and AI.id != BREAD_PRIORITY_ID)
-                or ((
-                            AI.id == GRASS_PRIORITY_ID1 or AI.id == GRASS_PRIORITY_ID2) and grass_dis - PRIORITY_GAP <= bread_dis)
+                or ((AI.id == GRASS_PRIORITY_ID1 or AI.id == GRASS_PRIORITY_ID2) and grass_dis - PRIORITY_GAP <= bread_dis)
                 or (AI.id == BREAD_PRIORITY_ID and grass_dis + PRIORITY_GAP < bread_dis)) \
                     and grass_dis != math.inf:
                 m = grass_dir
@@ -535,8 +534,8 @@ class AI:
         else:
             return None
 
-    #     # @time_measure
-    #     @handle_exception
+#     # @time_measure
+#     @handle_exception
     def turn(self) -> (str, int, int):
         if AI.debug and AI.life_cycle > 2 and (AI.ids and (AI.id in AI.ids[0] or AI.id in AI.ids[1])):
             t = "soldier" if self.game.ant.antType == AntType.SARBAAZ.value else "worker"
@@ -618,18 +617,7 @@ class AI:
 
                 # ####################################### DEFAULT SECTION
                 if AI.soldier_state == SoldierState.Null:
-                    # print("exp target", AI.game_round, self.pos, AI.exploration_target)
-                    if AI.exploration_target is None:
-                        self.direction = self.get_soldier_first_move_to_discover()
-                        print_with_debug(f'in soldier discover: pos = {self.pos}, direction = {self.direction}',
-                                         f=AI.out_file)
-                    else:
-                        if self.pos == AI.exploration_target:
-                            # print("NONE TARGET", self.pos, AI.exploration_target)
-                            AI.exploration_target = None
-                            self.direction = self.get_soldier_first_move_to_discover()
-                        else:
-                            self.direction = self.get_first_move_to_target(self.pos, AI.exploration_target)
+                    self.direction = self.discover_wrapper()
 
         self.send_msg()
         self.end_round()
@@ -643,11 +631,11 @@ class AI:
         if self.message is not None and len(self.message) > 32:
             self.message = ""
             self.value = -100000
-
-        if self.direction is None:
-            self.direction = self.random_valid_dir()
-            if self.direction is None or self.direction == Direction.CENTER.value:
-                self.direction = Direction.get_random_direction()
+        
+        # if self.direction is None:
+        #     self.direction = self.random_valid_dir()
+        #     if self.direction is None or self.direction == Direction.CENTER.value:
+        #         self.direction = Direction.get_random_direction()
 
         return self.message, self.value, self.direction
 
@@ -957,14 +945,6 @@ class AI:
             possible_msgs = [msg.text for msg in self.game.chatBox.allChats if
                              msg.text.startswith("s")]
 
-        # if possible_msgs:
-        #     print_with_debug("I HAVE S MESSAGE HAHAHAHHAA", f=AI.out_file)
-        #     if AI.life_cycle > 1:
-        #         AI.soldier_state = SoldierState.PreparingForAttack
-        #     elif AI.life_cycle == 1:
-        #         AI.soldier_state = SoldierState.WaitingForComrades
-        #     AI.cell_target = None
-
         for m in possible_msgs:
             print_with_debug("possible msg:", m)
             ant_id, pos, prev_pos, possible_cells = decode_possible_cells(m, AI.w, AI.h)
@@ -972,17 +952,6 @@ class AI:
                                           intersection(possible_cells))
             if (prev_pos, pos) not in AI.near_base_safe_cells:
                 AI.near_base_safe_cells.append((prev_pos, pos))
-
-        # if AI.near_base_targets:
-        #     AI.near_base_targets.sort()
-        #     distances = [manhattan_dist(AI.map.base_pos, t[0], AI.w, AI.h) for t in AI.near_base_targets]
-        #     min_i = distances.index(min(distances))
-        #     print_with_debug("HAHAHAHA i had shot msgs", AI.near_base_targets, distances, f=AI.out_file)
-        #     AI.cell_target = AI.near_base_targets[min_i][0] if AI.cell_target is None else AI.cell_target
-        #     if AI.near_base_targets[min_i][0] != AI.near_base_targets[min_i][1]:
-        #         AI.attack_dir = self.get_first_move_to_target(AI.near_base_targets[min_i][0], AI.near_base_targets[min_i][1])
-        #     else:
-        #         AI.attack_dir = Direction.get_random_direction()
 
     def get_soldier_first_move_to_discover(self, init=True):
         if init:
@@ -1170,6 +1139,10 @@ class AI:
         grass_number = 0
         AI.map.bfs(AI.map.nodes[self.pos])
         distance_to_base = AI.map.bfs_info['dist'][AI.map.base_pos]
+
+        if distance_to_base < MIN_DIST_SUPPORT:
+            return self.discover_wrapper()
+
         for d in self.visible_bread:
             num, pos = d["number"], d["pos"]
             if AI.map.bfs_info['dist'].get(pos) is not None:
@@ -1184,7 +1157,18 @@ class AI:
             AI.exploration_target = None
             return Direction.CENTER.value
 
-        return self.get_soldier_first_move_to_discover()
+        return self.discover_wrapper()
 
     def get_value(self, bread_number, grass_number, distance_to_base):
         return bread_number + grass_number + distance_to_base
+
+    def discover_wrapper(self):
+        print("TARGET", self.pos, AI.exploration_target)
+        if AI.exploration_target is None:
+            return self.get_soldier_first_move_to_discover()
+        else:
+            if self.pos == AI.exploration_target:
+                AI.exploration_target = None
+                return self.get_soldier_first_move_to_discover()
+            else:
+                return self.get_first_move_to_target(self.pos, AI.exploration_target)
