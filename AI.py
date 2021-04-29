@@ -186,11 +186,11 @@ class AI:
     def update_map_from_chat_box(self):
         maps = [msg for msg in
                 self.game.chatBox.allChats[-MAX_MESSAGES_PER_TURN:] if '!' in
-                msg.text and msg.turn == AI.game_round - 1]
+                msg.text and not msg.text.startswith("sc") and not msg.text.startswith("sh") and msg.turn == AI.game_round - 1]
         if AI.life_cycle == 1:
             if AI.born_game_round > MAX_MESSAGES_INIT:
                 maps = [msg for msg in self.game.chatBox.allChats[-MAX_MESSAGES_INIT * MAX_MESSAGES_PER_TURN:] if '!' in
-                        msg.text]
+                        msg.text and not msg.text.startswith("sc") and not msg.text.startswith("sh")]
             else:
                 maps = [msg for msg in self.game.chatBox.allChats if '!' in
                         msg.text]
