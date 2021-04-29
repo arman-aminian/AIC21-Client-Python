@@ -620,7 +620,7 @@ class Graph:
             )
         if not best_nodes:
             return None, None, math.inf
-        # print('best_node', best_nodes[0].pos)
+
         return Direction.get_value(self.step(
             src_pos, self.get_shortest_path_from_shortest_path_info(src_pos, best_nodes[0].pos, name_of_object)[0])
         ), name_of_object, self.get_shortest_distance(
@@ -654,3 +654,39 @@ class Graph:
             else:
                 converted_map.nodes[pos] = self.nodes[pos]
         return converted_map
+
+    def get_first_move_to_base(self, src, dest, number_of_object):
+        resource_number = number_of_object.get('bread', 0) + number_of_object.get('grass', 0)
+        if src.pos == dest.pos:
+            print('IM IN base')
+            return None
+
+        q = [src]
+        in_queue = {src.pos: True}
+        dist = {src.pos: 0}
+        parent = {src.pos: src.pos}
+
+        if src.wall:
+            return None
+
+        while q:
+            current_node = q.pop(0)
+            in_queue[current_node.pos] = False
+            neighbors = self.get_neighbors(current_node.pos)
+
+            for neighbor in neighbors:
+                next_node = self.nodes[neighbor]
+                if int(next_node.trap) * resource_number:
+                    continue
+                if parent.get(next_node.pos) is None:
+                    parent[next_node.pos] = current_node.pos
+                    q.append(next_node)
+                    weight = self.get_worker_weight(current_node, next_node)
+                    if dist.get(next_node.pos) is None or weight + dist[current_node.pos] < dist.get(next_node.pos):
+                        dist[next_node.pos] = weight + dist[current_node.pos]
+                        parent[next_node.pos] = current_node.pos
+                        if not in_queue.get(next_node.pos):
+                            in_queue[next_node.pos] = True
+                            q.append(next_node)
+
+        return self.get_first_move_from_parent(parent, src.pos, dest.pos) if dist.get(dest.pos) else None
