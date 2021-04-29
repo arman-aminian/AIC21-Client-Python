@@ -210,7 +210,7 @@ class Graph:
         return self.nodes[pos] if self.nodes[pos].discovered else self.guess_node(self.nodes[pos])
 
     def get_worker_weight(self, src, dest):
-        return int(src.swamp) * Utils.SWAMP_TURNS + 1
+        return int(dest.trap) * 1000000 + int(src.swamp) * Utils.SWAMP_TURNS + 1
 
     # @Utils.time_measure
     def get_shortest_path(self, src, name_of_other_object, number_of_object):
@@ -387,7 +387,9 @@ class Graph:
                     dest, node, 'grass'
             ) is not None and self.get_shortest_distance(
                 src, node, 'grass'
-            ) is not None:
+            ) is not None or self.get_shortest_distance(
+                src, node, 'grass'
+            ) > self.dim[0] * self.dim[1]:
                 grass_nodes.append(node)
 
         return sorted(grass_nodes, key=lambda n: n.grass_value(src, dest, self, number), reverse=True)[
@@ -411,7 +413,9 @@ class Graph:
                     dest, node, 'bread'
             ) is not None and self.get_shortest_distance(
                 src, node, 'bread'
-            ) is not None:
+            ) is not None or self.get_shortest_distance(
+                src, node, 'bread'
+            ) > self.dim[0] * self.dim[1]:
                 bread_nodes.append(node)
 
         return sorted(bread_nodes, key=lambda n: n.bread_value(src, dest, self, number), reverse=True)[
