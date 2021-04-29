@@ -655,6 +655,19 @@ class Graph:
                 converted_map.nodes[pos] = self.nodes[pos]
         return converted_map
 
+    def convert_base_possible_cells_to_wall(self, base_possible_cells):
+        converted_map = Graph((self.dim[0], self.dim[1]), self.base_pos)
+        for pos in self.nodes.keys():
+            if pos in [p[1] for p in base_possible_cells]:
+                converted_map.nodes[pos] = Node(
+                    pos=pos,
+                    discovered=True,
+                    wall=True
+                )
+            else:
+                converted_map.nodes[pos] = self.nodes[pos]
+        return converted_map
+
     def get_first_move_to_base(self, src, number_of_object):
         dest = self.nodes[self.base_pos]
         resource_number = number_of_object.get('bread', 0) + number_of_object.get('grass', 0)
