@@ -12,6 +12,7 @@ def print_with_debug(*args, f=None, debug=True):
 
 INIT_ANTS_NUM = 4
 MAX_MESSAGES_PER_TURN = 5
+MAX_MESSAGES_INIT = 60
 
 INIT_STRAIGHT_ANTS_MOVES = [[1, 2, 3, 4],
                             [2, 3, 4, 1],
