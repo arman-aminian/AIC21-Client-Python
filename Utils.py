@@ -12,7 +12,7 @@ def print_with_debug(*args, f=None, debug=False):
 
 INIT_ANTS_NUM = 4
 MAX_MESSAGES_PER_TURN = 5
-MAX_MESSAGES_INIT = 60
+MAX_MESSAGES_INIT = 50
 
 INIT_STRAIGHT_ANTS_MOVES = [[1, 2, 3, 4],
                             [2, 3, 4, 1],
@@ -42,7 +42,7 @@ PRIORITY_GAP = 4
 BASE_DMG = 3
 SOLDIER_DMG = 2
 HP = [8, 6]  # soldier, worker
-MAX_TURN_COUNT = 100
+MAX_TURN_COUNT = 200
 BASE_RANGE = 6
 SWAMP_TURNS = 3
 VALUES = {
@@ -88,6 +88,7 @@ def manhattan_dist(p, q, w, h) -> int:
     x_diff = min(abs(p[0] - q[0]), w - abs(p[0] - q[0]))
     y_diff = min(abs(p[1] - q[1]), h - abs(p[1] - q[1]))
     return x_diff + y_diff
+
 
 def get_view_distance_neighbors(pos, w, h, view: int, exact: bool = False, sort=True):
     ret = []
@@ -143,7 +144,7 @@ def time_measure(fn):
         now = time.time()
         res = fn(*args, **kwargs)
         delay = time.time() - now
-        print_with_debug(f'{fn.__name__} took {delay} seconds!', debug=True)
+        print_with_debug(f'{fn.__name__} took {delay} seconds!', debug=False)
 
         return res
 

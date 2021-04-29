@@ -471,7 +471,7 @@ class Graph:
         edge_nodes = self.edge_nodes
         distance = self.bfs_info.get('dist')
         parent = self.bfs_info.get('parent')
-        print("BEST LIST EDGE NODES", edge_nodes)
+        # print("BEST LIST EDGE NODES", edge_nodes)
 
         while len(edge_nodes) > each_list_max_size and len(
                 edge_nodes) % each_list_max_size != 0:
@@ -485,7 +485,7 @@ class Graph:
             for j in range(i, len(edge_nodes), math.ceil(len(edge_nodes) / each_list_max_size)):
                 all_list[-1].append(edge_nodes[j])
 
-        print("ALL LIST", all_list)
+        # print("ALL LIST", all_list)
         mn_value = math.inf
         mn_idx = 0
         for i in range(len(all_list)):
@@ -506,9 +506,9 @@ class Graph:
     # @Utils.time_measure
     def get_first_move_to_discover(self, curr_pos, src_pos, each_list_max_size, my_id, all_ids):
         src = self.nodes[src_pos]
-        print("FIRST MOVE EDGE NODES", self.edge_nodes)
+        # print("FIRST MOVE EDGE NODES", self.edge_nodes)
         best_list, parent = self.get_best_list(src, each_list_max_size)
-        print(best_list)
+        # print(best_list)
         idx = random.randint(0, len(best_list) - 1)
         ids = all_ids[-each_list_max_size:]
 
@@ -517,9 +517,9 @@ class Graph:
                 idx = i
                 break
 
-        print("MY GOAL IS TO REACH", best_list[idx % len(best_list)])
-        print("1", parent, src_pos, best_list[idx % len(best_list)])
-        print("HAHAAHHAHAHAH", self.step(curr_pos.pos, self.get_first_move_from_parent(parent, src_pos, best_list[idx % len(best_list)])), best_list[idx % len(best_list)])
+        # print("MY GOAL IS TO REACH", best_list[idx % len(best_list)])
+        # print("1", parent, src_pos, best_list[idx % len(best_list)])
+        # print("HAHAAHHAHAHAH", self.step(curr_pos.pos, self.get_first_move_from_parent(parent, src_pos, best_list[idx % len(best_list)])), best_list[idx % len(best_list)])
 
         return self.step(
             curr_pos.pos, self.get_first_move_from_parent(
@@ -559,7 +559,7 @@ class Graph:
                         in_queue[next_node.pos] = True
                         q.append(next_node)
 
-        print("EDGE NODES", self.edge_nodes)
+        # print("EDGE NODES", self.edge_nodes)
         self.edge_nodes = list(set(self.edge_nodes))
         self.edge_nodes.sort()
         self.bfs_info = {
