@@ -138,8 +138,8 @@ class AI:
         for n in neighbor_nodes:
             if not AI.map.nodes[n.pos].discovered:
                 total_disc += 1
-        if total_disc >= 5:
-            return VALUES["disc_gt_5"] + total_disc
+        if total_disc >= 3:
+            return VALUES["disc_gt_3"] + total_disc
 
         total_soldiers = 0
         for n in neighbor_nodes:
@@ -148,8 +148,8 @@ class AI:
         if total_soldiers > 0:
             return VALUES["es"] + total_soldiers
 
-        if 0 < total_disc < 5:
-            return VALUES["disc_lt_5"] + total_disc
+        if 0 < total_disc < 3:
+            return VALUES["disc_lt_3"] + total_disc
 
         if self.pos in self.new_neighbors.keys():
             if self.new_neighbors[self.pos].bread > AI.map.nodes[self.pos].bread \
@@ -287,7 +287,6 @@ class AI:
                     path = map.get_path_with_max_length(map.nodes[self.pos], map.nodes[self.fix_pos(p)], 2)
                     if path is not None:
                         return Direction.get_value(map.step(self.pos, path[0].pos))
-
         print_with_debug("error on get_init_ants_next_move", f=AI.out_file)
         return Direction.get_random_direction()
 
