@@ -602,7 +602,7 @@ class AI:
             if AI.life_cycle == 1:
                 self.direction = self.random_valid_dir()
             else:
-                if AI.born_game_round < 50:
+                if AI.born_game_round < EXPLORER_SUPPORT_MIN_ROUND:
                     AI.soldier_state = SoldierState.Explorer_Supporter
                 
                 self.handle_base()
