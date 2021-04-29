@@ -557,17 +557,41 @@ class AI:
                     and self.game.ant.currentResource.value >= (WORKER_MAX_CARRYING_RESOURCE_AMOUNT / 2):
                 print_with_debug("worker has >= (max carrying resources amount / 2) => back to base with bfs",
                                  f=AI.out_file)
-                path = AI.map.get_path(AI.map.nodes[self.pos], AI.map.nodes[AI.map.base_pos])
-                self.direction = Direction.get_value(AI.map.step(self.pos, path[0].pos))
+                dir, AI.last_name_of_object, dis = AI.map.get_resource_best_move(
+                    src_pos=self.pos,
+                    dest_pos=AI.map.base_pos,
+                    name_of_object='grass',
+                    limit=get_limit(
+                        bread_min=0,
+                        grass_min=0
+                    ),
+                    number_of_object=get_number_of_object(self.game.ant.currentResource),
+                )
+                if dir is None:
+                    self.direction = Direction.CENTER.value
+                else:
+                    self.direction = dir
                 print_with_debug("bfs dir:", self.direction)
             elif self.game_round > MAX_TURN_COUNT - 10:
                 print_with_debug("last rounds => back to base with bfs",
                                  f=AI.out_file)
-                path = AI.map.get_path(AI.map.nodes[self.pos], AI.map.nodes[AI.map.base_pos])
-                if path is None:
+                if self.pos == AI.map.base_pos:
                     self.direction = Direction.CENTER.value
                 else:
-                    self.direction = Direction.get_value(AI.map.step(self.pos, path[0].pos))
+                    dir, AI.last_name_of_object, dis = AI.map.get_resource_best_move(
+                        src_pos=self.pos,
+                        dest_pos=AI.map.base_pos,
+                        name_of_object='grass',
+                        limit=get_limit(
+                            bread_min=0,
+                            grass_min=0
+                        ),
+                        number_of_object=get_number_of_object(self.game.ant.currentResource),
+                    )
+                    if dir is None:
+                        self.direction = Direction.CENTER.value
+                    else:
+                        self.direction = dir
                 print_with_debug("bfs dir:", self.direction)
             else:
                 if AI.id <= Utils.INIT_ANTS_NUM:
@@ -992,7 +1016,7 @@ class AI:
                          f=AI.out_file)
         return Direction.get_value(
             AI.map.step(
-                src, AI.map.get_path_with_non_discovered(AI.map.nodes[src], AI.map.nodes[dest], unsafe_cells, name)[0].pos
+                src, AI.map.get_path_with_non_discovered(AI.map.nodes[src], AI.map.nodes[dest], unsafe_cells, name)
             )
         )
 

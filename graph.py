@@ -614,8 +614,10 @@ class Graph:
         number_of_bread_need = max(0, limit[name_of_object]['min'] - number_of_object.get(name_of_object, 0))
         if number_of_bread_need == 0:
             return Direction.get_value(self.step(
-                src_pos, self.get_shortest_path_from_shortest_path_info(src_pos, dest_pos, name_of_object)[0])
-            ), name_of_object
+                src_pos, self.get_shortest_path_from_shortest_path_info(src_pos, self.base_pos, name_of_object)[0])
+            ), name_of_object, self.get_shortest_distance(
+                self.nodes[src_pos], self.nodes[self.base_pos], name_of_object
+            )
         if not best_nodes:
             return None, None, math.inf
         # print('best_node', best_nodes[0].pos)
