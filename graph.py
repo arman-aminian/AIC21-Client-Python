@@ -706,3 +706,22 @@ class Graph:
         return Direction.get_value(
             self.step(src.pos, self.get_first_move_from_parent(parent, src.pos, dest.pos))
         ) if dist.get(dest.pos) else None
+
+    def get_reachable_resource_from_base(self):
+        reachable_resource = set()
+        q = [self.nodes[self.base_pos]]
+        parent = {self.base_pos: self.base_pos}
+
+        while q:
+            current_node = q.pop(0)
+            if current_node.bread + current_node.grass > 0:
+                reachable_resource.add(current_node.pos)
+            neighbors = self.get_neighbors(current_node.pos)
+
+            for neighbor in neighbors:
+                next_node = self.nodes[neighbor]
+                if not next_node.trap and parent.get(next_node.pos) is None:
+                    parent[next_node.pos] = current_node.pos
+                    q.append(next_node)
+
+        return reachable_resource
