@@ -45,12 +45,12 @@ class Node:
     # todo: make default dist better
     def grass_value(self, src, dest, graph, number=0):
         distance = graph.get_shortest_distance(src, self, 'grass', default=math.inf) \
-                   + graph.get_shortest_distance(dest, self, 'grass', default=math.inf)
+                   + graph.get_shortest_distance((dest, 1), self, 'grass', default=math.inf)
         return -distance * self.DISTANCE_WEIGH + self.grass + number * self.GRASS_WEIGHT
 
     def bread_value(self, src, dest, graph, number=0):
         distance = graph.get_shortest_distance(src, self, 'bread', default=math.inf) \
-                   + graph.get_shortest_distance(dest, self, 'bread', default=math.inf)
+                   + graph.get_shortest_distance((dest, 1), self, 'bread', default=math.inf)
         return -distance * self.DISTANCE_WEIGH + self.bread + number * self.BREAD_WEIGHT
 
 
@@ -210,7 +210,7 @@ class Graph:
         return self.nodes[pos] if self.nodes[pos].discovered else self.guess_node(self.nodes[pos])
 
     def get_worker_weight(self, src, dest):
-        return int(dest.trap) * 1000000 + int(src.swamp) * Utils.SWAMP_TURNS + 1
+        return int(src.swamp) * Utils.SWAMP_TURNS + 1
 
     # @Utils.time_measure
     def get_shortest_path(self, src, name_of_other_object, number_of_object):
@@ -233,6 +233,8 @@ class Graph:
             for neighbor in neighbors:
                 next_node = self.nodes[neighbor]
                 if getattr(next_node, name_of_other_object) > 0 and number_of_object == 0:
+                    continue
+                if number_of_object and next_node.trap:
                     continue
 
                 weight = self.get_worker_weight(current_node, next_node)
@@ -359,12 +361,14 @@ class Graph:
 
     # @Utils.time_measure
     def find_all_shortest_path(self, number_of_object, name_of_object, nodes):
-        for node in nodes:
+        for node, is_dest in nodes:
             pos = node.pos
-            default = 0
-            self.shortest_path_info[name_of_object][pos] = self.get_shortest_path(
-                self.nodes[pos], 'bread' if name_of_object == 'grass' else 'grass',
-                number_of_object.get(name_of_object, default)
+            key = pos
+            if is_dest:
+                key = (pos, 1)
+            self.shortest_path_info[name_of_object][key] = self.get_shortest_path(
+                node, 'bread' if name_of_object == 'grass' else 'grass',
+                number_of_object.get(name_of_object, is_dest)
             )
 
     # @Utils.time_measure
@@ -376,19 +380,17 @@ class Graph:
                 grass_nodes_temp.append(node)
 
         self.find_all_shortest_path(
-            number_of_object, 'grass', [src, dest]
+            number_of_object, 'grass', [(src, 0), (dest, 1)]
         )
 
         # print(grass_nodes_temp)
         grass_nodes = []
         for node in grass_nodes_temp:
             if self.get_shortest_distance(
-                    dest, node, 'grass'
+                    (dest, 1), node, 'grass'
             ) is not None and self.get_shortest_distance(
                 src, node, 'grass'
-            ) is not None or self.get_shortest_distance(
-                src, node, 'grass'
-            ) > self.dim[0] * self.dim[1]:
+            ) is not None:
                 grass_nodes.append(node)
 
         return sorted(grass_nodes, key=lambda n: n.grass_value(src, dest, self, number), reverse=True)[
@@ -403,18 +405,16 @@ class Graph:
                 bread_nodes_temp.append(node)
 
         self.find_all_shortest_path(
-            number_of_object, 'bread', [src, dest]
+            number_of_object, 'bread', [(src, 0), (dest, 1)]
         )
         # print(bread_nodes_temp)
         bread_nodes = []
         for node in bread_nodes_temp:
             if self.get_shortest_distance(
-                    dest, node, 'bread'
+                    (dest, 1), node, 'bread'
             ) is not None and self.get_shortest_distance(
                 src, node, 'bread'
-            ) is not None or self.get_shortest_distance(
-                src, node, 'bread'
-            ) > self.dim[0] * self.dim[1]:
+            ) is not None:
                 bread_nodes.append(node)
 
         return sorted(bread_nodes, key=lambda n: n.bread_value(src, dest, self, number), reverse=True)[
@@ -422,7 +422,11 @@ class Graph:
 
     # @Utils.time_measure
     def get_shortest_distance(self, src, dest, name_of_object, default=None):
-        return self.shortest_path_info[name_of_object].get(src.pos, {}).get('dist', {}).get(dest.pos, default)
+        if isinstance(src, Node):
+            key = src.pos
+        else:
+            key = (src[0].pos, 1)
+        return self.shortest_path_info[name_of_object].get(key, {}).get('dist', {}).get(dest.pos, default)
 
     # @Utils.time_measure
     def get_shortest_path_from_shortest_path_info(self, src_pos, dest_pos, name_of_object):

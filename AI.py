@@ -248,7 +248,7 @@ class AI:
         if AI.life_cycle <= 3:
             sup_msgs = [msg.text for msg in self.game.chatBox.allChats if
                        msg.text.startswith("sc")]
-        
+
         for m in sup_msgs:
             ant_id, ant_pos, resource_count = decode_support_cell(m, AI.w, AI.h)
             AI.sup_cells.append(ant_pos)
@@ -783,7 +783,7 @@ class AI:
                                                             AI.id, self.direction,
                                                             self.shot,
                                                             AI.map.enemy_base_pos)
-                
+
                 self.message = self.encoded_neighbors
         elif AI.life_cycle > 1 and self.shot and self.game.ant.antType == AntType.SARBAAZ.value and AI.soldier_state == SoldierState.Null:
             possible_cells = get_view_distance_neighbors(AI.latest_pos[AI.id][0], AI.w,
@@ -1166,15 +1166,48 @@ class AI:
             if AI.map.bfs_info['dist'].get(pos) is not None and pos in reachable_resource:
                 grass_number += num
 
+        best_dir = Direction.CENTER.value
+
         if self.get_value(bread_number, grass_number, distance_to_base) > VALUE_TO_SUPPORT:
+            visible_cells = get_view_distance_neighbors(self.pos, *AI.map.dim, view=3, exact=False, sort=False)
+            best_value = sum(
+                [
+                    (AI.map.nodes[cell].bread + AI.map.nodes[cell].grass) / (manhattan_dist(
+                        self.pos, cell, *AI.map.dim
+                    ) or 1) for cell in visible_cells if AI.map.nodes[cell].bread + AI.map.nodes[cell].grass > 0
+                ]
+            )
             AI.exploration_target = None
             if self.pos not in AI.sup_cells:
                 AI.sup_cells.append(self.pos)
                 self.reached_sup_cell = True
                 self.resource_count = bread_number + grass_number
-            return Direction.CENTER.value
+            neighbors = AI.map.get_neighbors(self.pos)
 
-        if AI.sup_cells and self.pos not in AI.sup_cells and AI.exploration_target is None:
+            for neighbor in neighbors:
+                visible_cells = get_view_distance_neighbors(neighbor, *AI.map.dim, view=3, exact=False, sort=False)
+                number_of_resource = sum(
+                    [
+                        (
+                                AI.map.nodes[cell].bread + AI.map.nodes[cell].grass
+                        ) for cell in visible_cells if AI.map.nodes[cell].bread + AI.map.nodes[cell].grass > 0
+                    ]
+                )
+                if number_of_resource < bread_number + grass_number:
+                    continue
+                value = sum(
+                    [
+                        (AI.map.nodes[cell].bread + AI.map.nodes[cell].grass) / (manhattan_dist(
+                            neighbor, cell, *AI.map.dim
+                        ) or 1) for cell in visible_cells if AI.map.nodes[cell].bread + AI.map.nodes[cell].grass > 0
+                    ]
+                )
+                if value > best_value:
+                    best_value = value
+                    best_dir = Direction.get_value(AI.map.step(self.pos, neighbor))
+            return best_dir
+
+        if not AI.exploration_target and AI.sup_cells and self.pos not in AI.sup_cells:
             AI.exploration_target = AI.sup_cells[-1]
 
         return self.discover_wrapper()
