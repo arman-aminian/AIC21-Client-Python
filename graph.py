@@ -655,7 +655,8 @@ class Graph:
                 converted_map.nodes[pos] = self.nodes[pos]
         return converted_map
 
-    def get_first_move_to_base(self, src, dest, number_of_object):
+    def get_first_move_to_base(self, src, number_of_object):
+        dest = self.nodes[self.base_pos]
         resource_number = number_of_object.get('bread', 0) + number_of_object.get('grass', 0)
         if src.pos == dest.pos:
             print('IM IN base')
@@ -689,4 +690,6 @@ class Graph:
                             in_queue[next_node.pos] = True
                             q.append(next_node)
 
-        return self.get_first_move_from_parent(parent, src.pos, dest.pos) if dist.get(dest.pos) else None
+        return Direction.get_value(
+            self.step(src.pos, self.get_first_move_from_parent(parent, src.pos, dest.pos))
+        ) if dist.get(dest.pos) else None
