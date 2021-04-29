@@ -664,8 +664,9 @@ class Graph:
 
     def convert_base_possible_cells_to_wall(self, base_possible_cells):
         converted_map = Graph((self.dim[0], self.dim[1]), self.base_pos)
+        possible_list = [p[1] for p in base_possible_cells]
         for pos in self.nodes.keys():
-            if pos in [p[1] for p in base_possible_cells]:
+            if pos in possible_list:
                 converted_map.nodes[pos] = Node(
                     pos=pos,
                     discovered=True,

@@ -337,7 +337,7 @@ class AI:
         else:
             search_map = AI.map
         if len(AI.possible_base_cells) > 0:
-            search_map = search_map.convert_base_possible_cells_to_wall(AI.possible_base_cells)
+            search_map = search_map.convert_base_possible_cells_to_wall(AI.near_base_safe_cells)
 
         if self.has_resource_in_map(2, 1) is None:
             m = self.get_init_ant_explore_move()
@@ -439,7 +439,7 @@ class AI:
         else:
             search_map = AI.map
         if len(AI.possible_base_cells) > 0:
-            search_map = search_map.convert_base_possible_cells_to_wall(AI.possible_base_cells)
+            search_map = search_map.convert_base_possible_cells_to_wall(AI.near_base_safe_cells)
 
         if self.game.ant.currentResource.type == ResourceType.BREAD.value:
             if self.has_resource_in_map(ResourceType.BREAD.value,
