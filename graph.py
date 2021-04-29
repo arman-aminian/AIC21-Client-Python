@@ -234,8 +234,7 @@ class Graph:
                 next_node = self.nodes[neighbor]
                 if getattr(next_node, name_of_other_object) > 0 and number_of_object == 0:
                     continue
-                if number_of_object * int(next_node.trap):
-                    continue
+
                 weight = self.get_worker_weight(current_node, next_node)
                 if dist.get(next_node.pos) is None or weight + dist[current_node.pos] < dist.get(next_node.pos):
                     dist[next_node.pos] = weight + dist[current_node.pos]
@@ -362,7 +361,7 @@ class Graph:
     def find_all_shortest_path(self, number_of_object, name_of_object, nodes):
         for node in nodes:
             pos = node.pos
-            default = Utils.WORKER_MAX_CARRYING_RESOURCE_AMOUNT if pos == self.base_pos else 0
+            default = 0
             self.shortest_path_info[name_of_object][pos] = self.get_shortest_path(
                 self.nodes[pos], 'bread' if name_of_object == 'grass' else 'grass',
                 number_of_object.get(name_of_object, default)
