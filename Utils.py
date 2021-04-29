@@ -3,7 +3,7 @@ import time
 import Model
 
 
-def print_with_debug(*args, f=None, debug=True):
+def print_with_debug(*args, f=None, debug=False):
     if debug:
         print(*args)
     if f is not None:
@@ -12,7 +12,7 @@ def print_with_debug(*args, f=None, debug=True):
 
 INIT_ANTS_NUM = 4
 MAX_MESSAGES_PER_TURN = 5
-MAX_MESSAGES_INIT = 60
+MAX_MESSAGES_INIT = 50
 
 INIT_STRAIGHT_ANTS_MOVES = [[1, 2, 3, 4],
                             [2, 3, 4, 1],
@@ -90,6 +90,7 @@ def manhattan_dist(p, q, w, h) -> int:
     y_diff = min(abs(p[1] - q[1]), h - abs(p[1] - q[1]))
     return x_diff + y_diff
 
+
 def get_view_distance_neighbors(pos, w, h, view: int, exact: bool = False, sort=True):
     ret = []
     for i in range(-view, view + 1):
@@ -144,7 +145,7 @@ def time_measure(fn):
         now = time.time()
         res = fn(*args, **kwargs)
         delay = time.time() - now
-        print_with_debug(f'{fn.__name__} took {delay} seconds!', debug=True)
+        print_with_debug(f'{fn.__name__} took {delay} seconds!', debug=False)
 
         return res
 

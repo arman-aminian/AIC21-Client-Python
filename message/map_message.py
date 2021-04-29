@@ -1,6 +1,6 @@
 from copy import deepcopy
 
-from Utils import get_view_distance_neighbors
+from Utils import get_view_distance_neighbors, time_measure
 from graph import Node
 
 MESSAGE_VALUE = {
@@ -50,7 +50,7 @@ def encode_graph_nodes(pos, nodes: dict, w, h, view, ant_id, direction,
     # breads b*2c, grasses g*2c, ally soldiers as*1c,
     # enemy soldiers es*1c, status 1c
     neighbors = get_view_distance_neighbors(pos, w, h, view)
-    arr = [[], [], [], []]  # for the values (b, g, as, es)
+    arr = [[], [], []]  # for the values (b, g, as, es)
     s = chr(ant_id + CONSTANT) + pos_str(pos, w, h)
     for p, n in nodes.items():
         if n.wall:
@@ -68,12 +68,12 @@ def encode_graph_nodes(pos, nodes: dict, w, h, view, ant_id, direction,
     s += DELIM
     
     for p, n in nodes.items():
-        values = [list(n.__dict__.values())[5], list(n.__dict__.values())[6], list(n.__dict__.values())[8], list(n.__dict__.values())[10]]
+        values = [list(n.__dict__.values())[5], list(n.__dict__.values())[6], list(n.__dict__.values())[10]]
         for i, v in enumerate(values):
             if v > 0:
                 if i < 2:
                     arr[i].append(chr(neighbors.index(p) + CONSTANT))
-                    arr[i].append(chr(v + CONSTANT))
+                    arr[i].append(chr(min(v, 220) + CONSTANT))
                 else:
                     pos_cnt = f'{neighbors.index(p):06b}' + unit_count_enc(v)
                     arr[i].append(chr(int(pos_cnt, 2) + CONSTANT))
@@ -144,17 +144,17 @@ def decode_nodes(nodes_str: str, w, h, view):
         #         else:
         #             ret[neighbors[idx]] = Node(neighbors[idx], True, False,
         #                                        ally_workers=v)
-        if i == 5:  # ally soldier
-            for j in range(len(part)):
-                p, v = int(f'{ord(part[j]) - CONSTANT:08b}'[:6], 2), \
-                       unit_count_dec(f'{ord(part[j]) - CONSTANT:08b}'[6:])
-                idx = p
-                non_empties.append(neighbors[idx])
-                if neighbors[idx] in ret:
-                    ret[neighbors[idx]].ally_soldiers = v
-                else:
-                    ret[neighbors[idx]] = Node(neighbors[idx], True, False,
-                                               ally_soldiers=v)
+        # if i == 5:  # ally soldier
+        #     for j in range(len(part)):
+        #         p, v = int(f'{ord(part[j]) - CONSTANT:08b}'[:6], 2), \
+        #                unit_count_dec(f'{ord(part[j]) - CONSTANT:08b}'[6:])
+        #         idx = p
+        #         non_empties.append(neighbors[idx])
+        #         if neighbors[idx] in ret:
+        #             ret[neighbors[idx]].ally_soldiers = v
+        #         else:
+        #             ret[neighbors[idx]] = Node(neighbors[idx], True, False,
+        #                                        ally_soldiers=v)
         # if i == 5:  # enemy worker
         #     for j in range(len(part)):
         #         p, v = int(f'{ord(part[j]) - CONSTANT:08b}'[:6], 2), \
@@ -166,7 +166,7 @@ def decode_nodes(nodes_str: str, w, h, view):
         #         else:
         #             ret[neighbors[idx]] = Node(neighbors[idx], True, False,
         #                                        enemy_workers=v)
-        if i == 6:  # enemy soldier
+        if i == 5:  # enemy soldier
             for j in range(len(part)):
                 p, v = int(f'{ord(part[j]) - CONSTANT:08b}'[:6], 2), \
                        unit_count_dec(f'{ord(part[j]) - CONSTANT:08b}'[6:])
@@ -178,12 +178,12 @@ def decode_nodes(nodes_str: str, w, h, view):
                     ret[neighbors[idx]] = Node(neighbors[idx], True, False,
                                                enemy_soldiers=v)
     
-        if i == 7:  # status
+        if i == 6:  # status
             status = f'{ord(part[0]) - CONSTANT:08b}'
             direction = direction_dec(status[:3])
             shot = bool(int(status[3]))
             
-        if i == 8 and len(part) > 0:  # enemy base pos
+        if i == 7 and len(part) > 0:  # enemy base pos
             enemy_base_pos = str_pos(part, w, h)
     
     for i in get_view_distance_neighbors(pos, w, h, view):
