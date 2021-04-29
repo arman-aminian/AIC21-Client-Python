@@ -619,6 +619,9 @@ class AI:
             if AI.life_cycle == 1:
                 self.direction = self.random_valid_dir()
             else:
+                if AI.born_game_round < 50:
+                    AI.soldier_state = SoldierState.Explorer_Supporter
+                
                 self.handle_base()
                 self.handle_shot()
 
@@ -1179,12 +1182,14 @@ class AI:
         bread_number = 0
         grass_number = 0
         AI.map.bfs(AI.map.nodes[self.pos])
-        distance_to_base = AI.map.bfs['dist'][AI.map.base_pos]
-        for num, pos in self.visible_bread:
+        distance_to_base = AI.map.bfs_info['dist'][AI.map.base_pos]
+        for d in self.visible_bread:
+            num, pos = d["number"], d["pos"]
             if AI.map.bfs_info['dist'].get(pos) is not None:
                 bread_number += num
 
-        for num, pos in self.visible_grass:
+        for d in self.visible_grass:
+            num, pos = d["number"], d["pos"]
             if AI.map.bfs_info['dist'].get(pos) is not None:
                 grass_number += num
 
