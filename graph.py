@@ -209,8 +209,8 @@ class Graph:
     def get_node(self, pos):
         return self.nodes[pos] if self.nodes[pos].discovered else self.guess_node(self.nodes[pos])
 
-    def get_weight(self, src, dest, number_of_object):
-        return number_of_object * int(dest.trap) * 1000000 + int(src.swamp) * Utils.SWAMP_TURNS + 1
+    def get_worker_weight(self, src, dest):
+        return int(src.swamp) * Utils.SWAMP_TURNS + 1
 
     # @Utils.time_measure
     def get_shortest_path(self, src, name_of_other_object, number_of_object):
@@ -234,7 +234,9 @@ class Graph:
                 next_node = self.nodes[neighbor]
                 if getattr(next_node, name_of_other_object) > 0 and number_of_object == 0:
                     continue
-                weight = self.get_weight(current_node, next_node, number_of_object)
+                if number_of_object * int(next_node.trap):
+                    continue
+                weight = self.get_worker_weight(current_node, next_node)
                 if dist.get(next_node.pos) is None or weight + dist[current_node.pos] < dist.get(next_node.pos):
                     dist[next_node.pos] = weight + dist[current_node.pos]
                     parent[next_node.pos] = current_node.pos
@@ -273,7 +275,10 @@ class Graph:
         return None
 
     # @Utils.time_measure
-    def get_path_with_non_discovered(self, src, dest, unsafe_cells=None):
+    def get_path_with_non_discovered(self, src, dest, unsafe_cells=None, name='soldier'):
+        if src == dest:
+            print('IM IN TARGET')
+            raise
         unsafe_pos = {}
         for pos in (unsafe_cells or []):
             unsafe_pos.update(
@@ -285,6 +290,8 @@ class Graph:
             )
 
         q = [src]
+        in_queue = {src.pos: True}
+        dist = {src.pos: 0}
         parent = {src.pos: src.pos}
 
         if src.wall:
@@ -292,6 +299,7 @@ class Graph:
 
         while q:
             current_node = q.pop(0)
+            in_queue[current_node.pos] = False
             neighbors = self.get_neighbors_with_not_discovered_nodes(current_node.pos)
 
             for neighbor in neighbors:
@@ -301,14 +309,15 @@ class Graph:
                 if parent.get(next_node.pos) is None:
                     parent[next_node.pos] = current_node.pos
                     q.append(next_node)
-                    if next_node.pos == dest.pos:
-                        path = []
-                        last_node_pos = next_node.pos
-                        while last_node_pos != src.pos:
-                            path.append(self.nodes[last_node_pos])
-                            last_node_pos = parent[last_node_pos]
-                        return list(reversed(path))
-        return None
+                    weight = getattr(self, f'get_{name}_weight')(current_node, next_node)
+                    if dist.get(next_node.pos) is None or weight + dist[current_node.pos] < dist.get(next_node.pos):
+                        dist[next_node.pos] = weight + dist[current_node.pos]
+                        parent[next_node.pos] = current_node.pos
+                        if not in_queue.get(next_node.pos):
+                            in_queue[next_node.pos] = True
+                            q.append(next_node)
+
+        return self.get_first_move_from_parent(parent, src.pos, dest.pos) if dist.get(dest.pos) else None
 
     # @Utils.time_measure
     def get_path_with_max_length(self, src, dest, max_len):
@@ -353,9 +362,10 @@ class Graph:
     def find_all_shortest_path(self, number_of_object, name_of_object, nodes):
         for node in nodes:
             pos = node.pos
+            default = Utils.WORKER_MAX_CARRYING_RESOURCE_AMOUNT if pos == self.base_pos else 0
             self.shortest_path_info[name_of_object][pos] = self.get_shortest_path(
                 self.nodes[pos], 'bread' if name_of_object == 'grass' else 'grass',
-                number_of_object.get(name_of_object, 0)
+                number_of_object.get(name_of_object, default)
             )
 
     # @Utils.time_measure

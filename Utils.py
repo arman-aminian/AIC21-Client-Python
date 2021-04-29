@@ -46,6 +46,10 @@ HP = [8, 6]  # soldier, worker
 MAX_TURN_COUNT = 200
 BASE_RANGE = 6
 SWAMP_TURNS = 3
+
+VALUE_TO_SUPPORT = 100
+
+
 VALUES = {
     "id": 10000,
     "enemy_base": 5000,

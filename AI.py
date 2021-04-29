@@ -85,10 +85,10 @@ class AI:
                 g = n.resource_value if \
                     n.resource_type == ResourceType.GRASS.value else 0
 
-                if b > 0:
+                if b > 0 and manhattan_dist(self.pos, (n.x, n.y), *AI.map.dim) <= 3:
                     self.visible_bread.append({'number': b, 'pos': (n.x, n.y)})
 
-                if g > 0:
+                if g > 0 and manhattan_dist(self.pos, (n.x, n.y), *AI.map.dim) <= 3:
                     self.visible_grass.append({'number': g, 'pos': (n.x, n.y)})
 
                 aw, ally_s, ew, es = [0] * 4
@@ -986,13 +986,13 @@ class AI:
             AI.map.step(self.pos, AI.map.get_best_node_to_support(self.pos))
         )
 
-    def get_first_move_to_target(self, src, dest, unsafe_cells=None):
+    def get_first_move_to_target(self, src, dest, unsafe_cells=None, name='soldier'):
         print_with_debug(src, dest, f=AI.out_file)
         print_with_debug(AI.map.get_path_with_non_discovered(AI.map.nodes[src], AI.map.nodes[dest], unsafe_cells),
                          f=AI.out_file)
         return Direction.get_value(
             AI.map.step(
-                src, AI.map.get_path_with_non_discovered(AI.map.nodes[src], AI.map.nodes[dest], unsafe_cells)[0].pos
+                src, AI.map.get_path_with_non_discovered(AI.map.nodes[src], AI.map.nodes[dest], unsafe_cells, name)[0].pos
             )
         )
 
@@ -1152,7 +1152,6 @@ class AI:
                                      f=AI.out_file)
 
     def get_first_move_to_go(self):
-        VALUE_TO_SUPPORT = 100
         bread_number = 0
         grass_number = 0
         AI.map.bfs(AI.map.nodes[self.pos])
@@ -1166,9 +1165,10 @@ class AI:
                 grass_number += num
 
         if self.get_value(bread_number, grass_number, distance_to_base) > VALUE_TO_SUPPORT:
+            AI.exploration_target = None
             return Direction.CENTER.value
 
-        return self.get_soldier_first_move_to_discover(init=False)
+        return self.get_soldier_first_move_to_discover()
 
     def get_value(self, bread_number, grass_number, distance_to_base):
         return bread_number + grass_number + distance_to_base
