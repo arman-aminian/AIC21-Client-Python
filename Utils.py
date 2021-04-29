@@ -3,7 +3,7 @@ import time
 import Model
 
 
-def print_with_debug(*args, f=None, debug=True):
+def print_with_debug(*args, f=None, debug=False):
     if debug:
         print(*args)
     if f is not None:
@@ -47,7 +47,7 @@ MAX_TURN_COUNT = 200
 BASE_RANGE = 6
 SWAMP_TURNS = 3
 
-VALUE_TO_SUPPORT = 100
+VALUE_TO_SUPPORT = 70
 MIN_DIST_SUPPORT = 7
 EXPLORER_SUPPORT_MIN_ROUND = 30
 
@@ -56,6 +56,7 @@ VALUES = {
     "id": 10000,
     "enemy_base": 5000,
     "shot": 4000,
+    "sup": 2000,
     "bg": 700,
     "disc_gt_3": 600,
     "es": 500,
@@ -191,7 +192,7 @@ def print_map(input_map, pos, f=None):
                     print('B', end='')
             elif (i, j) == pos:
                 if f is not None:
-                    print('P', end='')
+                    print('P', end='', file=f)
                 else:
                     print('P', end='')
             elif input_map.nodes[(i, j)].wall:
@@ -199,6 +200,11 @@ def print_map(input_map, pos, f=None):
                     print('W', end="", file=f)
                 else:
                     print('W', end="")
+            elif input_map.nodes[(i, j)].swamp and input_map.nodes[(i, j)].trap:
+                if f is not None:
+                    print('Z', end="", file=f)
+                else:
+                    print('Z', end="")
             elif input_map.nodes[(i, j)].swamp:
                 if f is not None:
                     print('S', end="", file=f)

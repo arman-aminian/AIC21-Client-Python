@@ -78,7 +78,7 @@ def encode_graph_nodes(pos, nodes: dict, w, h, view, ant_id, direction,
                     pos_cnt = f'{neighbors.index(p):06b}' + unit_count_enc(v)
                     arr[i].append(chr(int(pos_cnt, 2) + CONSTANT))
     
-    status = direction_enc(direction) + str(int(shot))
+    status = direction_enc(direction) + str(int(shot)) + '0000'
     
     for a in arr:
         s = s + ''.join(a) + DELIM
@@ -96,7 +96,7 @@ def decode_nodes(nodes_str: str, w, h, view):
     nodes_str = nodes_str[3:]
     neighbors = get_view_distance_neighbors(pos, w, h, view)
     direction = direction_dec('000')
-    shot = bool(int('0'))
+    shot = False
     enemy_base_pos = None
     non_empties = []
     

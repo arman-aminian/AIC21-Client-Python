@@ -4,6 +4,7 @@ from Utils import *
 from graph import *
 from message.map_message import *
 from message.possible_base_message import *
+from message.support_cell_message import *
 from tsp_generator import get_limit, get_number_of_object
 from state import *
 from BT import *
@@ -44,6 +45,7 @@ class AI:
     shot_default_dir = None
     first_id = -1
     exploration_target = None
+    sup_cells = []
 
     def __init__(self):
         # Current Game State
@@ -57,10 +59,13 @@ class AI:
         # mine
         self.pos = (-1, -1)
         self.new_neighbors = {}
+        self.all_neighbors = {}
         self.encoded_neighbors = ""
         self.shot = False
+        self.reached_sup_cell = False
         self.visible_bread = []
         self.visible_grass = []
+        self.resource_count = 0
 
     # @time_measure
     def search_neighbors(self):
@@ -111,6 +116,7 @@ class AI:
                                            enemy_workers=ew,
                                            enemy_soldiers=es))
 
+        self.all_neighbors = {n.pos: n for n in neighbor_nodes}
         self.new_neighbors = {n.pos: n for n in neighbor_nodes if
                               AI.map.nodes[n.pos] != n}
         if AI.life_cycle > 1:
@@ -168,11 +174,13 @@ class AI:
 
     # @time_measure
     def update_map_from_neighbors(self):
-        if not self.new_neighbors:
-            return
-        # just in case. not really needed
-        for pos, n in self.new_neighbors.items():
+        for pos, n in self.all_neighbors.items():
             AI.map.nodes[pos] = copy.deepcopy(n)
+        # if not self.new_neighbors:
+        #     return
+        # # just in case. not really needed
+        # for pos, n in self.new_neighbors.items():
+        #     AI.map.nodes[pos] = copy.deepcopy(n)
 
     # @time_measure
     def update_map_from_chat_box(self):
@@ -189,9 +197,10 @@ class AI:
 
         for m in maps:
             ant_id, ant_pos, ant_dir, \
-            ant_shot, nodes, enemy_base_pos = decode_nodes(m.text,
-                                                           AI.w, AI.h,
-                                                           self.game.ant.viewDistance)
+            ant_shot, \
+            nodes, enemy_base_pos = decode_nodes(m.text,
+                                                 AI.w, AI.h,
+                                                 self.game.ant.viewDistance)
             AI.latest_pos[ant_id] = (ant_pos, m.turn)
             for pos, n in nodes.items():
                 if n != AI.map.nodes[pos]:
@@ -231,6 +240,18 @@ class AI:
         while iid in all_ids:
             iid = random.randint(min_id, max_id)
         AI.id = iid
+
+    def update_support_cells_from_chat_box(self):
+        sup_msgs = [msg.text for msg in
+                   self.game.chatBox.allChats[-MAX_MESSAGES_PER_TURN:] if
+                   msg.text.startswith("sc") and msg.turn == AI.game_round - 1]
+        if AI.life_cycle <= 3:
+            sup_msgs = [msg.text for msg in self.game.chatBox.allChats if
+                       msg.text.startswith("sc")]
+        
+        for m in sup_msgs:
+            ant_id, ant_pos, resource_count = decode_support_cell(m, AI.w, AI.h)
+            AI.sup_cells.append(ant_pos)
 
     def get_next_pos(self, cur_pos, move):
         if move == 1:
@@ -556,7 +577,7 @@ class AI:
         # ########################################################KAARGAAAR########################################################
         # *************************************************************************************************************************
         elif self.game.ant.antType == AntType.KARGAR.value:
-            print_map(AI.map, self.pos)
+            # print_map(AI.map, self.pos)
             if self.game.ant.currentResource.value is not None \
                     and self.game.ant.currentResource.value >= (WORKER_MAX_CARRYING_RESOURCE_AMOUNT / 2):
                 print_with_debug("worker has >= (max carrying resources amount / 2) => back to base with bfs",
@@ -623,13 +644,14 @@ class AI:
                     self.direction = self.discover_wrapper()
 
         self.send_msg()
-        self.end_round()
 
         print_with_debug("turn", AI.game_round, "id", AI.id, "pos", self.pos,
                          "worker state", AI.worker_state,
                          "soldier state", AI.soldier_state,
                          "dir", Direction.get_string(self.direction),
-                         "map value", self.value, f=AI.out_file)
+                         "map value", self.value, f=AI.out_file, debug=True)
+
+        self.end_round()
 
         if self.message is not None and len(self.message) > 32:
             self.message = ""
@@ -714,6 +736,7 @@ class AI:
         if AI.game_round > 5 and not AI.shot_once:
             self.check_for_base()
         if self.game.ant.antType == AntType.SARBAAZ.value:
+            self.update_support_cells_from_chat_box()
             self.soldier_update_history()
             print_with_debug("soldier history", AI.soldier_path_neighbors_history, f=AI.out_file)
 
@@ -737,7 +760,10 @@ class AI:
 
     # @time_measure
     def send_msg(self):
-        if AI.life_cycle > 1 and (not self.shot or self.value == VALUES["enemy_base"]):
+        if AI.life_cycle > 1 and self.game.ant.antType == AntType.SARBAAZ.value and self.reached_sup_cell:
+            self.message = encode_support_cell(AI.id, self.pos, AI.w, AI.h, self.resource_count)
+            self.value = VALUES["sup"]
+        elif AI.life_cycle > 1 and (not self.shot or self.value == VALUES["enemy_base"]):
             if self.direction is None:
                 print_with_debug("turn", AI.game_round, "id", AI.id, "pos", self.pos,
                                  "worker state", AI.worker_state,
@@ -748,6 +774,8 @@ class AI:
                 dis_list = get_view_distance_neighbors(self.pos, AI.w, AI.h, 4)
                 neighbors = {pos: n for pos, n in AI.map.nodes.items() if
                              pos in dis_list}
+                if self.reached_sup_cell:
+                    neighbors = {pos: Node(n.pos, n.discovered, n.wall, n.swamp, n.trap, 0, 0, 0, 0, 0, n.enemy_soldiers) for pos, n in neighbors.items()}
                 self.encoded_neighbors = encode_graph_nodes(self.pos,
                                                             neighbors,
                                                             AI.w, AI.h,
@@ -755,6 +783,7 @@ class AI:
                                                             AI.id, self.direction,
                                                             self.shot,
                                                             AI.map.enemy_base_pos)
+                
                 self.message = self.encoded_neighbors
         elif AI.life_cycle > 1 and self.shot and self.game.ant.antType == AntType.SARBAAZ.value and AI.soldier_state == SoldierState.Null:
             possible_cells = get_view_distance_neighbors(AI.latest_pos[AI.id][0], AI.w,
@@ -943,10 +972,7 @@ class AI:
 
     def get_soldier_first_move_to_discover(self, init=True):
         if init:
-            # print("GOT IN INIT.")
             AI.latest_map.bfs(AI.map.nodes[self.pos])
-            # print("INIT EDGE NODES", AI.latest_map.edge_nodes)
-        # print("IDS", AI.ids)
         move, AI.exploration_target = AI.latest_map.get_first_move_to_discover(
             AI.map.nodes[self.pos], self.pos, len(AI.ids[self.game.ant.antType]), AI.id, AI.ids[self.game.ant.antType]
         )
@@ -1142,7 +1168,14 @@ class AI:
 
         if self.get_value(bread_number, grass_number, distance_to_base) > VALUE_TO_SUPPORT:
             AI.exploration_target = None
+            if self.pos not in AI.sup_cells:
+                AI.sup_cells.append(self.pos)
+                self.reached_sup_cell = True
+                self.resource_count = bread_number + grass_number
             return Direction.CENTER.value
+
+        if AI.sup_cells and self.pos not in AI.sup_cells:
+            AI.exploration_target = AI.sup_cells[-1]
 
         return self.discover_wrapper()
 
@@ -1150,7 +1183,6 @@ class AI:
         return bread_number + grass_number + distance_to_base
 
     def discover_wrapper(self):
-        print("TARGET", self.pos, AI.exploration_target)
         if AI.exploration_target is None:
             return self.get_soldier_first_move_to_discover()
         else:
@@ -1161,11 +1193,9 @@ class AI:
                 return self.get_first_move_to_target(self.pos, AI.exploration_target)
 
     def remove_occupied_from_candidates(self, candidates_idx):
-        print("CANDIDATES ARE", candidates_idx)
         temp = candidates_idx.copy()
         for pos in [p[0] for p in AI.latest_pos.values()]:
             if pos not in candidates_idx:
                 temp.append(pos)
             else:
-                print("HAHA ALREADY OCCUPIED", pos)
         return temp
