@@ -191,24 +191,24 @@ def print_map(input_map, pos, f=None):
                     print('B', end='')
             elif (i, j) == pos:
                 if f is not None:
-                    print('P', end='', file=f)
+                    print('P', end='')
                 else:
                     print('P', end='')
             elif input_map.nodes[(i, j)].wall:
                 if f is not None:
                     print('W', end="", file=f)
                 else:
-                    print('W', end="", file=f)
+                    print('W', end="")
             elif input_map.nodes[(i, j)].swamp:
                 if f is not None:
                     print('S', end="", file=f)
                 else:
-                    print('S', end="", file=f)
+                    print('S', end="")
             elif input_map.nodes[(i, j)].trap:
                 if f is not None:
                     print('T', end="", file=f)
                 else:
-                    print('T', end="", file=f)
+                    print('T', end="")
             else:
                 if f is not None:
                     print('N' if not input_map.nodes[(i, j)].discovered else 'D', end='', file=f)
