@@ -498,7 +498,7 @@ class AI:
             print_with_debug("bread_dir:", bread_dir, f=AI.out_file)
             print_with_debug("bread_dis:", bread_dis, f=AI.out_file)
             if ((grass_dis <= bread_dis and AI.id != BREAD_PRIORITY_ID)
-                or (AI.id == GRASS_PRIORITY_ID and grass_dis - PRIORITY_GAP <= bread_dis)
+                or ((AI.id == GRASS_PRIORITY_ID1 or AI.id == GRASS_PRIORITY_ID2) and grass_dis - PRIORITY_GAP <= bread_dis)
                 or (AI.id == BREAD_PRIORITY_ID and grass_dis + PRIORITY_GAP < bread_dis)) \
                     and grass_dis != math.inf:
                 m = grass_dir
