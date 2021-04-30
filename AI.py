@@ -252,7 +252,10 @@ class AI:
 
         for m in sup_msgs:
             ant_id, ant_pos, resource_count = decode_support_cell(m, AI.w, AI.h)
-            AI.sup_cells.append(ant_pos)
+            if ant_pos not in AI.sup_cells:
+                AI.sup_cells.append(ant_pos)
+
+
 
     def get_next_pos(self, cur_pos, move):
         if move == 1:
