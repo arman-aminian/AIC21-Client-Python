@@ -278,7 +278,7 @@ class Graph:
     # @Utils.time_measure
     def get_path_with_non_discovered(self, src, dest, unsafe_cells=None, name='soldier'):
         if src == dest:
-            print('IM IN TARGET')
+            # print('IM IN TARGET')
             raise
         unsafe_pos = {}
         for pos in (unsafe_cells or []):
@@ -680,7 +680,7 @@ class Graph:
         dest = self.nodes[self.base_pos]
         resource_number = number_of_object.get('bread', 0) + number_of_object.get('grass', 0)
         if src.pos == dest.pos:
-            print('IM IN base')
+            # print('IM IN base')
             return None
 
         q = [src]

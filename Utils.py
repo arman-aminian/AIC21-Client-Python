@@ -49,8 +49,8 @@ SWAMP_TURNS = 3
 
 VALUE_TO_SUPPORT = 60
 MIN_DIST_SUPPORT = 8
-EXPLORER_SUPPORT_MAX_ROUND = 30
-ATTACKING_SOLDIERS_ROUND = 60
+EXPLORER_SUPPORT_MAX_ROUND = 80
+ATTACKING_SOLDIERS_ROUND = 160
 
 
 VALUES = {
@@ -172,8 +172,8 @@ def handle_exception(fn):
         try:
             res = fn(*args, **kwargs)
         except Exception as e:
-            print_with_debug('ERROR ERROR ERROR')
-            print_with_debug(e)
+            # print_with_debug('ERROR ERROR ERROR')
+            # print_with_debug(e)
             res = '', -50000, Model.Direction.get_random_direction()
             # todo: Raise Error
             # raise

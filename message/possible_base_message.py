@@ -11,21 +11,21 @@ def sp(s, w, h):
 
 def encode_possible_cells(ant_id, pos, prev_pos, w, h, possible_cells):
     s = "sh" + chr(ant_id + CONSTANT)
-    
+
     binary = ps(pos, w, h) + ps(prev_pos, w, h)
     for p in possible_cells:
         binary += ps(p, w, h)
-    
+
     for i in range(0, len(binary) - 8, 8):
         part = binary[i:i + 8]
         s += chr(int(part, 2) + CONSTANT)
-    
+
     return s
 
 
 def decode_possible_cells(s, w, h):
     ant_id = ord(s[1]) - CONSTANT
-    temp = ''.join([f"{ord(c) - CONSTANT:08b}" for c in s[2:]])
+    temp = ''.join([f"{ord(c) - CONSTANT:08b}" for c in s[3:]])
     # print("decode possible msg error:", temp[:12])
     # print(temp)
     pos = sp(temp[:12], w, h)

@@ -561,6 +561,7 @@ class AI:
 
     # @handle_exception
     # @time_measure
+    @handle_exception
     def turn(self) -> (str, int, int):
         if AI.debug and AI.life_cycle > 2 and (AI.ids and (AI.id in AI.ids[0] or AI.id in AI.ids[1])):
             t = "soldier" if self.game.ant.antType == AntType.SARBAAZ.value else "worker"
@@ -624,13 +625,13 @@ class AI:
         # ########################################################SAARBAAAZ########################################################
         # *************************************************************************************************************************
         elif self.game.ant.antType == AntType.SARBAAZ.value:
-            print_map(AI.map, self.pos, f=AI.out_file)
+            # print_map(AI.map, self.pos, f=AI.out_file)
             if AI.life_cycle == 1:
                 self.direction = self.random_valid_dir()
             else:
                 if AI.born_game_round < EXPLORER_SUPPORT_MAX_ROUND:
                     AI.soldier_state = SoldierState.Explorer_Supporter
-                elif EXPLORER_SUPPORT_MAX_ROUND <= AI.born_game_round < ATTACKING_SOLDIERS_ROUND:
+                else:
                     AI.exploration_target = None if AI.soldier_state != SoldierState.Null else AI.exploration_target
                     AI.soldier_state = SoldierState.Null
                 
@@ -980,8 +981,11 @@ class AI:
         for m in possible_msgs:
             print_with_debug("possible msg:", m)
             ant_id, pos, prev_pos, possible_cells = decode_possible_cells(m, AI.w, AI.h)
-            AI.possible_base_cells = list(set(AI.possible_base_cells).
-                                          intersection(possible_cells))
+            if not AI.possible_base_cells:
+                AI.possible_base_cells = possible_cells
+            else:
+                AI.possible_base_cells = list(set(AI.possible_base_cells).
+                                              intersection(possible_cells))
             if (prev_pos, pos) not in AI.near_base_safe_cells:
                 AI.near_base_safe_cells.append((prev_pos, pos))
 
@@ -1173,7 +1177,7 @@ class AI:
 
         best_dir = Direction.CENTER.value
 
-        if self.get_value(bread_number, grass_number, distance_to_base) > VALUE_TO_SUPPORT:
+        if self.get_value(bread_number, grass_number, distance_to_base) >= VALUE_TO_SUPPORT:
             visible_cells = get_view_distance_neighbors(self.pos, *AI.map.dim, view=3, exact=False, sort=False)
             best_value = sum(
                 [
