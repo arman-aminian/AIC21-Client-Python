@@ -133,39 +133,7 @@ def decode_nodes(nodes_str: str, w, h, view):
                 non_empties.append(neighbors[idx])
                 ret[neighbors[idx]] = Node(neighbors[idx], True, False,
                                            grass=ord(v) - CONSTANT)
-        # if i == 3:  # ally worker
-        #     for j in range(len(part)):
-        #         p, v = int(f'{ord(part[j]) - CONSTANT:08b}'[:6], 2), \
-        #                unit_count_dec(f'{ord(part[j]) - CONSTANT:08b}'[6:])
-        #         idx = p
-        #         non_empties.append(neighbors[idx])
-        #         if neighbors[idx] in ret:
-        #             ret[neighbors[idx]].ally_workers = v
-        #         else:
-        #             ret[neighbors[idx]] = Node(neighbors[idx], True, False,
-        #                                        ally_workers=v)
-        # if i == 5:  # ally soldier
-        #     for j in range(len(part)):
-        #         p, v = int(f'{ord(part[j]) - CONSTANT:08b}'[:6], 2), \
-        #                unit_count_dec(f'{ord(part[j]) - CONSTANT:08b}'[6:])
-        #         idx = p
-        #         non_empties.append(neighbors[idx])
-        #         if neighbors[idx] in ret:
-        #             ret[neighbors[idx]].ally_soldiers = v
-        #         else:
-        #             ret[neighbors[idx]] = Node(neighbors[idx], True, False,
-        #                                        ally_soldiers=v)
-        # if i == 5:  # enemy worker
-        #     for j in range(len(part)):
-        #         p, v = int(f'{ord(part[j]) - CONSTANT:08b}'[:6], 2), \
-        #                unit_count_dec(f'{ord(part[j]) - CONSTANT:08b}'[6:])
-        #         idx = p
-        #         non_empties.append(neighbors[idx])
-        #         if neighbors[idx] in ret:
-        #             ret[neighbors[idx]].enemy_workers = v
-        #         else:
-        #             ret[neighbors[idx]] = Node(neighbors[idx], True, False,
-        #                                        enemy_workers=v)
+
         if i == 5:  # enemy soldier
             for j in range(len(part)):
                 p, v = int(f'{ord(part[j]) - CONSTANT:08b}'[:6], 2), \

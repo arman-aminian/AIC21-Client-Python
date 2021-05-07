@@ -843,43 +843,6 @@ class AI:
         d = solve_bt(AI.map, self.pos)
         return d
 
-        # second version
-        # size = 4
-        # while self.is_radius_fully_discovered(size):
-        #     size += 1
-        #
-        # # right, up, left, down
-        # scores = self.calculate_score(size)
-        # print_with_debug("scores, right up left down", scores, f=AI.out_file)
-        # # TODO add the extra step when two sides have the same scores
-        # d = [(1, 0), (0, -1), (-1, 0), (0, 1)]
-        # possible_pos = [fix(tuple(map(sum, zip(self.pos, dd))), AI.w, AI.h)
-        #                 for dd in d]
-        # same_score_indices = [i + 1 for i, s in enumerate(scores)
-        #                       if s == max(scores) and
-        #                       possible_pos[i] != AI.latest_pos[AI.id][0]]
-        # return random.choice(same_score_indices) if same_score_indices else \
-        #     scores.index(max(scores)) + 1
-
-        # first version
-        # # right -> up -> left -> down
-        # points = [fix((self.pos[0] + 1, self.pos[1]), AI.w, AI.h),
-        #           fix((self.pos[0], self.pos[1] + 1), AI.w, AI.h),
-        #           fix((self.pos[0] - 1, self.pos[1]), AI.w, AI.h),
-        #           fix((self.pos[0], self.pos[1] - 1), AI.w, AI.h)]
-        # num_non_discovered = []
-        # for p in points:
-        #     new_positions = get_view_distance_neighbors(p, AI.w, AI.h, self.game.ant.viewDistance)
-        #     n = sum([pos for pos in new_positions if
-        #              not AI.map.nodes[pos].discovered])
-        #     num_non_discovered.append(n)
-        #
-        # if num_non_discovered.count(max(num_non_discovered)) == 1:
-        #     return num_non_discovered.index(max(num_non_discovered)) + 1
-        #
-        # # do it for all the points in the radius
-        # self.total_non_discovered_points()
-
     def is_radius_fully_discovered(self, size):
         for i in range(self.pos[0] - size, self.pos[0] + size + 1):
             for j in range(self.pos[1] - size, self.pos[1] + size + 1):
