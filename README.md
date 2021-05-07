@@ -1,5 +1,6 @@
-# AIC21-Client-Python
-- Write your code in `AI.py`
-- Use PyInstaller to create binary executable file
-  - `python -m PyInstaller --onefile Controller.py`
-- Pass output file path (path to `dist/Controller`) to server as args ( `--first-team` or `--second-team` )
+Game Doc : https://github.com/SharifAIChallenge/AIC21-Doc/blob/main/2-Game-Doc.md
+
+Our Team : MMA
+- [Mohammad Mahdi Ahangaran](https://github.com/mmahdi2414)
+- [Mohammad Hosein Zarei](https://github.com/mhezarei)
+- [Arman Aminian](https://github.com/arman-aminian)
